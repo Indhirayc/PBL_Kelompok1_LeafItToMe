@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../widgets/profile_menu_tile.dart';
+import '../../../../core/widgets/main_bottom_navigation.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -124,8 +125,12 @@ class ProfilePage extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
+         // Profil merupakan menu keempat, sehingga index-nya 3.
+          bottomNavigationBar: const MainBottomNavigation(
+            currentIndex: 3,
+          ),
+        );
+      }
 
   Widget _buildProfileCard(BuildContext context) {
     return Container(
