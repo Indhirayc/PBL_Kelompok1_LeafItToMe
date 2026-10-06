@@ -90,12 +90,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _forgotPassword() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Fitur lupa kata sandi akan segera tersedia'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    context.goNamed('forgot-password');
   }
 
   void _openRegisterPage() {
