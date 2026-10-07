@@ -7,6 +7,7 @@ import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/profile/presentation/pages/personal_information_page.dart';
 import '../../features/profile/presentation/pages/help_faq_page.dart';
+import '../../features/profile/presentation/pages/about_page.dart';
 
 abstract final class AppRouter {
   static final GoRouter router = GoRouter(
@@ -48,6 +49,11 @@ abstract final class AppRouter {
         path: '/help-faq',
         name: 'help-faq',
         builder: (context, state) => const HelpFaqPage(),
+      ),
+      GoRoute(
+        path: '/about',
+        name: 'about',
+        builder: (context, state) => const AboutPage(),
       ),
     ],
   );
