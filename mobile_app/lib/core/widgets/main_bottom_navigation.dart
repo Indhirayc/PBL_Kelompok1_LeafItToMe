@@ -107,7 +107,14 @@ class MainBottomNavigation extends StatelessWidget {
       return;
     }
 
-    // Untuk sementara, hanya halaman Profil yang sudah tersedia.
+    if (routeName == 'home') {
+      context.goNamed('home');
+      return;
+    }
+    if (routeName == 'guides') {
+      context.goNamed('guides');
+      return;
+    }
     if (routeName == 'profile') {
       context.goNamed('profile');
       return;

@@ -84,9 +84,7 @@ class _LoginPageState extends State<LoginPage> {
         behavior: SnackBarBehavior.floating,
       ),
     );
-    context.goNamed('profile');
-    // Setelah halaman beranda tersedia, gunakan:
-    // context.goNamed('home');
+    context.goNamed('home');
   }
 
   void _forgotPassword() {
