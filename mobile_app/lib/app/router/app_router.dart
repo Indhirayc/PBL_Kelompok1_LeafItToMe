@@ -11,6 +11,9 @@ import '../../features/profile/presentation/pages/about_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/guide/presentation/pages/guide_list_page.dart';
 import '../../features/guide/presentation/pages/guide_detail_page.dart';
+import '../../features/guide/presentation/pages/tool_detail_page.dart';
+import '../../features/guide/presentation/pages/disease_detail_page.dart';
+import '../../features/guide/data/guide_data.dart';
 
 abstract final class AppRouter {
   static final GoRouter router = GoRouter(
@@ -52,6 +55,22 @@ abstract final class AppRouter {
         builder: (context, state) {
           final tabIndex = (state.extra as int?) ?? 0;
           return GuideDetailPage(initialTabIndex: tabIndex);
+        },
+      ),
+      GoRoute(
+        path: '/tool-detail',
+        name: 'tool-detail',
+        builder: (context, state) {
+          final tool = state.extra as ToolModel;
+          return ToolDetailPage(tool: tool);
+        },
+      ),
+      GoRoute(
+        path: '/disease-detail',
+        name: 'disease-detail',
+        builder: (context, state) {
+          final disease = state.extra as DiseaseModel;
+          return DiseaseDetailPage(disease: disease);
         },
       ),
       GoRoute(

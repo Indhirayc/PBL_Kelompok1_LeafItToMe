@@ -1,0 +1,335 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../../data/guide_data.dart';
+import '../widgets/guide_illustrations.dart';
+
+class DiseaseDetailPage extends StatelessWidget {
+  final DiseaseModel disease;
+
+  const DiseaseDetailPage({
+    super.key,
+    required this.disease,
+  });
+
+  static const Color primaryGreen = Color(0xFF2F7D4A);
+  static const Color darkGreen = Color(0xFF183E2D);
+  static const Color backgroundColor = Color(0xFFF8FAF5);
+  static const Color secondaryText = Color(0xFF75857B);
+  static const Color borderColor = Color(0xFFE3EAE4);
+  static const Color accentGreen = Color(0xFFE8F5E9);
+
+  Future<void> _openMarketplace(BuildContext context) async {
+    final encodedKeyword = Uri.encodeComponent(disease.searchKeyword);
+    final url = Uri.parse('https://shopee.co.id/search?keyword=$encodedKeyword');
+
+    try {
+      final launched = await launchUrl(
+        url,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Membuka produk perawatan untuk: ${disease.name}'),
+            backgroundColor: primaryGreen,
+          ),
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Membuka produk perawatan untuk: ${disease.name}'),
+            backgroundColor: primaryGreen,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: backgroundColor,
+      appBar: AppBar(
+        toolbarHeight: 56,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0.5,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: darkGreen,
+            size: 18,
+          ),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.goNamed('guides');
+            }
+          },
+        ),
+        title: const Text(
+          'Detail Penyakit',
+          style: TextStyle(
+            color: darkGreen,
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Illustration Banner with Clean Severity Overlay
+              Stack(
+                children: [
+                  DiseaseLeafIllustration(
+                    diseaseId: disease.id,
+                    imageAssetPath: disease.imageAssetPath,
+                  ),
+                  Positioned(
+                    left: 14,
+                    bottom: 14,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.95),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: disease.severityColor.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.warning_amber_rounded,
+                            size: 14,
+                            color: disease.severityColor,
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            disease.severity,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: disease.severityColor,
+                              letterSpacing: 0.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+
+              // Title: Nama Penyakit
+              Text(
+                disease.name,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: darkGreen,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(height: 3),
+
+              // Latin Name & Category
+              Text(
+                disease.latinName,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: secondaryText,
+                ),
+              ),
+              const SizedBox(height: 18),
+
+              // Gejala Utama Card
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: borderColor),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: const [
+                        Icon(
+                          Icons.biotech_outlined,
+                          color: Color(0xFFD32F2F),
+                          size: 18,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          'Gejala yang Terlihat',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: darkGreen,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    const Divider(height: 1, color: borderColor),
+                    const SizedBox(height: 10),
+                    ...disease.symptoms.map(
+                      (symptom) => Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.only(top: 6),
+                              width: 5,
+                              height: 5,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFD32F2F),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                symptom,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: darkGreen,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+
+              // Penanganan Awal & Pencegahan Card
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: borderColor),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: const [
+                        Icon(
+                          Icons.shield_outlined,
+                          color: primaryGreen,
+                          size: 18,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          'Penanganan & Pencegahan',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: darkGreen,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    const Divider(height: 1, color: borderColor),
+                    const SizedBox(height: 10),
+                    ...disease.preventions.asMap().entries.map((entry) {
+                      final idx = entry.key + 1;
+                      final text = entry.value;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 20,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                color: accentGreen,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  '$idx',
+                                  style: const TextStyle(
+                                    color: primaryGreen,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                text,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: darkGreen,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 22),
+
+              // Tasteful Inline Treatment Search Button
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => _openMarketplace(context),
+                  icon: const Icon(Icons.medication_outlined, size: 16),
+                  label: const Text('Cari Produk Penanganan / Obat Terkait'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: primaryGreen,
+                    side: BorderSide(color: primaryGreen.withValues(alpha: 0.3)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
