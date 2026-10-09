@@ -8,6 +8,7 @@ import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/profile/presentation/pages/personal_information_page.dart';
 import '../../features/profile/presentation/pages/help_faq_page.dart';
 import '../../features/profile/presentation/pages/about_page.dart';
+import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 
 abstract final class AppRouter {
   static final GoRouter router = GoRouter(
@@ -32,6 +33,11 @@ abstract final class AppRouter {
         path: '/forgot-password',
         name: 'forgot-password',
         builder: (context, state) => const ForgotPasswordPage(),
+      ),
+      GoRoute(
+        path: '/home',
+        name: 'home',
+        builder: (context, state) => const DashboardPage(),
       ),
       GoRoute(
         path: '/profile',
