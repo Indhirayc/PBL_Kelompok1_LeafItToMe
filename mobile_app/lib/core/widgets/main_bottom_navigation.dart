@@ -111,6 +111,10 @@ class MainBottomNavigation extends StatelessWidget {
       context.goNamed('home');
       return;
     }
+    if (routeName == 'guides') {
+      context.goNamed('guides');
+      return;
+    }
     if (routeName == 'profile') {
       context.goNamed('profile');
       return;
