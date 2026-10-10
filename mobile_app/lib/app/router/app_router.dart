@@ -17,6 +17,8 @@ import '../../features/guide/presentation/pages/disease_detail_page.dart';
 import '../../features/guide/data/guide_data.dart';
 import '../../features/detection/presentation/pages/data_inspection_page.dart';
 import '../../features/detection/presentation/pages/photo_source_page.dart';
+import '../../features/detection/presentation/pages/photo_preview_page.dart';
+import '../../features/detection/presentation/pages/detection_result_page.dart';
 
 abstract final class AppRouter {
   static final GoRouter router = GoRouter(
@@ -113,6 +115,52 @@ abstract final class AppRouter {
                     ),
                     inspectionDate: DateTime.now(),
                     note: '',
+                  ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/photo-preview',
+        name: 'photo-preview',
+        builder: (context, state) {
+          final selection = state.extra;
+          return PhotoPreviewPage(
+            selection: selection is InspectionPhotoSelection
+                ? selection
+                : InspectionPhotoSelection(
+                    draft: InspectionDraft(
+                      plant: const InspectionPlant(
+                        name: 'Tomat Pot Depan',
+                        id: 'TMT-001',
+                        location: 'Teras depan',
+                      ),
+                      inspectionDate: DateTime.now(),
+                      note: '',
+                    ),
+                    source: 'Galeri',
+                  ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/detection-result',
+        name: 'detection-result',
+        builder: (context, state) {
+          final selection = state.extra;
+          return DetectionResultPage(
+            selection: selection is InspectionPhotoSelection
+                ? selection
+                : InspectionPhotoSelection(
+                    draft: InspectionDraft(
+                      plant: const InspectionPlant(
+                        name: 'Tomat Pot Depan',
+                        id: 'TMT-001',
+                        location: 'Teras depan',
+                      ),
+                      inspectionDate: DateTime.now(),
+                      note: '',
+                    ),
+                    source: 'Galeri',
                   ),
           );
         },

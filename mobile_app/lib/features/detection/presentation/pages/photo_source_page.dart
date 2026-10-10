@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/main_bottom_navigation.dart';
 import 'data_inspection_page.dart';
+import 'photo_preview_page.dart';
 
 class PhotoSourcePage extends StatefulWidget {
   const PhotoSourcePage({super.key, required this.draft});
@@ -25,6 +26,10 @@ class _PhotoSourcePageState extends State<PhotoSourcePage> {
     setState(() {
       _selectedSource = source;
     });
+    context.pushNamed(
+      'photo-preview',
+      extra: InspectionPhotoSelection(draft: widget.draft, source: source),
+    );
   }
 
   @override
