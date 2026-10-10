@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../data/guide_data.dart';
+
 class GuideDetailPage extends StatefulWidget {
   const GuideDetailPage({
     super.key,
@@ -46,11 +48,16 @@ class _GuideDetailPageState extends State<GuideDetailPage>
     return Scaffold(
       backgroundColor: GuideDetailPage.backgroundColor,
       appBar: AppBar(
+        toolbarHeight: 56,
         backgroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 0.5,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: GuideDetailPage.darkGreen, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: GuideDetailPage.darkGreen,
+            size: 18,
+          ),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -63,31 +70,44 @@ class _GuideDetailPageState extends State<GuideDetailPage>
           'Panduan Menanam Tomat',
           style: TextStyle(
             color: GuideDetailPage.darkGreen,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
           ),
         ),
-        bottom: TabBar(
-          controller: _tabController,
-          isScrollable: true,
-          labelColor: GuideDetailPage.primaryGreen,
-          unselectedLabelColor: GuideDetailPage.secondaryText,
-          indicatorColor: GuideDetailPage.primaryGreen,
-          indicatorWeight: 3,
-          labelStyle: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(46),
+          child: Container(
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: GuideDetailPage.borderColor),
+              ),
+            ),
+            child: TabBar(
+              controller: _tabController,
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              labelPadding: const EdgeInsets.symmetric(horizontal: 12),
+              labelColor: GuideDetailPage.primaryGreen,
+              unselectedLabelColor: GuideDetailPage.secondaryText,
+              indicatorColor: GuideDetailPage.primaryGreen,
+              indicatorWeight: 2.5,
+              labelStyle: const TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 13,
+              ),
+              tabs: const [
+                Tab(text: 'Alat & Bahan'),
+                Tab(text: 'Cara Menanam'),
+                Tab(text: 'Perawatan Harian'),
+                Tab(text: 'Cegah Penyakit'),
+              ],
+            ),
           ),
-          unselectedLabelStyle: const TextStyle(
-            fontWeight: FontWeight.normal,
-            fontSize: 13,
-          ),
-          tabs: const [
-            Tab(text: 'Alat & Bahan'),
-            Tab(text: 'Cara Menanam'),
-            Tab(text: 'Perawatan Harian'),
-            Tab(text: 'Cegah Penyakit'),
-          ],
         ),
       ),
       body: SafeArea(
@@ -106,97 +126,115 @@ class _GuideDetailPageState extends State<GuideDetailPage>
 
   // --- TAB 1: ALAT DAN BAHAN ---
   Widget _buildToolsAndMaterialsTab() {
-    final items = [
-      {
-        'title': 'Pot / Polybag (Diameter 30cm)',
-        'desc': 'Memiliki lubang drainase di bagian bawah agar air tidak menggenang.',
-        'icon': Icons.inventory_2_outlined,
-      },
-      {
-        'title': 'Media Tanam Humus & Sekam',
-        'desc': 'Campuran tanah subur, pupuk kandang matang, dan sekam bakar (1:1:1).',
-        'icon': Icons.landscape_outlined,
-      },
-      {
-        'title': 'Benih Tomat Unggul',
-        'desc': 'Pilih benih bersertifikat atau benih hibrida yang tahan penyakit.',
-        'icon': Icons.eco_outlined,
-      },
-      {
-        'title': 'Tiang Penyangga (Ajir)',
-        'desc': 'Bambu atau kayu setinggi 1.5 meter untuk menopang batang tomat.',
-        'icon': Icons.straighten_outlined,
-      },
-      {
-        'title': 'Sprayer & Alat Penyiram',
-        'desc': 'Sprayer halus untuk pembibitan dan gembor air untuk tanaman dewasa.',
-        'icon': Icons.water_drop_outlined,
-      },
-      {
-        'title': 'Pupuk Organik & NPK',
-        'desc': 'Pupuk kompos/kandang untuk dasar dan NPK 16-16-16 untuk susulan.',
-        'icon': Icons.science_outlined,
-      },
-    ];
+    final tools = GuideData.tools;
 
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
       children: [
-        _buildSectionHeader('Daftar Alat & Bahan Budidaya', 'Persiapkan semua perlengkapan sebelum memulai penanaman.'),
+        _buildSectionHeader(
+          'Alat & Bahan',
+          'Persiapkan kebutuhan berikut agar proses budidaya tomat berjalan terarah.',
+        ),
         const SizedBox(height: 16),
-        ...items.map((item) => Padding(
-              padding: const EdgeInsets.only(bottom: 12.0),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: GuideDetailPage.borderColor),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: GuideDetailPage.accentGreen,
-                        borderRadius: BorderRadius.circular(12),
+        ...tools.map(
+          (tool) => Padding(
+            padding: const EdgeInsets.only(bottom: 10.0),
+            child: Material(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              child: InkWell(
+                onTap: () {
+                  context.pushNamed('tool-detail', extra: tool);
+                },
+                borderRadius: BorderRadius.circular(14),
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: GuideDetailPage.borderColor),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.02),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
                       ),
-                      child: Icon(
-                        item['icon'] as IconData,
-                        color: GuideDetailPage.primaryGreen,
-                        size: 24,
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: GuideDetailPage.accentGreen,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          tool.icon,
+                          color: GuideDetailPage.primaryGreen,
+                          size: 20,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item['title'] as String,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: GuideDetailPage.darkGreen,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              tool.name,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: GuideDetailPage.darkGreen,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            item['desc'] as String,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: GuideDetailPage.secondaryText,
-                              height: 1.4,
+                            const SizedBox(height: 2),
+                            Text(
+                              tool.shortDescription,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: GuideDetailPage.secondaryText,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: tool.tag == 'Wajib'
+                              ? GuideDetailPage.accentGreen
+                              : const Color(0xFFFFF3E0),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          tool.tag,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: tool.tag == 'Wajib'
+                                ? GuideDetailPage.primaryGreen
+                                : const Color(0xFFE65100),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        color: GuideDetailPage.secondaryText,
+                        size: 18,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            )),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -206,134 +244,228 @@ class _GuideDetailPageState extends State<GuideDetailPage>
     final steps = [
       {
         'step': '1',
-        'title': 'Penyemaian Benih',
-        'desc': 'Rendam benih dalam air hangat selama 2-4 jam. Semai di wadah persemaian dengan media halus. Jaga kelembapan hingga berkecambah (3-7 hari).',
+        'title': 'Siapkan Media Tanam',
+        'desc':
+            'Campurkan tanah humus/topsoil, kompos matang, dan sekam bakar (perbandingan 1:1:1). Masukkan ke dalam pot berdiameter minimal 30–40 cm dengan lubang drainase baik.',
       },
       {
         'step': '2',
-        'title': 'Penyiapan Media Tanam',
-        'desc': 'Campurkan tanah, pupuk kandang, dan sekam. Masukkan ke dalam pot 30cm dan biarkan media diangin-anginkan selama 2 hari.',
+        'title': 'Tanam Benih atau Bibit',
+        'desc':
+            'Buat lubang tanam sedalam 1–2 cm di bagian tengah media. Letakkan benih atau pindahkan bibit muda perlahan tanpa merusak perakarannya.',
       },
       {
         'step': '3',
-        'title': 'Pemindahan Bibit',
-        'desc': 'Pindahkan bibit yang sudah memiliki 4-5 helai daun sejati ke pot utama secara hati-hati agar perakaran tidak rusak.',
+        'title': 'Siram Perlahan',
+        'desc':
+            'Semprotkan air secara merata dengan sprayer halus agar media lembap tanpa memadatkan atau menggeser posisi bibit.',
       },
       {
         'step': '4',
-        'title': 'Pemasangan Ajir (Penyangga)',
-        'desc': 'Tancapkan bambu penyangga dekat pangkal tanaman sejak awal agar tidak merusak perakaran saat tanaman tumbuh membesar.',
+        'title': 'Pencahayaan & Penempatan',
+        'desc':
+            'Letakkan pot di tempat teduh selama 2–3 hari pertama, kemudian pindahkan ke area yang menerima 6–8 jam sinar matahari penuh harian.',
       },
     ];
 
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
       children: [
-        _buildSectionHeader('Tahapan Penanaman', 'Ikuti langkah-langkah penanaman bertahap berikut.'),
+        _buildSectionHeader(
+          'Tahapan Menanam',
+          'Ikuti urutan langkah ini untuk menumbuhkan tanaman tomat yang kokoh.',
+        ),
         const SizedBox(height: 16),
-        ...steps.map((step) => Padding(
-              padding: const EdgeInsets.only(bottom: 16.0),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: GuideDetailPage.borderColor),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    CircleAvatar(
-                      radius: 16,
-                      backgroundColor: GuideDetailPage.primaryGreen,
+        ...steps.map(
+          (step) => Padding(
+            padding: const EdgeInsets.only(bottom: 12.0),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: GuideDetailPage.borderColor),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 30,
+                    height: 30,
+                    decoration: const BoxDecoration(
+                      color: GuideDetailPage.primaryGreen,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
                       child: Text(
                         step['step'] as String,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            step['title'] as String,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: GuideDetailPage.darkGreen,
-                            ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          step['title'] as String,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: GuideDetailPage.darkGreen,
                           ),
-                          const SizedBox(height: 6),
-                          Text(
-                            step['desc'] as String,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: GuideDetailPage.secondaryText,
-                              height: 1.4,
-                            ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          step['desc'] as String,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: GuideDetailPage.secondaryText,
+                            height: 1.4,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            )),
+            ),
+          ),
+        ),
       ],
     );
   }
 
   // --- TAB 3: PERAWATAN HARIAN ---
   Widget _buildDailyCareTab() {
+    final cares = [
+      {
+        'title': 'Cek Kelembapan Media',
+        'subtitle': 'Pagi • 06:30 - 08:00',
+        'desc': 'Tekan tanah sedalam 2 cm. Jika mulai kering, lakukan penyiraman secukupnya.',
+        'icon': Icons.wb_sunny_outlined,
+      },
+      {
+        'title': 'Penyiraman Pangkal Batang',
+        'subtitle': '1x sehari',
+        'desc': 'Siram langsung ke media tanah di sekitar pangkal tanaman, hindari membasahi daun.',
+        'icon': Icons.water_drop_outlined,
+      },
+      {
+        'title': 'Pemangkasan Tunas Air (Wiwil)',
+        'subtitle': 'Secara berkala',
+        'desc': 'Buang tunas air di ketiak daun agar nutrisi terfokus pada batang utama dan pembungaan.',
+        'icon': Icons.content_cut_outlined,
+      },
+      {
+        'title': 'Pemasangan Tiang Ajir',
+        'subtitle': 'Minggu ke-3',
+        'desc': 'Ikat batang tomat dengan tali rami longgar ke bambu ajir agar tidak rebah saat berbuah.',
+        'icon': Icons.straighten_outlined,
+      },
+    ];
+
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
       children: [
-        _buildSectionHeader('Panduan Perawatan Rutin', 'Perawatan yang konsisten menghasilkan tanaman yang sehat dan berbuah lebat.'),
+        _buildSectionHeader(
+          'Perawatan Rutin',
+          'Aktivitas berkala untuk menjaga kesuburan dan daya tahan tanaman.',
+        ),
         const SizedBox(height: 16),
-
-        _buildCareCategoryCard(
-          icon: Icons.water_drop,
-          title: 'Penyiraman',
-          details: [
-            'Siram 2x sehari (Pagi pukul 07:00 dan Sore pukul 16:00).',
-            'Hindari menyiram daun langsung untuk mencegah jamur.',
-            'Pastikan tanah lembap namun tidak becek.',
-          ],
-        ),
-        const SizedBox(height: 14),
-
-        _buildCareCategoryCard(
-          icon: Icons.wb_sunny,
-          title: 'Sinar Matahari',
-          details: [
-            'Tomat membutuhkan sinar matahari langsung 6-8 jam sehari.',
-            'Letakkan pot di area terbuka seperti teras atau balkon selatan.',
-          ],
-        ),
-        const SizedBox(height: 14),
-
-        _buildCareCategoryCard(
-          icon: Icons.content_cut,
-          title: 'Pemangkasan (Pruning)',
-          details: [
-            'Potong tunas air (sucker branch) yang tumbuh di ketiak daun.',
-            'Buang daun bagian bawah yang sudah kuning atau menyentuh tanah.',
-          ],
-        ),
-        const SizedBox(height: 14),
-
-        _buildCareCategoryCard(
-          icon: Icons.bolt,
-          title: 'Pemupukan Susulan',
-          details: [
-            'Beri pupuk NPK 16-16-16 larut air setiap 2 minggu sekali.',
-            'Saat pembungaan, berikan pupuk tinggi Kalium untuk merangsang buah.',
-          ],
+        ...cares.map(
+          (c) => Padding(
+            padding: const EdgeInsets.only(bottom: 10.0),
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: GuideDetailPage.borderColor),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: GuideDetailPage.accentGreen,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      c['icon'] as IconData,
+                      color: GuideDetailPage.primaryGreen,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          c['title'] as String,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: GuideDetailPage.darkGreen,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          c['desc'] as String,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: GuideDetailPage.secondaryText,
+                            height: 1.35,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: GuideDetailPage.backgroundColor,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: GuideDetailPage.borderColor),
+                    ),
+                    child: Text(
+                      c['subtitle'] as String,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: GuideDetailPage.secondaryText,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ],
     );
@@ -341,103 +473,94 @@ class _GuideDetailPageState extends State<GuideDetailPage>
 
   // --- TAB 4: CEGAH PENYAKIT ---
   Widget _buildDiseasePreventionTab() {
-    final diseases = [
-      {
-        'name': 'Bercak Daun (Bacterial Spot)',
-        'symptom': 'Bercak cokelat kehitaman pada daun bagian bawah yang meluas.',
-        'prevention': 'Hindari penyiraman dari atas daun, berikan jarak antar pot agar sirkulasi udara lancar, dan semprot fungisida organik.',
-        'severity': 'Sedang',
-      },
-      {
-        'name': 'Busuk Ujung Buah (Blossom End Rot)',
-        'symptom': 'Bagian bawah buah tomat menghitam dan membusuk.',
-        'prevention': 'Jaga kelembapan tanah tetap stabil dan tambahkan kalsium/kapur dolomit pada media tanam.',
-        'severity': 'Tinggi',
-      },
-      {
-        'name': 'Hama Kutu Daun (Aphids)',
-        'symptom': 'Kutu kecil bergerombol di balik daun menyebabkan daun melingkar.',
-        'prevention': 'Semprotkan larutan sabun pencuci piring cair encer atau minyak mimba (neem oil) secara berkala.',
-        'severity': 'Ringan',
-      },
-    ];
+    final diseases = GuideData.diseases;
 
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
       children: [
-        _buildSectionHeader('Pencegahan & Pengendalian Penyakit', 'Kenali gejala awal dan tindakan pencegahan dini.'),
+        _buildSectionHeader(
+          'Pencegahan & Diagnosis',
+          'Kenali gejala awal penyakit daun tomat dan langkah antisipasinya.',
+        ),
         const SizedBox(height: 16),
-        ...diseases.map((d) => Padding(
-              padding: const EdgeInsets.only(bottom: 16.0),
-              child: Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: GuideDetailPage.borderColor),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.shield_outlined,
-                          color: Color(0xFFE5484D),
-                          size: 22,
+
+        // List of Diseases
+        ...diseases.map(
+          (disease) => Padding(
+            padding: const EdgeInsets.only(bottom: 10.0),
+            child: Material(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              child: InkWell(
+                onTap: () {
+                  context.pushNamed('disease-detail', extra: disease);
+                },
+                borderRadius: BorderRadius.circular(14),
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: GuideDetailPage.borderColor),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.02),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: disease.severityColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            d['name']!,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: GuideDetailPage.darkGreen,
+                        child: Icon(
+                          Icons.coronavirus_outlined,
+                          color: disease.severityColor,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              disease.name,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: GuideDetailPage.darkGreen,
+                              ),
                             ),
-                          ),
+                            const SizedBox(height: 2),
+                            Text(
+                              disease.shortDescription,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: GuideDetailPage.secondaryText,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Gejala:',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red.shade700,
                       ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      d['symptom']!,
-                      style: const TextStyle(
-                        fontSize: 13,
+                      const SizedBox(width: 8),
+                      const Icon(
+                        Icons.chevron_right_rounded,
                         color: GuideDetailPage.secondaryText,
+                        size: 18,
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Cara Pencegahan:',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: GuideDetailPage.primaryGreen,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      d['prevention']!,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: GuideDetailPage.darkGreen,
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            )),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -450,80 +573,21 @@ class _GuideDetailPageState extends State<GuideDetailPage>
           title,
           style: const TextStyle(
             fontSize: 18,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
             color: GuideDetailPage.darkGreen,
+            letterSpacing: -0.2,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         Text(
           subtitle,
           style: const TextStyle(
             fontSize: 12,
             color: GuideDetailPage.secondaryText,
+            height: 1.35,
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildCareCategoryCard({
-    required IconData icon,
-    required String title,
-    required List<String> details,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: GuideDetailPage.borderColor),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: GuideDetailPage.accentGreen,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: GuideDetailPage.primaryGreen, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: GuideDetailPage.darkGreen,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          ...details.map((text) => Padding(
-                padding: const EdgeInsets.only(bottom: 6.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('• ', style: TextStyle(fontWeight: FontWeight.bold, color: GuideDetailPage.primaryGreen)),
-                    Expanded(
-                      child: Text(
-                        text,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: GuideDetailPage.secondaryText,
-                          height: 1.35,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              )),
-        ],
-      ),
     );
   }
 }

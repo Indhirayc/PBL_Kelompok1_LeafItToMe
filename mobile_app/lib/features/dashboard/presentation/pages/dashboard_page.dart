@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/main_bottom_navigation.dart';
 
@@ -28,82 +27,96 @@ class _DashboardPageState extends State<DashboardPage> {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
+        toolbarHeight: 80,
         backgroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 0.5,
         surfaceTintColor: Colors.transparent,
-        title: Row(
-          children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: primaryGreen.withValues(alpha: 0.12),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.eco,
-                color: primaryGreen,
-                size: 22,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  'LeafItToMe',
-                  style: TextStyle(
-                    color: darkGreen,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+        titleSpacing: 20,
+        title: Padding(
+          padding: const EdgeInsets.only(top: 12.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: primaryGreen.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
                 ),
-                Text(
-                  'Beranda',
-                  style: TextStyle(
-                    color: secondaryText,
-                    fontSize: 12,
-                  ),
+                child: const Icon(
+                  Icons.eco,
+                  color: primaryGreen,
+                  size: 22,
                 ),
-              ],
-            ),
-          ],
+              ),
+              const SizedBox(width: 12),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text(
+                    'LeafItToMe',
+                    style: TextStyle(
+                      color: darkGreen,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 1),
+                  Text(
+                    'Beranda',
+                    style: TextStyle(
+                      color: secondaryText,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
         actions: [
           // Toggle Switch untuk memudahkan pengujian 2 kondisi (Sudah vs Belum memiliki tanaman)
-          Container(
-            margin: const EdgeInsets.only(right: 16),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: primaryGreen.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: primaryGreen.withValues(alpha: 0.2)),
-            ),
-            child: Row(
-              children: [
-                Text(
-                  _hasPlants ? 'Ada Tanaman' : 'Belum Ada',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: primaryGreen,
-                  ),
+          Padding(
+            padding: const EdgeInsets.only(top: 12.0, right: 20.0),
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: primaryGreen.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: primaryGreen.withValues(alpha: 0.2)),
                 ),
-                const SizedBox(width: 4),
-                Transform.scale(
-                  scale: 0.7,
-                  child: Switch(
-                    value: _hasPlants,
-                    activeTrackColor: primaryGreen,
-                    onChanged: (val) {
-                      setState(() {
-                        _hasPlants = val;
-                      });
-                    },
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      _hasPlants ? 'Ada Tanaman' : 'Belum Ada',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: primaryGreen,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Transform.scale(
+                      scale: 0.72,
+                      child: Switch(
+                        value: _hasPlants,
+                        activeTrackColor: primaryGreen,
+                        onChanged: (val) {
+                          setState(() {
+                            _hasPlants = val;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ],
@@ -114,6 +127,7 @@ class _DashboardPageState extends State<DashboardPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SizedBox(height: 12),
               // Banner Salam & Perkenalan
               _buildGreetingHeader(),
               const SizedBox(height: 20),
@@ -243,10 +257,12 @@ class _DashboardPageState extends State<DashboardPage> {
           const SizedBox(height: 20),
           ElevatedButton.icon(
             onPressed: () {
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Fitur Tambah Tanaman akan dikembangkan oleh tim.'),
                   duration: Duration(seconds: 2),
+                  behavior: SnackBarBehavior.floating,
                 ),
               );
             },
@@ -282,7 +298,6 @@ class _DashboardPageState extends State<DashboardPage> {
               child: _buildStatCard(
                 title: 'Total Tanaman',
                 value: '2',
-                subtitle: 'Tanaman Aktif',
                 icon: Icons.grass,
                 color: primaryGreen,
               ),
@@ -292,7 +307,6 @@ class _DashboardPageState extends State<DashboardPage> {
               child: _buildStatCard(
                 title: 'Kondisi Sehat',
                 value: '1',
-                subtitle: 'Sangat Baik',
                 icon: Icons.check_circle_outline,
                 color: const Color(0xFF2E7D32),
               ),
@@ -302,7 +316,6 @@ class _DashboardPageState extends State<DashboardPage> {
               child: _buildStatCard(
                 title: 'Perhatian',
                 value: '1',
-                subtitle: 'Perlu Dilihat',
                 icon: Icons.warning_amber_rounded,
                 color: const Color(0xFFED6C02),
               ),
@@ -321,19 +334,6 @@ class _DashboardPageState extends State<DashboardPage> {
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: darkGreen,
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                context.goNamed('guides');
-              },
-              child: const Text(
-                'Lihat Panduan',
-                style: TextStyle(
-                  color: primaryGreen,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
-                ),
               ),
             ),
           ],
@@ -375,7 +375,6 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget _buildStatCard({
     required String title,
     required String value,
-    required String subtitle,
     required IconData icon,
     required Color color,
   }) {
@@ -537,7 +536,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
                 ],
               ),
-              OutlinedButton.icon(
+              OutlinedButton(
                 onPressed: onTap,
                 style: OutlinedButton.styleFrom(
                   foregroundColor: primaryGreen,
@@ -550,14 +549,20 @@ class _DashboardPageState extends State<DashboardPage> {
                     vertical: 8,
                   ),
                 ),
-                icon: const Text(
-                  'Lihat Detail',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Text(
+                      'Lihat Detail',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(width: 4),
+                    Icon(Icons.chevron_right, size: 16),
+                  ],
                 ),
-                label: const Icon(Icons.chevron_right, size: 16),
               ),
             ],
           ),
@@ -565,8 +570,6 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
     );
   }
-
-
 
   void _showPlantDetailModal(
     BuildContext context,
@@ -625,7 +628,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Status Tanaman: $status.\nHalaman detail & riwayat pemeriksaan penuh dikerjakan oleh anggota tim lain.',
+                        'Status Tanaman: $status.\nKondisi terpantau baik dan dalam masa pertumbuhan.',
                         style: const TextStyle(fontSize: 13, color: darkGreen),
                       ),
                     ),
