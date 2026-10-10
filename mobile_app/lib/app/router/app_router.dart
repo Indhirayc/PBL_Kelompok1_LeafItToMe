@@ -11,6 +11,7 @@ import '../../features/profile/presentation/pages/about_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/guide/presentation/pages/guide_list_page.dart';
 import '../../features/guide/presentation/pages/guide_detail_page.dart';
+import '../../features/plants/views/plant_list_page.dart';
 
 abstract final class AppRouter {
   static final GoRouter router = GoRouter(
@@ -53,6 +54,11 @@ abstract final class AppRouter {
           final tabIndex = (state.extra as int?) ?? 0;
           return GuideDetailPage(initialTabIndex: tabIndex);
         },
+      ),
+      GoRoute(
+        path: '/plants',
+        name: 'plants',
+        builder: (context, state) => const PlantListPage(),
       ),
       GoRoute(
         path: '/profile',

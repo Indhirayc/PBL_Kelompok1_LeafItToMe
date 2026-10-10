@@ -3,13 +3,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 class MainBottomNavigation extends StatelessWidget {
-  const MainBottomNavigation({
-    super.key,
-    required this.currentIndex,
-  }) : assert(
-          currentIndex >= 0 && currentIndex <= 3,
-          'currentIndex harus bernilai antara 0 sampai 3',
-        );
+  const MainBottomNavigation({super.key, required this.currentIndex})
+    : assert(
+        currentIndex >= 0 && currentIndex <= 3,
+        'currentIndex harus bernilai antara 0 sampai 3',
+      );
 
   final int currentIndex;
 
@@ -21,12 +19,7 @@ class MainBottomNavigation extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         color: _backgroundColor,
-        border: Border(
-          top: BorderSide(
-            color: _borderColor,
-            width: 1,
-          ),
-        ),
+        border: Border(top: BorderSide(color: _borderColor, width: 1)),
       ),
       child: SafeArea(
         top: false,
@@ -119,6 +112,10 @@ class MainBottomNavigation extends StatelessWidget {
       context.goNamed('profile');
       return;
     }
+    if (routeName == 'plants') {
+      context.goNamed('plants');
+      return;
+    }
 
     // Halaman lain masih dikerjakan anggota kelompok.
     ScaffoldMessenger.of(context)
@@ -168,9 +165,7 @@ class _NavigationItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color itemColor = isActive
-        ? _activeColor
-        : _inactiveColor;
+    final Color itemColor = isActive ? _activeColor : _inactiveColor;
 
     return Material(
       color: Colors.transparent,
@@ -183,10 +178,7 @@ class _NavigationItem extends StatelessWidget {
           selected: isActive,
           label: label,
           child: Padding(
-            padding: const EdgeInsets.only(
-              top: 8,
-              bottom: 5,
-            ),
+            padding: const EdgeInsets.only(top: 8, bottom: 5),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -195,10 +187,7 @@ class _NavigationItem extends StatelessWidget {
                   width: 26,
                   height: 26,
                   fit: BoxFit.contain,
-                  colorFilter: ColorFilter.mode(
-                    itemColor,
-                    BlendMode.srcIn,
-                  ),
+                  colorFilter: ColorFilter.mode(itemColor, BlendMode.srcIn),
                 ),
                 const SizedBox(height: 3),
                 Text(
@@ -209,9 +198,7 @@ class _NavigationItem extends StatelessWidget {
                     color: itemColor,
                     fontSize: 12,
                     height: 1,
-                    fontWeight: isActive
-                        ? FontWeight.w600
-                        : FontWeight.w400,
+                    fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
                   ),
                 ),
               ],
