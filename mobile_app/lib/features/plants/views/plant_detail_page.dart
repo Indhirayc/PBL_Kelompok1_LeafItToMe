@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/main_bottom_navigation.dart';
 import 'plant_list_page.dart';
+import '../../detection/presentation/pages/data_inspection_page.dart';
 
 class PlantDetailPage extends StatelessWidget {
   final Plant plant;
@@ -246,8 +248,16 @@ class PlantDetailPage extends StatelessWidget {
                         ),
                         elevation: 0,
                       ),
+                      key: const Key('scanPlantButton'),
                       onPressed: () {
-                        // Fitur Scan Daun
+                        context.pushNamed(
+                          'data-inspection',
+                          extra: InspectionPlant(
+                            name: plant.name,
+                            id: plant.id,
+                            location: plant.location,
+                          ),
+                        );
                       },
                       child: const Text(
                         "Scan Daun",

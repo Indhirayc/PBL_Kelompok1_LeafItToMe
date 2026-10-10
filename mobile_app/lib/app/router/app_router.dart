@@ -15,6 +15,7 @@ import '../../features/plants/views/plant_list_page.dart';
 import '../../features/guide/presentation/pages/tool_detail_page.dart';
 import '../../features/guide/presentation/pages/disease_detail_page.dart';
 import '../../features/guide/data/guide_data.dart';
+import '../../features/detection/presentation/pages/data_inspection_page.dart';
 
 abstract final class AppRouter {
   static final GoRouter router = GoRouter(
@@ -77,6 +78,22 @@ abstract final class AppRouter {
         builder: (context, state) {
           final disease = state.extra as DiseaseModel;
           return DiseaseDetailPage(disease: disease);
+        },
+      ),
+      GoRoute(
+        path: '/data-inspection',
+        name: 'data-inspection',
+        builder: (context, state) {
+          final plant = state.extra;
+          return DataInspectionPage(
+            plant: plant is InspectionPlant
+                ? plant
+                : const InspectionPlant(
+                    name: 'Tomat Pot Depan',
+                    id: 'TMT-001',
+                    location: 'Teras depan',
+                  ),
+          );
         },
       ),
       GoRoute(
