@@ -64,6 +64,7 @@ flutter:
     - assets/images/
     - assets/images/splash/splash_background.png
     - assets/images/splash/leafittome_logo.png
+    - assets/images/inspection/camera_leaf_illustration.png
     - assets/images/tomato_plant.png
     - assets/icons/navigation/home.svg
     - assets/icons/navigation/guide.svg

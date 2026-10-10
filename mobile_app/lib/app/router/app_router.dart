@@ -16,6 +16,7 @@ import '../../features/guide/presentation/pages/tool_detail_page.dart';
 import '../../features/guide/presentation/pages/disease_detail_page.dart';
 import '../../features/guide/data/guide_data.dart';
 import '../../features/detection/presentation/pages/data_inspection_page.dart';
+import '../../features/detection/presentation/pages/photo_source_page.dart';
 
 abstract final class AppRouter {
   static final GoRouter router = GoRouter(
@@ -92,6 +93,26 @@ abstract final class AppRouter {
                     name: 'Tomat Pot Depan',
                     id: 'TMT-001',
                     location: 'Teras depan',
+                  ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/photo-source',
+        name: 'photo-source',
+        builder: (context, state) {
+          final draft = state.extra;
+          return PhotoSourcePage(
+            draft: draft is InspectionDraft
+                ? draft
+                : InspectionDraft(
+                    plant: const InspectionPlant(
+                      name: 'Tomat Pot Depan',
+                      id: 'TMT-001',
+                      location: 'Teras depan',
+                    ),
+                    inspectionDate: DateTime.now(),
+                    note: '',
                   ),
           );
         },
