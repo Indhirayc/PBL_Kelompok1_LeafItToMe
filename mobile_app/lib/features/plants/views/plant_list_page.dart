@@ -49,6 +49,49 @@ class _PlantListPageState extends State<PlantListPage> {
     ),
   ];
 
+  String _generateNextPlantId() {
+    int maxNum = 0;
+    for (var plant in _plants) {
+      final parts = plant.id.split('-');
+      if (parts.length > 1) {
+        final num = int.tryParse(parts[1]);
+        if (num != null && num > maxNum) {
+          maxNum = num;
+        }
+      }
+    }
+    return "TMT-${(maxNum + 1).toString().padLeft(3, '0')}";
+  }
+
+  Widget _buildStatItem(
+    String count,
+    String label,
+    Color countColor,
+    Color labelColor,
+  ) {
+    return Column(
+      children: [
+        Text(
+          count,
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w900,
+            color: countColor,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+            color: labelColor,
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     int totalCount = _plants.length;
@@ -101,7 +144,11 @@ class _PlantListPageState extends State<PlantListPage> {
                       // Buka halaman tambah dan tunggu hasil return-nya
                       final newPlant = await Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => AddPlantPage()),
+                        MaterialPageRoute(
+                          builder: (context) => AddPlantPage(
+                            nextId: _generateNextPlantId(),
+                          ),
+                        ),
                       );
                       if (newPlant != null && newPlant is Plant) {
                         setState(() {
@@ -118,34 +165,33 @@ class _PlantListPageState extends State<PlantListPage> {
               // Card Ringkasan Statistik
               Container(
                 padding: const EdgeInsets.symmetric(
-                  vertical: 12,
+                  vertical: 14,
                   horizontal: 16,
                 ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFE8F5E9),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    Text(
-                      "$totalCount\nTanaman",
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    _buildStatItem(
+                      '$totalCount',
+                      'Tanaman',
+                      const Color(0xFF2E7D32),
+                      const Color(0xFF75857B),
                     ),
-                    Text(
-                      "$healthyCount Sehat",
-                      style: const TextStyle(
-                        color: Color(0xFF2E7D32),
-                        fontWeight: FontWeight.bold,
-                      ),
+                    _buildStatItem(
+                      '$healthyCount',
+                      'Sehat',
+                      const Color(0xFF2E7D32),
+                      const Color(0xFF2E7D32),
                     ),
-                    Text(
-                      "$attentionCount Perlu perhatian",
-                      style: const TextStyle(
-                        color: Colors.orange,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    _buildStatItem(
+                      '$attentionCount',
+                      'Perlu Perhatian',
+                      const Color(0xFFED6C02),
+                      const Color(0xFFED6C02),
                     ),
                   ],
                 ),
