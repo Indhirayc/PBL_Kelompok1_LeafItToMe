@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../history/widgets/history_page_header.dart';
 import '../data/sync_data.dart';
 
 class SyncProcessPage extends StatefulWidget {
-  const SyncProcessPage({super.key});
+  const SyncProcessPage({super.key, this.isFailure = false});
+
+  final bool isFailure;
 
   @override
   State<SyncProcessPage> createState() => _SyncProcessPageState();
@@ -27,7 +30,15 @@ class _SyncProcessPageState extends State<SyncProcessPage>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 6),
-    )..forward();
+    );
+    _controller.addStatusListener(_onStatusChanged);
+    _controller.forward();
+  }
+
+  void _onStatusChanged(AnimationStatus status) {
+    if (status == AnimationStatus.completed && mounted) {
+      context.pushReplacementNamed('sync-result', extra: widget.isFailure);
+    }
   }
 
   @override

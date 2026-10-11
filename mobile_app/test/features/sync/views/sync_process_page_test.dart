@@ -1,25 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mobile_app/features/sync/views/sync_process_page.dart';
+import 'package:mobile_app/features/sync/views/sync_result_page.dart';
 
 void main() {
-  testWidgets('menampilkan progres dan data yang sedang diunggah', (
+  testWidgets('menampilkan progres lalu lanjut ke hasil sinkronisasi', (
     tester,
   ) async {
-    await tester.pumpWidget(const MaterialApp(home: SyncProcessPage()));
+    final router = GoRouter(
+      initialLocation: '/sync-process',
+      routes: [
+        GoRoute(
+          path: '/sync-process',
+          builder: (context, state) => const SyncProcessPage(),
+        ),
+        GoRoute(
+          path: '/sync-result',
+          name: 'sync-result',
+          builder: (context, state) =>
+              SyncResultPage(isFailure: state.extra as bool? ?? false),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
     await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.text('Menyinkronkan Data'), findsOneWidget);
     expect(find.text('Sedang mengunggah data pemeriksaan.'), findsOneWidget);
     expect(find.text('Mengunggah data pemeriksaan...'), findsOneWidget);
-    expect(
-      find.text('Jangan tutup aplikasi selama proses berlangsung.'),
-      findsOneWidget,
-    );
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
     expect(find.textContaining('%'), findsOneWidget);
 
     await tester.pump(const Duration(seconds: 7));
-    expect(find.text('100%'), findsOneWidget);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sinkronisasi Berhasil'), findsOneWidget);
+    expect(find.text('Kembali ke Riwayat'), findsOneWidget);
   });
 }

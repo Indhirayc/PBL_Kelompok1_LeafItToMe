@@ -26,6 +26,7 @@ import '../../features/history/views/treatment_recommendation_page.dart';
 import '../../features/history/views/disease_detail_page.dart';
 import '../../features/sync/views/sync_status_page.dart';
 import '../../features/sync/views/sync_process_page.dart';
+import '../../features/sync/views/sync_result_page.dart';
 
 abstract final class AppRouter {
   static final GoRouter router = GoRouter(
@@ -218,7 +219,18 @@ abstract final class AppRouter {
       GoRoute(
         path: '/sync-process',
         name: 'sync-process',
-        builder: (context, state) => const SyncProcessPage(),
+        builder: (context, state) {
+          final failure = state.extra;
+          return SyncProcessPage(isFailure: failure is bool && failure);
+        },
+      ),
+      GoRoute(
+        path: '/sync-result',
+        name: 'sync-result',
+        builder: (context, state) {
+          final failure = state.extra;
+          return SyncResultPage(isFailure: failure is bool && failure);
+        },
       ),
       GoRoute(
         path: '/profile',

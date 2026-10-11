@@ -58,7 +58,10 @@ class _SyncStatusPageState extends State<SyncStatusPage> {
                     height: 50,
                     child: ElevatedButton(
                       key: const Key('syncNowButton'),
-                      onPressed: () => context.pushNamed('sync-process'),
+                      onPressed: () => context.pushNamed(
+                        'sync-process',
+                        extra: _simulateFailure,
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _primaryGreen,
                         foregroundColor: Colors.white,
