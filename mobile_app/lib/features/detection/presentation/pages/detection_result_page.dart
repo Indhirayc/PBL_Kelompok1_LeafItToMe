@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'photo_preview_page.dart';
+import '../../../history/data/history_data.dart';
 import '../widgets/confidence_indicator.dart';
 import '../widgets/image_preview.dart';
 import '../widgets/plant_context_card.dart';
@@ -57,8 +58,19 @@ class DetectionResultPage extends StatelessWidget {
                       height: 48,
                       child: ElevatedButton(
                         key: const Key('treatmentButton'),
-                        onPressed: () =>
-                            _showUiOnlyMessage(context, 'Lihat Penanganan'),
+                        onPressed: () => context.pushNamed(
+                          'treatment-recommendation',
+                          extra: HistoryRecord(
+                            id: 'DET-001',
+                            plantId: selection.draft.plant.id,
+                            diseaseName: 'Bacterial Spot',
+                            latinName: 'Xanthomonas spp.',
+                            date: selection.draft.inspectionDate,
+                            accuracy: 94,
+                            isHealthy: false,
+                            note: selection.draft.note,
+                          ),
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _primaryGreen,
                           foregroundColor: Colors.white,

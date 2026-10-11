@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/main_bottom_navigation.dart';
 import '../data/history_data.dart';
@@ -17,18 +18,6 @@ class HistoryDetailPage extends StatelessWidget {
   static const Color _paleGreen = Color(0xFFE8F5E9);
   static const Color _bannerGreen = Color(0xFF183E2D);
   static const Color _healthyGreen = Color(0xFF2E7D32);
-
-  void _showUiOnlyMessage(BuildContext context) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(
-          content: Text('Rekomendasi penanganan segera hadir.'),
-          duration: Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +49,10 @@ class HistoryDetailPage extends StatelessWidget {
                     height: 50,
                     child: ElevatedButton(
                       key: const Key('recommendationButton'),
-                      onPressed: () => _showUiOnlyMessage(context),
+                      onPressed: () => context.pushNamed(
+                        'treatment-recommendation',
+                        extra: record,
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _primaryGreen,
                         foregroundColor: Colors.white,

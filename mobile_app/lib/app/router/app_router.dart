@@ -22,6 +22,7 @@ import '../../features/detection/presentation/pages/detection_result_page.dart';
 import '../../features/history/data/history_data.dart';
 import '../../features/history/views/history_page.dart';
 import '../../features/history/views/history_detail_page.dart';
+import '../../features/history/views/treatment_recommendation_page.dart';
 
 abstract final class AppRouter {
   static final GoRouter router = GoRouter(
@@ -182,6 +183,16 @@ abstract final class AppRouter {
         builder: (context, state) {
           final record = state.extra;
           return HistoryDetailPage(
+            record: record is HistoryRecord ? record : HistoryData.records.first,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/treatment-recommendation',
+        name: 'treatment-recommendation',
+        builder: (context, state) {
+          final record = state.extra;
+          return TreatmentRecommendationPage(
             record: record is HistoryRecord ? record : HistoryData.records.first,
           );
         },
