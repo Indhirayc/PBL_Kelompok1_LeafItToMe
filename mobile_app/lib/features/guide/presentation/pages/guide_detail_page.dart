@@ -4,10 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../data/guide_data.dart';
 
 class GuideDetailPage extends StatefulWidget {
-  const GuideDetailPage({
-    super.key,
-    this.initialTabIndex = 0,
-  });
+  const GuideDetailPage({super.key, this.initialTabIndex = 0});
 
   final int initialTabIndex;
 
@@ -245,26 +242,22 @@ class _GuideDetailPageState extends State<GuideDetailPage>
       {
         'step': '1',
         'title': 'Siapkan Media Tanam',
-        'desc':
-            'Campurkan tanah humus/topsoil, kompos matang, dan sekam bakar (perbandingan 1:1:1). Masukkan ke dalam pot berdiameter minimal 30–40 cm dengan lubang drainase baik.',
+        'desc': 'Campurkan tanah humus/topsoil, kompos matang, dan sekam bakar (perbandingan 1:1:1). Masukkan ke dalam pot berdiameter minimal 30–40 cm dengan lubang drainase baik.',
       },
       {
         'step': '2',
         'title': 'Tanam Benih atau Bibit',
-        'desc':
-            'Buat lubang tanam sedalam 1–2 cm di bagian tengah media. Letakkan benih atau pindahkan bibit muda perlahan tanpa merusak perakarannya.',
+        'desc': 'Buat lubang tanam sedalam 1–2 cm di bagian tengah media. Letakkan benih atau pindahkan bibit muda perlahan tanpa merusak perakarannya.',
       },
       {
         'step': '3',
         'title': 'Siram Perlahan',
-        'desc':
-            'Semprotkan air secara merata dengan sprayer halus agar media lembap tanpa memadatkan atau menggeser posisi bibit.',
+        'desc': 'Semprotkan air secara merata dengan sprayer halus agar media lembap tanpa memadatkan atau menggeser posisi bibit.',
       },
       {
         'step': '4',
         'title': 'Pencahayaan & Penempatan',
-        'desc':
-            'Letakkan pot di tempat teduh selama 2–3 hari pertama, kemudian pindahkan ke area yang menerima 6–8 jam sinar matahari penuh harian.',
+        'desc': 'Letakkan pot di tempat teduh selama 2–3 hari pertama, kemudian pindahkan ke area yang menerima 6–8 jam sinar matahari penuh harian.',
       },
     ];
 

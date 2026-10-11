@@ -61,8 +61,7 @@ abstract final class GuideData {
       name: 'Pot Tanam / Polybag',
       tag: 'Wajib',
       shortDescription: 'Diameter minimal 30-40 cm',
-      fullDescription:
-          'Wadah utama untuk pertumbuhan akar tomat. Memiliki sistem drainase yang baik sangat krusial agar air siraman tidak menggenang di dasar pot.',
+      fullDescription: 'Wadah utama untuk pertumbuhan akar tomat. Memiliki sistem drainase yang baik sangat krusial agar air siraman tidak menggenang di dasar pot.',
       specifications: {
         'Ukuran': 'Diameter 30–40 cm',
         'Bahan': 'Tanah liat, keramik, atau plastik tebal',
@@ -78,8 +77,7 @@ abstract final class GuideData {
       name: 'Benih Tomat Unggul',
       tag: 'Wajib',
       shortDescription: 'Pilih benih bersertifikat',
-      fullDescription:
-          'Benih tomat unggul atau hibrida (F1) berkualitas tinggi dengan tingkat daya berkecambah di atas 85% dan daya tahan lebih baik terhadap serangan hama & penyakit.',
+      fullDescription: 'Benih tomat unggul atau hibrida (F1) berkualitas tinggi dengan tingkat daya berkecambah di atas 85% dan daya tahan lebih baik terhadap serangan hama & penyakit.',
       specifications: {
         'Varietas': 'Tomat Buah / Tomat Cherry',
         'Sertifikasi': 'Label Resmi Kementan / Benih F1',
@@ -94,8 +92,7 @@ abstract final class GuideData {
       name: 'Media Tanam Subur',
       tag: 'Wajib',
       shortDescription: 'Tanah, kompos, dan sekam',
-      fullDescription:
-          'Kombinasi media tanam gembur yang kaya nutrisi organik, memiliki porositas tinggi, dan dapat menahan kelembapan tanah secara stabil.',
+      fullDescription: 'Kombinasi media tanam gembur yang kaya nutrisi organik, memiliki porositas tinggi, dan dapat menahan kelembapan tanah secara stabil.',
       specifications: {
         'Komposisi': 'Tanah topsoil : Kompos : Sekam bakar (1:1:1)',
         'pH Ideal': '6.0 – 6.8 (Agak Asam - Netral)',
@@ -110,8 +107,7 @@ abstract final class GuideData {
       name: 'Sprayer & Alat Penyiram',
       tag: 'Opsional',
       shortDescription: 'Gunakan aliran air lembut',
-      fullDescription:
-          'Sprayer misting halus untuk membasahi benih pada tahap awal penyemaian, serta gembor berlubang halus untuk menyiram tanaman dewasa tanpa merusak struktur tanah.',
+      fullDescription: 'Sprayer misting halus untuk membasahi benih pada tahap awal penyemaian, serta gembor berlubang halus untuk menyiram tanaman dewasa tanpa merusak struktur tanah.',
       specifications: {
         'Kapasitas': '1.5 – 2 Litre Sprayer',
         'Nozzle': 'Dapat diatur (Kabut halus s/d Semprotan)',
@@ -126,8 +122,7 @@ abstract final class GuideData {
       name: 'Ajir Tanaman (Penyangga)',
       tag: 'Opsional',
       shortDescription: 'Penyangga batang tomat',
-      fullDescription:
-          'Tiang penyangga berbahan bambu atau pipa PVC setinggi 1.5–2 meter untuk menopang batang tomat yang berbuah lebat agar tidak rebah atau patah.',
+      fullDescription: 'Tiang penyangga berbahan bambu atau pipa PVC setinggi 1.5–2 meter untuk menopang batang tomat yang berbuah lebat agar tidak rebah atau patah.',
       specifications: {
         'Tinggi': '1.5 – 2.0 Meter',
         'Bahan': 'Bambu tebal / Pipa PVC / Kayu',
@@ -142,8 +137,7 @@ abstract final class GuideData {
       name: 'Pupuk Organik & NPK',
       tag: 'Opsional',
       shortDescription: 'Nutrisi lengkap tanaman',
-      fullDescription:
-          'Pupuk dasar kompos/kandang yang telah terfermentasi matang, serta pupuk NPK dan Kalsium untuk merangsang pertumbuhan bunga dan memperkuat dinding sel buah.',
+      fullDescription: 'Pupuk dasar kompos/kandang yang telah terfermentasi matang, serta pupuk NPK dan Kalsium untuk merangsang pertumbuhan bunga dan memperkuat dinding sel buah.',
       specifications: {
         'Pupuk Dasar': 'Kompos matang / Pupuk kandang kambing',
         'Pupuk Susulan': 'NPK 16-16-16 & Kalsium Nitrat',

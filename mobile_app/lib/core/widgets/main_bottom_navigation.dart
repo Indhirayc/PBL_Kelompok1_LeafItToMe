@@ -12,7 +12,30 @@ class MainBottomNavigation extends StatelessWidget {
   final int currentIndex;
 
   static const Color _backgroundColor = Color(0xFFFFFFFF);
-  static const Color _borderColor = Color(0xFFE4EBE5);
+  static const Color _borderColor = Color(0xFFE3EAE4);
+
+  static const List<_NavigationData> _items = [
+    _NavigationData(
+      label: 'Beranda',
+      iconPath: 'assets/icons/navigation/home.svg',
+      routeName: 'home',
+    ),
+    _NavigationData(
+      label: 'Panduan',
+      iconPath: 'assets/icons/navigation/guide.svg',
+      routeName: 'guides',
+    ),
+    _NavigationData(
+      label: 'Tanamanku',
+      iconPath: 'assets/icons/navigation/plant.svg',
+      routeName: 'plants',
+    ),
+    _NavigationData(
+      label: 'Profil',
+      iconPath: 'assets/icons/navigation/profile.svg',
+      routeName: 'profile',
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -26,64 +49,24 @@ class MainBottomNavigation extends StatelessWidget {
         child: SizedBox(
           height: 72,
           child: Row(
-            children: [
-              Expanded(
+            children: List.generate(_items.length, (index) {
+              final item = _items[index];
+
+              return Expanded(
                 child: _NavigationItem(
-                  label: 'Beranda',
-                  iconPath: 'assets/icons/navigation/home.svg',
-                  isActive: currentIndex == 0,
+                  label: item.label,
+                  iconPath: item.iconPath,
+                  isActive: currentIndex == index,
                   onTap: () {
                     _handleNavigation(
                       context,
-                      selectedIndex: 0,
-                      routeName: 'home',
+                      selectedIndex: index,
+                      routeName: item.routeName,
                     );
                   },
                 ),
-              ),
-              Expanded(
-                child: _NavigationItem(
-                  label: 'Panduan',
-                  iconPath: 'assets/icons/navigation/guide.svg',
-                  isActive: currentIndex == 1,
-                  onTap: () {
-                    _handleNavigation(
-                      context,
-                      selectedIndex: 1,
-                      routeName: 'guides',
-                    );
-                  },
-                ),
-              ),
-              Expanded(
-                child: _NavigationItem(
-                  label: 'Tanamanku',
-                  iconPath: 'assets/icons/navigation/plant.svg',
-                  isActive: currentIndex == 2,
-                  onTap: () {
-                    _handleNavigation(
-                      context,
-                      selectedIndex: 2,
-                      routeName: 'plants',
-                    );
-                  },
-                ),
-              ),
-              Expanded(
-                child: _NavigationItem(
-                  label: 'Profil',
-                  iconPath: 'assets/icons/navigation/profile.svg',
-                  isActive: currentIndex == 3,
-                  onTap: () {
-                    _handleNavigation(
-                      context,
-                      selectedIndex: 3,
-                      routeName: 'profile',
-                    );
-                  },
-                ),
-              ),
-            ],
+              );
+            }),
           ),
         ),
       ),
@@ -95,56 +78,25 @@ class MainBottomNavigation extends StatelessWidget {
     required int selectedIndex,
     required String routeName,
   }) {
-    // Jangan membuka kembali halaman yang sedang aktif.
+    // Mencegah halaman aktif dibuka kembali.
     if (selectedIndex == currentIndex) {
       return;
     }
 
-    if (routeName == 'home') {
-      context.goNamed('home');
-      return;
-    }
-    if (routeName == 'guides') {
-      context.goNamed('guides');
-      return;
-    }
-    if (routeName == 'profile') {
-      context.goNamed('profile');
-      return;
-    }
-    if (routeName == 'plants') {
-      context.goNamed('plants');
-      return;
-    }
-
-    // Halaman lain masih dikerjakan anggota kelompok.
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(
-            'Halaman ${_getPageName(selectedIndex)} sedang dikembangkan.',
-          ),
-          duration: const Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+    context.goNamed(routeName);
   }
+}
 
-  String _getPageName(int index) {
-    switch (index) {
-      case 0:
-        return 'Beranda';
-      case 1:
-        return 'Panduan';
-      case 2:
-        return 'Tanamanku';
-      case 3:
-        return 'Profil';
-      default:
-        return 'Tidak diketahui';
-    }
-  }
+class _NavigationData {
+  const _NavigationData({
+    required this.label,
+    required this.iconPath,
+    required this.routeName,
+  });
+
+  final String label;
+  final String iconPath;
+  final String routeName;
 }
 
 class _NavigationItem extends StatelessWidget {
@@ -160,12 +112,12 @@ class _NavigationItem extends StatelessWidget {
   final bool isActive;
   final VoidCallback onTap;
 
-  static const Color _activeColor = Color(0xFF07852F);
-  static const Color _inactiveColor = Color(0xFF7B9186);
+  static const Color _activeColor = Color(0xFF2F7D4A);
+  static const Color _inactiveColor = Color(0xFF75857B);
 
   @override
   Widget build(BuildContext context) {
-    final Color itemColor = isActive ? _activeColor : _inactiveColor;
+    final itemColor = isActive ? _activeColor : _inactiveColor;
 
     return Material(
       color: Colors.transparent,
@@ -184,19 +136,26 @@ class _NavigationItem extends StatelessWidget {
               children: [
                 SvgPicture.asset(
                   iconPath,
-                  width: 26,
-                  height: 26,
+                  width: 25,
+                  height: 25,
                   fit: BoxFit.contain,
                   colorFilter: ColorFilter.mode(itemColor, BlendMode.srcIn),
+                  placeholderBuilder: (context) {
+                    return Icon(
+                      _fallbackIcon(label),
+                      size: 25,
+                      color: itemColor,
+                    );
+                  },
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: 4),
                 Text(
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: itemColor,
-                    fontSize: 12,
+                    fontSize: 11,
                     height: 1,
                     fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
                   ),
@@ -207,5 +166,20 @@ class _NavigationItem extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  IconData _fallbackIcon(String label) {
+    switch (label) {
+      case 'Beranda':
+        return Icons.home_outlined;
+      case 'Panduan':
+        return Icons.menu_book_outlined;
+      case 'Tanamanku':
+        return Icons.eco_outlined;
+      case 'Profil':
+        return Icons.person_outline_rounded;
+      default:
+        return Icons.circle_outlined;
+    }
   }
 }

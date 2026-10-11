@@ -33,11 +33,7 @@ class ProfilePage extends StatelessWidget {
           ),
           content: const Text(
             'Apakah kamu yakin ingin keluar dari akun LeafItToMe?',
-            style: TextStyle(
-              color: secondaryText,
-              fontSize: 14,
-              height: 1.5,
-            ),
+            style: TextStyle(color: secondaryText, fontSize: 14, height: 1.5),
           ),
           actions: [
             TextButton(
@@ -65,9 +61,7 @@ class ProfilePage extends StatelessWidget {
               ),
               child: const Text(
                 'Keluar',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -108,15 +102,11 @@ class ProfilePage extends StatelessWidget {
             children: [
               _buildProfileCard(context),
               const SizedBox(height: 24),
-              const _SectionTitle(
-                title: 'Aktivitas Tanaman',
-              ),
+              const _SectionTitle(title: 'Aktivitas Tanaman'),
               const SizedBox(height: 10),
               const _ActivityCard(),
               const SizedBox(height: 24),
-              const _SectionTitle(
-                title: 'Pengaturan Akun',
-              ),
+              const _SectionTitle(title: 'Pengaturan Akun'),
               const SizedBox(height: 12),
               _buildAccountMenu(context),
               const SizedBox(height: 26),
@@ -125,12 +115,10 @@ class ProfilePage extends StatelessWidget {
           ),
         ),
       ),
-         // Profil merupakan menu keempat, sehingga index-nya 3.
-          bottomNavigationBar: const MainBottomNavigation(
-            currentIndex: 3,
-          ),
-        );
-      }
+      // Profil merupakan menu keempat, sehingga index-nya 3.
+      bottomNavigationBar: const MainBottomNavigation(currentIndex: 3),
+    );
+  }
 
   Widget _buildProfileCard(BuildContext context) {
     return Container(
@@ -139,9 +127,7 @@ class ProfilePage extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: borderColor,
-        ),
+        border: Border.all(color: borderColor),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -159,9 +145,7 @@ class ProfilePage extends StatelessWidget {
             decoration: BoxDecoration(
               color: const Color(0xFFF0F7EE),
               shape: BoxShape.circle,
-              border: Border.all(
-                color: const Color(0xFFDCE9DC),
-              ),
+              border: Border.all(color: const Color(0xFFDCE9DC)),
             ),
             child: ClipOval(
               child: Image.asset(
@@ -199,10 +183,7 @@ class ProfilePage extends StatelessWidget {
                   'indhira@example.com',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: secondaryText,
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: secondaryText, fontSize: 12),
                 ),
                 const SizedBox(height: 12),
                 SizedBox(
@@ -211,19 +192,12 @@ class ProfilePage extends StatelessWidget {
                     onPressed: () {
                       context.pushNamed('personal-information');
                     },
-                    icon: const Icon(
-                      Icons.edit_outlined,
-                      size: 16,
-                    ),
+                    icon: const Icon(Icons.edit_outlined, size: 16),
                     label: const Text('Edit Profil'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: primaryGreen,
-                      side: const BorderSide(
-                        color: Color(0xFFBFD7C4),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 13,
-                      ),
+                      side: const BorderSide(color: Color(0xFFBFD7C4)),
+                      padding: const EdgeInsets.symmetric(horizontal: 13),
                       textStyle: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -247,9 +221,7 @@ class ProfilePage extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: borderColor,
-        ),
+        border: Border.all(color: borderColor),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -298,20 +270,12 @@ class ProfilePage extends StatelessWidget {
         onPressed: () {
           _showLogoutDialog(context);
         },
-        icon: const Icon(
-          Icons.logout_rounded,
-          size: 20,
-        ),
+        icon: const Icon(Icons.logout_rounded, size: 20),
         label: const Text('Keluar'),
         style: OutlinedButton.styleFrom(
           foregroundColor: dangerColor,
-          side: const BorderSide(
-            color: dangerColor,
-          ),
-          textStyle: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
+          side: const BorderSide(color: dangerColor),
+          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
@@ -322,9 +286,7 @@ class ProfilePage extends StatelessWidget {
 }
 
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({
-    required this.title,
-  });
+  const _SectionTitle({required this.title});
 
   final String title;
 
@@ -350,18 +312,13 @@ class _ActivityCard extends StatelessWidget {
       width: double.infinity,
 
       // Ukuran atas dan bawah diperkecil dari 20 menjadi 13.
-      padding: const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 13,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 13),
       decoration: BoxDecoration(
         color: Colors.white,
 
         // Sedikit diperkecil agar sesuai dengan tinggi kartu baru.
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: ProfilePage.borderColor,
-        ),
+        border: Border.all(color: ProfilePage.borderColor),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),

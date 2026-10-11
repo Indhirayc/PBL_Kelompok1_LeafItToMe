@@ -145,9 +145,8 @@ class _PlantListPageState extends State<PlantListPage> {
                       final newPlant = await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => AddPlantPage(
-                            nextId: _generateNextPlantId(),
-                          ),
+                          builder: (context) =>
+                              AddPlantPage(nextId: _generateNextPlantId()),
                         ),
                       );
                       if (newPlant != null && newPlant is Plant) {

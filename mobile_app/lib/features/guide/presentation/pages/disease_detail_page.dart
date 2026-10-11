@@ -8,10 +8,7 @@ import '../widgets/guide_illustrations.dart';
 class DiseaseDetailPage extends StatelessWidget {
   final DiseaseModel disease;
 
-  const DiseaseDetailPage({
-    super.key,
-    required this.disease,
-  });
+  const DiseaseDetailPage({super.key, required this.disease});
 
   static const Color primaryGreen = Color(0xFF2F7D4A);
   static const Color darkGreen = Color(0xFF183E2D);
@@ -22,7 +19,9 @@ class DiseaseDetailPage extends StatelessWidget {
 
   Future<void> _openMarketplace(BuildContext context) async {
     final encodedKeyword = Uri.encodeComponent(disease.searchKeyword);
-    final url = Uri.parse('https://shopee.co.id/search?keyword=$encodedKeyword');
+    final url = Uri.parse(
+      'https://shopee.co.id/search?keyword=$encodedKeyword',
+    );
 
     try {
       final launched = await launchUrl(
@@ -314,7 +313,9 @@ class DiseaseDetailPage extends StatelessWidget {
                   label: const Text('Cari Produk Penanganan / Obat Terkait'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: primaryGreen,
-                    side: BorderSide(color: primaryGreen.withValues(alpha: 0.3)),
+                    side: BorderSide(
+                      color: primaryGreen.withValues(alpha: 0.3),
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

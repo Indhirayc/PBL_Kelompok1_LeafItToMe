@@ -23,7 +23,9 @@ class HistoryDiseaseDetailPage extends StatelessWidget {
 
   Future<void> _openMarketplace(BuildContext context, String keyword) async {
     final encodedKeyword = Uri.encodeComponent(keyword);
-    final url = Uri.parse('https://shopee.co.id/search?keyword=$encodedKeyword');
+    final url = Uri.parse(
+      'https://shopee.co.id/search?keyword=$encodedKeyword',
+    );
 
     try {
       final launched = await launchUrl(

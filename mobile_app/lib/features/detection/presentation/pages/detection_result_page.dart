@@ -187,10 +187,7 @@ class DetectionResultPage extends StatelessWidget {
         ),
         Positioned(
           bottom: -12,
-          child: const ConfidenceIndicator(
-            percentage: 94,
-            isExample: true,
-          ),
+          child: const ConfidenceIndicator(percentage: 94, isExample: true),
         ),
       ],
     );

@@ -45,16 +45,10 @@ class AppTextField extends StatelessWidget {
           obscureText: obscureText,
           validator: validator,
           autovalidateMode: AutovalidateMode.onUserInteraction,
-          style: const TextStyle(
-            color: Color(0xFF183E2D),
-            fontSize: 14,
-          ),
+          style: const TextStyle(color: Color(0xFF183E2D), fontSize: 14),
           decoration: InputDecoration(
             hintText: hintText,
-            hintStyle: const TextStyle(
-              color: Color(0xFF9AA89F),
-              fontSize: 14,
-            ),
+            hintStyle: const TextStyle(color: Color(0xFF9AA89F), fontSize: 14),
             prefixIcon: prefixIcon,
             suffixIcon: suffixIcon,
             filled: true,
@@ -65,9 +59,7 @@ class AppTextField extends StatelessWidget {
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(
-                color: Color(0xFFDDE5DF),
-              ),
+              borderSide: const BorderSide(color: Color(0xFFDDE5DF)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
@@ -78,9 +70,7 @@ class AppTextField extends StatelessWidget {
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(
-                color: Color(0xFFD7352A),
-              ),
+              borderSide: const BorderSide(color: Color(0xFFD7352A)),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),

@@ -21,9 +21,9 @@ void main() {
     );
 
     expect(find.text('Tomat Kebun Belakang'), findsOneWidget);
+    expect(find.text('Healthy'), findsOneWidget);
     expect(find.text('Leaf Mold'), findsOneWidget);
     expect(find.text('Late Blight'), findsOneWidget);
     expect(find.text('Bacterial Spot'), findsNothing);
-    expect(find.text('Healthy'), findsNothing);
   });
 }

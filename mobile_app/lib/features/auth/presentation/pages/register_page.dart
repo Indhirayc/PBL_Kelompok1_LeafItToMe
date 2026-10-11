@@ -102,9 +102,7 @@ class _RegisterPageState extends State<RegisterPage> {
     if (!_agreeToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Setujui Syarat & Ketentuan dan Kebijakan Privasi',
-          ),
+          content: Text('Setujui Syarat & Ketentuan dan Kebijakan Privasi'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -254,8 +252,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   suffixIcon: IconButton(
                     onPressed: () {
                       setState(() {
-                        _obscureConfirmPassword =
-                            !_obscureConfirmPassword;
+                        _obscureConfirmPassword = !_obscureConfirmPassword;
                       });
                     },
                     icon: Icon(
@@ -295,10 +292,7 @@ class _RegisterPageState extends State<RegisterPage> {
           onTap: _openLoginPage,
           borderRadius: BorderRadius.circular(20),
           child: const Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: 2,
-              vertical: 6,
-            ),
+            padding: EdgeInsets.symmetric(horizontal: 2, vertical: 6),
             child: Icon(
               Icons.chevron_left_rounded,
               color: Color(0xFF124B35),
@@ -361,10 +355,7 @@ class _RegisterPageState extends State<RegisterPage> {
               value: _agreeToTerms,
               activeColor: const Color(0xFF1F7338),
               checkColor: Colors.white,
-              side: const BorderSide(
-                color: Color(0xFF1F7338),
-                width: 1.2,
-              ),
+              side: const BorderSide(color: Color(0xFF1F7338), width: 1.2),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(4),
               ),
@@ -398,21 +389,14 @@ class _RegisterPageState extends State<RegisterPage> {
       children: [
         const Text(
           'Sudah memiliki akun? ',
-          style: TextStyle(
-            color: Color(0xFF718478),
-            fontSize: 13,
-            
-          ),
+          style: TextStyle(color: Color(0xFF718478), fontSize: 13),
         ),
         InkWell(
           key: const Key('loginButton'),
           onTap: _openLoginPage,
           borderRadius: BorderRadius.circular(6),
           child: const Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: 2,
-              vertical: 6,
-            ),
+            padding: EdgeInsets.symmetric(horizontal: 2, vertical: 6),
             child: Text(
               'Masuk',
               style: TextStyle(

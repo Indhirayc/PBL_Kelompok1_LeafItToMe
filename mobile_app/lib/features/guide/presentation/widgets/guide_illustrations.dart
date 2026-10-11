@@ -158,11 +158,7 @@ class ToolIllustration extends StatelessWidget {
             color: Colors.white,
             shape: BoxShape.circle,
           ),
-          child: Icon(
-            icon,
-            size: 54,
-            color: const Color(0xFF2F7D4A),
-          ),
+          child: Icon(icon, size: 54, color: const Color(0xFF2F7D4A)),
         ),
       ),
     );

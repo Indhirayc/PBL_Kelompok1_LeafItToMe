@@ -122,7 +122,7 @@ class _LoginPageState extends State<LoginPage> {
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
                   validator: _validateEmail,
-                    prefixIcon: const Icon(
+                  prefixIcon: const Icon(
                     Icons.mail_outline_rounded,
                     color: Color(0xFF1F7338),
                     size: 21,
@@ -138,7 +138,7 @@ class _LoginPageState extends State<LoginPage> {
                   textInputAction: TextInputAction.done,
                   obscureText: _obscurePassword,
                   validator: _validatePassword,
-                    prefixIcon: const Icon(
+                  prefixIcon: const Icon(
                     Icons.lock_outline_rounded,
                     color: Color(0xFF1F7338),
                     size: 21,
@@ -187,10 +187,7 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     const Text(
                       'Belum punya akun? ',
-                      style: TextStyle(
-                        color: Color(0xFF597361),
-                        fontSize: 13,
-                      ),
+                      style: TextStyle(color: Color(0xFF597361), fontSize: 13),
                     ),
                     TextButton(
                       key: const Key('registerButton'),
@@ -215,9 +212,7 @@ class _LoginPageState extends State<LoginPage> {
 
                 const Row(
                   children: [
-                    Expanded(
-                      child: Divider(color: Color(0xFFDDE5DF)),
-                    ),
+                    Expanded(child: Divider(color: Color(0xFFDDE5DF))),
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 12),
                       child: Text(
@@ -228,9 +223,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
-                    Expanded(
-                      child: Divider(color: Color(0xFFDDE5DF)),
-                    ),
+                    Expanded(child: Divider(color: Color(0xFFDDE5DF))),
                   ],
                 ),
                 const SizedBox(height: 18),
@@ -246,10 +239,7 @@ class _LoginPageState extends State<LoginPage> {
                     SizedBox(width: 7),
                     Text(
                       'Data tersimpan aman di akunmu',
-                      style: TextStyle(
-                        color: Color(0xFF718478),
-                        fontSize: 11,
-                      ),
+                      style: TextStyle(color: Color(0xFF718478), fontSize: 11),
                     ),
                   ],
                 ),

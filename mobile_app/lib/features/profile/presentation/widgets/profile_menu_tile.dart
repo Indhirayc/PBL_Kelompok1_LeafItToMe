@@ -26,10 +26,7 @@ class ProfileMenuTile extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(14),
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 13,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
             child: Row(
               children: [
                 Container(
@@ -39,11 +36,7 @@ class ProfileMenuTile extends StatelessWidget {
                     color: iconColor.withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(
-                    icon,
-                    color: iconColor,
-                    size: 22,
-                  ),
+                  child: Icon(icon, color: iconColor, size: 22),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -83,14 +76,8 @@ class ProfileMenuTile extends StatelessWidget {
         ),
         if (showDivider)
           const Padding(
-            padding: EdgeInsets.only(
-              left: 70,
-              right: 14,
-            ),
-            child: Divider(
-              height: 1,
-              color: Color(0xFFE4EAE5),
-            ),
+            padding: EdgeInsets.only(left: 70, right: 14),
+            child: Divider(height: 1, color: Color(0xFFE4EAE5)),
           ),
       ],
     );

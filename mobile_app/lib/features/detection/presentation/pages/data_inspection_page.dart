@@ -152,10 +152,7 @@ class _DataInspectionPageState extends State<DataInspectionPage> {
                         SizedBox(height: 4),
                         Text(
                           'Lengkapi data sebelum memindai daun.',
-                          style: TextStyle(
-                            color: _secondaryText,
-                            fontSize: 12,
-                          ),
+                          style: TextStyle(color: _secondaryText, fontSize: 12),
                         ),
                       ],
                     ),

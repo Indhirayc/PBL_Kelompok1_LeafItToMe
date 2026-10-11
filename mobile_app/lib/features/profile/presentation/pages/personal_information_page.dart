@@ -22,17 +22,11 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
   void initState() {
     super.initState();
 
-    _nameController = TextEditingController(
-      text: 'Indhira Yuantika Christy',
-    );
+    _nameController = TextEditingController(text: 'Indhira Yuantika Christy');
 
-    _emailController = TextEditingController(
-      text: 'indhira@example.com',
-    );
+    _emailController = TextEditingController(text: 'indhira@example.com');
 
-    _phoneController = TextEditingController(
-      text: '081234567890',
-    );
+    _phoneController = TextEditingController(text: '081234567890');
   }
 
   @override
@@ -54,9 +48,7 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
       _isSaving = true;
     });
 
-    await Future<void>.delayed(
-      const Duration(milliseconds: 700),
-    );
+    await Future<void>.delayed(const Duration(milliseconds: 700));
 
     if (!mounted) {
       return;
@@ -82,9 +74,7 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
       backgroundColor: _ProfileColors.white,
       showDragHandle: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(24),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) {
         return SafeArea(
@@ -240,9 +230,7 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
                       return 'Email wajib diisi.';
                     }
 
-                    final emailPattern = RegExp(
-                      r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
-                    );
+                    final emailPattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
 
                     if (!emailPattern.hasMatch(email)) {
                       return 'Format email belum benar.';
@@ -286,10 +274,8 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
                       backgroundColor: _ProfileColors.primaryGreen,
-                      disabledBackgroundColor:
-                          _ProfileColors.primaryGreen.withValues(
-                        alpha: 0.65,
-                      ),
+                      disabledBackgroundColor: _ProfileColors.primaryGreen
+                          .withValues(alpha: 0.65),
                       foregroundColor: _ProfileColors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(13),
@@ -334,10 +320,7 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
               decoration: BoxDecoration(
                 color: const Color(0xFFF4FAF3),
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFFD5E9D7),
-                  width: 1.2,
-                ),
+                border: Border.all(color: const Color(0xFFD5E9D7), width: 1.2),
               ),
               child: Image.asset(
                 'assets/images/splash/leafittome_logo.png',
@@ -382,10 +365,7 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
             onTap: _editProfilePhoto,
             borderRadius: BorderRadius.circular(8),
             child: const Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: 8,
-                vertical: 4,
-              ),
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               child: Text(
                 'Ubah Foto Profil',
                 style: TextStyle(
@@ -473,9 +453,7 @@ class _ProfileTextField extends StatelessWidget {
               color: _ProfileColors.primaryGreen,
               width: 1.4,
             ),
-            errorBorder: _inputBorder(
-              color: _ProfileColors.error,
-            ),
+            errorBorder: _inputBorder(color: _ProfileColors.error),
             focusedErrorBorder: _inputBorder(
               color: _ProfileColors.error,
               width: 1.4,
@@ -492,10 +470,7 @@ class _ProfileTextField extends StatelessWidget {
   }) {
     return OutlineInputBorder(
       borderRadius: BorderRadius.circular(13),
-      borderSide: BorderSide(
-        color: color,
-        width: width,
-      ),
+      borderSide: BorderSide(color: color, width: width),
     );
   }
 }
@@ -520,17 +495,10 @@ class _PhotoOption extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(13),
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 15,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
           child: Row(
             children: [
-              Icon(
-                icon,
-                color: _ProfileColors.primaryGreen,
-                size: 22,
-              ),
+              Icon(icon, color: _ProfileColors.primaryGreen, size: 22),
               const SizedBox(width: 14),
               Text(
                 title,

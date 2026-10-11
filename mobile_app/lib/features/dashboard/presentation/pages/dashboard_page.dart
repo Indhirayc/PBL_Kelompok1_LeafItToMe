@@ -45,11 +45,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   color: primaryGreen.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.eco,
-                  color: primaryGreen,
-                  size: 22,
-                ),
+                child: const Icon(Icons.eco, color: primaryGreen, size: 22),
               ),
               const SizedBox(width: 12),
               Column(
@@ -67,10 +63,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   SizedBox(height: 1),
                   Text(
                     'Beranda',
-                    style: TextStyle(
-                      color: secondaryText,
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: secondaryText, fontSize: 12),
                   ),
                 ],
               ),
@@ -83,11 +76,16 @@ class _DashboardPageState extends State<DashboardPage> {
             padding: const EdgeInsets.only(top: 12.0, right: 20.0),
             child: Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: primaryGreen.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: primaryGreen.withValues(alpha: 0.2)),
+                  border: Border.all(
+                    color: primaryGreen.withValues(alpha: 0.2),
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -248,11 +246,7 @@ class _DashboardPageState extends State<DashboardPage> {
           const Text(
             'Kamu belum merawat tanaman apapun saat ini.\nTambah tanaman baru atau pelajari panduan budidaya!',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 13,
-              color: secondaryText,
-              height: 1.4,
-            ),
+            style: TextStyle(fontSize: 13, color: secondaryText, height: 1.4),
           ),
           const SizedBox(height: 20),
           ElevatedButton.icon(
@@ -260,7 +254,9 @@ class _DashboardPageState extends State<DashboardPage> {
               ScaffoldMessenger.of(context).hideCurrentSnackBar();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Fitur Tambah Tanaman akan dikembangkan oleh tim.'),
+                  content: Text(
+                    'Fitur Tambah Tanaman akan dikembangkan oleh tim.',
+                  ),
                   duration: Duration(seconds: 2),
                   behavior: SnackBarBehavior.floating,
                 ),
@@ -348,7 +344,12 @@ class _DashboardPageState extends State<DashboardPage> {
           status: 'Sehat',
           isHealthy: true,
           onTap: () {
-            _showPlantDetailModal(context, 'Tomat Pot Depan', 'TMT-001', 'Sehat');
+            _showPlantDetailModal(
+              context,
+              'Tomat Pot Depan',
+              'TMT-001',
+              'Sehat',
+            );
           },
         ),
         const SizedBox(height: 12),
@@ -520,10 +521,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 children: [
                   const Text(
                     'Pemeriksaan terakhir',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: secondaryText,
-                    ),
+                    style: TextStyle(fontSize: 11, color: secondaryText),
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -610,10 +608,7 @@ class _DashboardPageState extends State<DashboardPage> {
               ),
               Text(
                 'ID Tanaman: $code',
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: secondaryText,
-                ),
+                style: const TextStyle(fontSize: 13, color: secondaryText),
               ),
               const SizedBox(height: 16),
               Container(

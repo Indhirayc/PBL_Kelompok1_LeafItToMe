@@ -8,10 +8,7 @@ import '../widgets/guide_illustrations.dart';
 class ToolDetailPage extends StatelessWidget {
   final ToolModel tool;
 
-  const ToolDetailPage({
-    super.key,
-    required this.tool,
-  });
+  const ToolDetailPage({super.key, required this.tool});
 
   static const Color primaryGreen = Color(0xFF2F7D4A);
   static const Color darkGreen = Color(0xFF183E2D);
@@ -22,7 +19,9 @@ class ToolDetailPage extends StatelessWidget {
 
   Future<void> _openMarketplace(BuildContext context) async {
     final encodedKeyword = Uri.encodeComponent(tool.searchKeyword);
-    final url = Uri.parse('https://shopee.co.id/search?keyword=$encodedKeyword');
+    final url = Uri.parse(
+      'https://shopee.co.id/search?keyword=$encodedKeyword',
+    );
 
     try {
       final launched = await launchUrl(
@@ -211,7 +210,9 @@ class ToolDetailPage extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: const Color(0xFFF2F7F2),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: primaryGreen.withValues(alpha: 0.15)),
+                  border: Border.all(
+                    color: primaryGreen.withValues(alpha: 0.15),
+                  ),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -246,7 +247,9 @@ class ToolDetailPage extends StatelessWidget {
                   label: const Text('Cari di Marketplace'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: primaryGreen,
-                    side: BorderSide(color: primaryGreen.withValues(alpha: 0.3)),
+                    side: BorderSide(
+                      color: primaryGreen.withValues(alpha: 0.3),
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

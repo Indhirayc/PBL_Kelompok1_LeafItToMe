@@ -21,7 +21,9 @@ class TreatmentRecommendationPage extends StatelessWidget {
 
   Future<void> _openMarketplace(BuildContext context, String keyword) async {
     final encodedKeyword = Uri.encodeComponent(keyword);
-    final url = Uri.parse('https://shopee.co.id/search?keyword=$encodedKeyword');
+    final url = Uri.parse(
+      'https://shopee.co.id/search?keyword=$encodedKeyword',
+    );
 
     try {
       final launched = await launchUrl(
@@ -206,10 +208,7 @@ class TreatmentRecommendationPage extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(
                   '$plantLabel  •  ${formatHistoryDate(record.date)}',
-                  style: const TextStyle(
-                    color: _secondaryText,
-                    fontSize: 12,
-                  ),
+                  style: const TextStyle(color: _secondaryText, fontSize: 12),
                 ),
               ],
             ),
@@ -221,7 +220,9 @@ class TreatmentRecommendationPage extends StatelessWidget {
 
   Widget _buildNumberedCard(List<String> items) {
     if (items.isEmpty) {
-      return _buildEmptyCard('Tidak ada penanganan khusus. Lanjutkan perawatan rutin.');
+      return _buildEmptyCard(
+        'Tidak ada penanganan khusus. Lanjutkan perawatan rutin.',
+      );
     }
     return Container(
       width: double.infinity,

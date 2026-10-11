@@ -8,8 +8,7 @@ class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
 
   @override
-  State<ForgotPasswordPage> createState() =>
-      _ForgotPasswordPageState();
+  State<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
 }
 
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
@@ -109,10 +108,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               ),
               const SizedBox(height: 38),
 
-              if (!_emailSent)
-                _buildEmailForm()
-              else
-                _buildSuccessContent(),
+              if (!_emailSent) _buildEmailForm() else _buildSuccessContent(),
             ],
           ),
         ),
@@ -127,10 +123,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           onTap: _backToLogin,
           borderRadius: BorderRadius.circular(20),
           child: const Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: 2,
-              vertical: 6,
-            ),
+            padding: EdgeInsets.symmetric(horizontal: 2, vertical: 6),
             child: Icon(
               Icons.chevron_left_rounded,
               color: Color(0xFF124B35),
@@ -209,10 +202,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             children: [
               const Text(
                 'Sudah ingat kata sandimu? ',
-                style: TextStyle(
-                  color: Color(0xFF718478),
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: Color(0xFF718478), fontSize: 12),
               ),
               InkWell(
                 onTap: _backToLogin,
@@ -245,9 +235,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           decoration: BoxDecoration(
             color: const Color(0xFFE8F6E7),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: const Color(0xFFC9E3CD),
-            ),
+            border: Border.all(color: const Color(0xFFC9E3CD)),
           ),
           child: Column(
             children: [
@@ -282,10 +270,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         ),
         const SizedBox(height: 26),
 
-        AppButton(
-          text: 'Kembali ke Login',
-          onPressed: _backToLogin,
-        ),
+        AppButton(text: 'Kembali ke Login', onPressed: _backToLogin),
         const SizedBox(height: 14),
 
         TextButton(

@@ -101,9 +101,8 @@ void main() {
         GoRoute(
           path: '/data-inspection',
           name: 'data-inspection',
-          builder: (context, state) => DataInspectionPage(
-            plant: state.extra! as InspectionPlant,
-          ),
+          builder: (context, state) =>
+              DataInspectionPage(plant: state.extra! as InspectionPlant),
         ),
       ],
     );

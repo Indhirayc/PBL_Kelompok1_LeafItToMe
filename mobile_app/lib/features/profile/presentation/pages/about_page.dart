@@ -66,9 +66,7 @@ class AboutPage extends StatelessWidget {
               _buildApplicationIdentity(),
               const SizedBox(height: 28),
 
-              const _SectionTitle(
-                title: 'Tentang Aplikasi',
-              ),
+              const _SectionTitle(title: 'Tentang Aplikasi'),
               const SizedBox(height: 14),
 
               const _InformationCard(
@@ -87,9 +85,7 @@ class AboutPage extends StatelessWidget {
 
               const SizedBox(height: 26),
 
-              const _SectionTitle(
-                title: 'Fitur Utama',
-              ),
+              const _SectionTitle(title: 'Fitur Utama'),
               const SizedBox(height: 14),
 
               const _InformationCard(
@@ -105,8 +101,7 @@ class AboutPage extends StatelessWidget {
                     _FeatureItem(
                       icon: Icons.document_scanner_outlined,
                       title: 'Deteksi Penyakit',
-                      description:
-                          'Mendeteksi kondisi daun melalui foto menggunakan model machine learning.',
+                      description: 'Mendeteksi kondisi daun melalui foto menggunakan model machine learning.',
                     ),
                     _CardDivider(),
                     _FeatureItem(
@@ -119,8 +114,7 @@ class AboutPage extends StatelessWidget {
                     _FeatureItem(
                       icon: Icons.menu_book_outlined,
                       title: 'Panduan Budidaya',
-                      description:
-                          'Menyediakan informasi perawatan dan budidaya tanaman tomat.',
+                      description: 'Menyediakan informasi perawatan dan budidaya tanaman tomat.',
                     ),
                   ],
                 ),
@@ -128,9 +122,7 @@ class AboutPage extends StatelessWidget {
 
               const SizedBox(height: 26),
 
-              const _SectionTitle(
-                title: 'Informasi Pengembangan',
-              ),
+              const _SectionTitle(title: 'Informasi Pengembangan'),
               const SizedBox(height: 14),
 
               const _InformationCard(
@@ -170,9 +162,7 @@ class AboutPage extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFF8E8),
                   borderRadius: BorderRadius.circular(15),
-                  border: Border.all(
-                    color: const Color(0xFFF2E3B8),
-                  ),
+                  border: Border.all(color: const Color(0xFFF2E3B8)),
                 ),
                 child: const Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -239,10 +229,7 @@ class AboutPage extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color(0xFFF0F8F0),
             shape: BoxShape.circle,
-            border: Border.all(
-              color: const Color(0xFFD6E9D7),
-              width: 1.2,
-            ),
+            border: Border.all(color: const Color(0xFFD6E9D7), width: 1.2),
           ),
           child: Image.asset(
             'assets/images/splash/leafittome_logo.png',
@@ -270,21 +257,13 @@ class AboutPage extends StatelessWidget {
         const Text(
           'Kenali Daunnya, Jaga Tanamannya',
           textAlign: TextAlign.center,
-          style: TextStyle(
-            color: _AboutColors.secondaryText,
-            fontSize: 13,
-          ),
+          style: TextStyle(color: _AboutColors.secondaryText, fontSize: 13),
         ),
         const SizedBox(height: 11),
         Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 13,
-            vertical: 6,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 6),
           decoration: BoxDecoration(
-            color: _AboutColors.primaryGreen.withValues(
-              alpha: 0.10,
-            ),
+            color: _AboutColors.primaryGreen.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(20),
           ),
           child: const Text(
@@ -302,9 +281,7 @@ class AboutPage extends StatelessWidget {
 }
 
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({
-    required this.title,
-  });
+  const _SectionTitle({required this.title});
 
   final String title;
 
@@ -322,9 +299,7 @@ class _SectionTitle extends StatelessWidget {
 }
 
 class _InformationCard extends StatelessWidget {
-  const _InformationCard({
-    required this.child,
-  });
+  const _InformationCard({required this.child});
 
   final Widget child;
 
@@ -335,9 +310,7 @@ class _InformationCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: _AboutColors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: _AboutColors.border,
-        ),
+        border: Border.all(color: _AboutColors.border),
       ),
       child: child,
     );
@@ -358,9 +331,7 @@ class _FeatureItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        vertical: 5,
-      ),
+      padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -368,16 +339,10 @@ class _FeatureItem extends StatelessWidget {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: _AboutColors.primaryGreen.withValues(
-                alpha: 0.09,
-              ),
+              color: _AboutColors.primaryGreen.withValues(alpha: 0.09),
               borderRadius: BorderRadius.circular(11),
             ),
-            child: Icon(
-              icon,
-              color: _AboutColors.primaryGreen,
-              size: 22,
-            ),
+            child: Icon(icon, color: _AboutColors.primaryGreen, size: 22),
           ),
           const SizedBox(width: 13),
           Expanded(
@@ -424,9 +389,7 @@ class _InformationRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        vertical: 6,
-      ),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -434,16 +397,10 @@ class _InformationRow extends StatelessWidget {
             width: 39,
             height: 39,
             decoration: BoxDecoration(
-              color: _AboutColors.primaryGreen.withValues(
-                alpha: 0.09,
-              ),
+              color: _AboutColors.primaryGreen.withValues(alpha: 0.09),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(
-              icon,
-              color: _AboutColors.primaryGreen,
-              size: 20,
-            ),
+            child: Icon(icon, color: _AboutColors.primaryGreen, size: 20),
           ),
           const SizedBox(width: 13),
           SizedBox(
@@ -487,14 +444,8 @@ class _CardDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Padding(
-      padding: EdgeInsets.symmetric(
-        vertical: 10,
-      ),
-      child: Divider(
-        height: 1,
-        thickness: 1,
-        color: _AboutColors.border,
-      ),
+      padding: EdgeInsets.symmetric(vertical: 10),
+      child: Divider(height: 1, thickness: 1, color: _AboutColors.border),
     );
   }
 }

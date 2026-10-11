@@ -34,7 +34,11 @@ class ImagePreview extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Image.asset(imageAsset, fit: BoxFit.cover, semanticLabel: semanticLabel),
+              Image.asset(
+                imageAsset,
+                fit: BoxFit.cover,
+                semanticLabel: semanticLabel,
+              ),
               if (showFrameCorners) const _PhotoFrameCorners(),
               if (source != null)
                 Positioned(

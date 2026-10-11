@@ -35,14 +35,11 @@ class _SplashPageState extends State<SplashPage>
       duration: const Duration(seconds: 3),
     )..forward();
 
-    _navigationTimer = Timer(
-      const Duration(seconds: 3),
-      () {
-        if (mounted) {
-          context.goNamed('login');
-        }
-      },
-    );
+    _navigationTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) {
+        context.goNamed('login');
+      }
+    });
   }
 
   @override
@@ -94,10 +91,7 @@ class _SplashContent extends StatelessWidget {
     final bool isTablet = maxWidth >= 600;
     final bool isShortScreen = maxHeight < 700;
 
-    final double contentWidth = maxWidth.clamp(
-      0.0,
-      isTablet ? 520.0 : 430.0,
-    );
+    final double contentWidth = maxWidth.clamp(0.0, isTablet ? 520.0 : 430.0);
 
     final double logoSize = _responsiveValue(
       normal: maxWidth * 0.21,
@@ -131,23 +125,18 @@ class _SplashContent extends StatelessWidget {
       maximum: isTablet ? 230 : 200,
     );
 
-    final double logoToTitleSpacing =
-        isShortScreen || isLandscape ? 10 : 14;
+    final double logoToTitleSpacing = isShortScreen || isLandscape ? 10 : 14;
 
-    final double titleToTaglineSpacing =
-        isShortScreen || isLandscape ? 8 : 12;
+    final double titleToTaglineSpacing = isShortScreen || isLandscape ? 8 : 12;
 
-    final double bottomSpacing =
-        isShortScreen || isLandscape ? 18 : 30;
+    final double bottomSpacing = isShortScreen || isLandscape ? 18 : 30;
 
     return Center(
       child: SizedBox(
         width: contentWidth,
         height: maxHeight,
         child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: isTablet ? 32 : 24,
-          ),
+          padding: EdgeInsets.symmetric(horizontal: isTablet ? 32 : 24),
           child: Column(
             children: [
               SizedBox(height: topSpacing),
@@ -262,9 +251,7 @@ class _SplashBackground extends StatelessWidget {
         alignment: Alignment.center,
         filterQuality: FilterQuality.high,
         errorBuilder: (context, error, stackTrace) {
-          return const ColoredBox(
-            color: Color(0xFFFBFCF6),
-          );
+          return const ColoredBox(color: Color(0xFFFBFCF6));
         },
       ),
     );
