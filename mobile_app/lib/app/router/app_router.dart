@@ -19,6 +19,8 @@ import '../../features/detection/presentation/pages/data_inspection_page.dart';
 import '../../features/detection/presentation/pages/photo_source_page.dart';
 import '../../features/detection/presentation/pages/photo_preview_page.dart';
 import '../../features/detection/presentation/pages/detection_result_page.dart';
+import '../../features/history/data/history_data.dart';
+import '../../features/history/views/history_page.dart';
 
 abstract final class AppRouter {
   static final GoRouter router = GoRouter(
@@ -163,6 +165,14 @@ abstract final class AppRouter {
                     source: 'Galeri',
                   ),
           );
+        },
+      ),
+      GoRoute(
+        path: '/history',
+        name: 'history',
+        builder: (context, state) {
+          final plant = state.extra;
+          return HistoryPage(plant: plant is HistoryPlant ? plant : null);
         },
       ),
       GoRoute(

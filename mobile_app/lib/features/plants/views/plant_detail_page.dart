@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
 import 'plant_list_page.dart';
 import '../../detection/presentation/pages/data_inspection_page.dart';
+import '../../history/data/history_data.dart';
 
 class PlantDetailPage extends StatelessWidget {
   final Plant plant;
@@ -275,13 +276,41 @@ class PlantDetailPage extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Judul Riwayat Pemeriksaan
-          const Text(
-            "Riwayat Pemeriksaan",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1F3826),
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Riwayat Pemeriksaan",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1F3826),
+                ),
+              ),
+              TextButton(
+                key: const Key('viewAllHistoryButton'),
+                onPressed: () {
+                  context.pushNamed(
+                    'history',
+                    extra: HistoryPlant(
+                      id: plant.id,
+                      name: plant.name,
+                      location: plant.location,
+                    ),
+                  );
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF1B5E20),
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Text(
+                  "Lihat Semua",
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
 
