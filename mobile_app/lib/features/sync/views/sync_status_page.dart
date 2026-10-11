@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../history/widgets/history_page_header.dart';
 import '../data/sync_data.dart';
@@ -24,18 +25,6 @@ class _SyncStatusPageState extends State<SyncStatusPage> {
 
   bool _offlineMode = true;
   bool _simulateFailure = false;
-
-  void _showUiOnlyMessage() {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(
-          content: Text('Proses sinkronisasi segera hadir.'),
-          duration: Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +58,7 @@ class _SyncStatusPageState extends State<SyncStatusPage> {
                     height: 50,
                     child: ElevatedButton(
                       key: const Key('syncNowButton'),
-                      onPressed: _showUiOnlyMessage,
+                      onPressed: () => context.pushNamed('sync-process'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _primaryGreen,
                         foregroundColor: Colors.white,
