@@ -2,11 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../history/widgets/history_page_header.dart';
+import '../../history/data/history_data.dart';
 import '../data/sync_data.dart';
 
 class SyncProcessPage extends StatefulWidget {
-  const SyncProcessPage({super.key, this.isFailure = false});
+  const SyncProcessPage({
+    super.key,
+    required this.plant,
+    this.isFailure = false,
+  });
 
+  final HistoryPlant plant;
   final bool isFailure;
 
   @override
@@ -37,7 +43,13 @@ class _SyncProcessPageState extends State<SyncProcessPage>
 
   void _onStatusChanged(AnimationStatus status) {
     if (status == AnimationStatus.completed && mounted) {
-      context.pushReplacementNamed('sync-result', extra: widget.isFailure);
+      context.pushReplacementNamed(
+        'sync-result',
+        extra: <String, dynamic>{
+          'plant': widget.plant,
+          'isFailure': widget.isFailure,
+        },
+      );
     }
   }
 
@@ -68,9 +80,10 @@ class _SyncProcessPageState extends State<SyncProcessPage>
                 builder: (context, child) {
                   final double progress = _controller.value;
                   final int percent = (progress * 100).round();
-                  final int index = (progress * items.length)
-                      .floor()
-                      .clamp(0, items.length - 1);
+                  final int index = (progress * items.length).floor().clamp(
+                    0,
+                    items.length - 1,
+                  );
                   final SyncItem current = items[index];
 
                   return Column(

@@ -1,30 +1,29 @@
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
-import '../../features/splash/presentation/pages/splash_page.dart';
-import '../../features/auth/presentation/pages/forgot_password_page.dart';
-import '../../features/profile/presentation/pages/profile_page.dart';
-import '../../features/profile/presentation/pages/personal_information_page.dart';
-import '../../features/profile/presentation/pages/help_faq_page.dart';
-import '../../features/profile/presentation/pages/about_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
-import '../../features/guide/presentation/pages/guide_list_page.dart';
-import '../../features/guide/presentation/pages/guide_detail_page.dart';
-import '../../features/plants/views/plant_list_page.dart';
-import '../../features/guide/presentation/pages/tool_detail_page.dart';
-import '../../features/guide/presentation/pages/disease_detail_page.dart';
-import '../../features/guide/data/guide_data.dart';
 import '../../features/detection/presentation/pages/data_inspection_page.dart';
-import '../../features/detection/presentation/pages/photo_source_page.dart';
-import '../../features/detection/presentation/pages/photo_preview_page.dart';
 import '../../features/detection/presentation/pages/detection_result_page.dart';
-import '../../features/history/data/history_data.dart';
+import '../../features/detection/presentation/pages/photo_preview_page.dart';
+import '../../features/detection/presentation/pages/photo_source_page.dart';
+import '../../features/guide/data/guide_data.dart';
+import '../../features/guide/presentation/pages/disease_detail_page.dart';
+import '../../features/guide/presentation/pages/guide_detail_page.dart';
+import '../../features/guide/presentation/pages/guide_list_page.dart';
+import '../../features/guide/presentation/pages/tool_detail_page.dart';
+import '../../features/plants/views/add_plant_page.dart';
+import '../../features/plants/views/plant_detail_page.dart';
+import '../../features/plants/views/plant_list_page.dart';
+import '../../features/profile/presentation/pages/about_page.dart';
+import '../../features/profile/presentation/pages/help_faq_page.dart';
+import '../../features/profile/presentation/pages/personal_information_page.dart';
+import '../../features/profile/presentation/pages/profile_page.dart';
+import '../../features/splash/presentation/pages/splash_page.dart';
+import '../../features/history/data/history_data.dart' as history_data;
 import '../../features/history/views/history_page.dart';
-import '../../features/history/views/history_detail_page.dart';
-import '../../features/history/views/treatment_recommendation_page.dart';
-import '../../features/history/views/disease_detail_page.dart';
-import '../../features/sync/views/sync_status_page.dart';
+import '../../features/plants/views/history_detail_page.dart';
 import '../../features/sync/views/sync_process_page.dart';
 import '../../features/sync/views/sync_result_page.dart';
 
@@ -37,6 +36,8 @@ abstract final class AppRouter {
         name: 'splash',
         builder: (context, state) => const SplashPage(),
       ),
+
+      // Authentication
       GoRoute(
         path: '/login',
         name: 'login',
@@ -52,6 +53,8 @@ abstract final class AppRouter {
         name: 'forgot-password',
         builder: (context, state) => const ForgotPasswordPage(),
       ),
+
+      // Main navigation
       GoRoute(
         path: '/home',
         name: 'home',
@@ -63,23 +66,36 @@ abstract final class AppRouter {
         builder: (context, state) => const GuideListPage(),
       ),
       GoRoute(
-        path: '/guide-detail',
-        name: 'guide-detail',
-        builder: (context, state) {
-          final tabIndex = (state.extra as int?) ?? 0;
-          return GuideDetailPage(initialTabIndex: tabIndex);
-        },
-      ),
-      GoRoute(
         path: '/plants',
         name: 'plants',
         builder: (context, state) => const PlantListPage(),
       ),
       GoRoute(
+        path: '/profile',
+        name: 'profile',
+        builder: (context, state) => const ProfilePage(),
+      ),
+
+      // Guide
+      GoRoute(
+        path: '/guide-detail',
+        name: 'guide-detail',
+        builder: (context, state) {
+          final initialTabIndex = state.extra is int ? state.extra! as int : 0;
+
+          return GuideDetailPage(initialTabIndex: initialTabIndex);
+        },
+      ),
+      GoRoute(
         path: '/tool-detail',
         name: 'tool-detail',
         builder: (context, state) {
-          final tool = state.extra as ToolModel;
+          final tool = state.extra;
+
+          if (tool is! ToolModel) {
+            return const GuideListPage();
+          }
+
           return ToolDetailPage(tool: tool);
         },
       ),
@@ -87,15 +103,99 @@ abstract final class AppRouter {
         path: '/disease-detail',
         name: 'disease-detail',
         builder: (context, state) {
-          final disease = state.extra as DiseaseModel;
+          final disease = state.extra;
+
+          if (disease is! DiseaseModel) {
+            return const GuideListPage();
+          }
+
           return DiseaseDetailPage(disease: disease);
         },
       ),
+
+      // Plants
+      GoRoute(
+        path: '/plants/add',
+        name: 'add-plant',
+        builder: (context, state) {
+          final nextId = state.extra;
+
+          return AddPlantPage(nextId: nextId is String ? nextId : 'TMT-001');
+        },
+      ),
+      GoRoute(
+        path: '/plants/:plantId',
+        name: 'plant-detail',
+        builder: (context, state) {
+          final plant = state.extra;
+
+          if (plant is! Plant) {
+            return const PlantListPage();
+          }
+
+          return PlantDetailPage(plant: plant);
+        },
+      ),
+
+      GoRoute(
+        path: '/history',
+        name: 'history',
+        builder: (context, state) {
+          final selectedPlant = state.extra;
+
+          return selectedPlant is history_data.HistoryPlant
+              ? HistoryPage(plant: selectedPlant)
+              : HistoryPage(plant: history_data.HistoryData.plants.first);
+        },
+      ),
+
+      GoRoute(
+        path: '/history-detail',
+        name: 'history-detail',
+        builder: (context, state) {
+          final record = state.extra;
+
+          if (record is history_data.HistoryRecord) {
+            final selectedPlant = history_data.HistoryData.plantById(
+              record.plantId,
+            );
+
+            return HistoryDetailPage(
+              record: HistoryRecord(
+                plantId: record.plantId,
+                plantName: selectedPlant?.name ?? 'Tanaman Tomat',
+                disease: record.diseaseName,
+                date: history_data.formatHistoryDate(record.date),
+                accuracy: '${record.accuracy}%',
+                note: record.note,
+              ),
+            );
+          }
+
+          if (record is HistoryRecord) {
+            return HistoryDetailPage(record: record);
+          }
+
+          return const HistoryDetailPage(
+            record: HistoryRecord(
+              plantId: 'TMT-001',
+              plantName: 'Tomat Pot Depan',
+              disease: 'Healthy',
+              date: '28 September 2026',
+              accuracy: '96%',
+              note: 'Daun tampak hijau segar dan tidak ditemukan gejala penyakit.',
+            ),
+          );
+        },
+      ),
+
+      // Detection
       GoRoute(
         path: '/data-inspection',
         name: 'data-inspection',
         builder: (context, state) {
           final plant = state.extra;
+
           return DataInspectionPage(
             plant: plant is InspectionPlant
                 ? plant
@@ -112,6 +212,7 @@ abstract final class AppRouter {
         name: 'photo-source',
         builder: (context, state) {
           final draft = state.extra;
+
           return PhotoSourcePage(
             draft: draft is InspectionDraft
                 ? draft
@@ -132,6 +233,7 @@ abstract final class AppRouter {
         name: 'photo-preview',
         builder: (context, state) {
           final selection = state.extra;
+
           return PhotoPreviewPage(
             selection: selection is InspectionPhotoSelection
                 ? selection
@@ -155,6 +257,7 @@ abstract final class AppRouter {
         name: 'detection-result',
         builder: (context, state) {
           final selection = state.extra;
+
           return DetectionResultPage(
             selection: selection is InspectionPhotoSelection
                 ? selection
@@ -173,70 +276,8 @@ abstract final class AppRouter {
           );
         },
       ),
-      GoRoute(
-        path: '/history',
-        name: 'history',
-        builder: (context, state) {
-          final plant = state.extra;
-          return HistoryPage(plant: plant is HistoryPlant ? plant : null);
-        },
-      ),
-      GoRoute(
-        path: '/history-detail',
-        name: 'history-detail',
-        builder: (context, state) {
-          final record = state.extra;
-          return HistoryDetailPage(
-            record: record is HistoryRecord ? record : HistoryData.records.first,
-          );
-        },
-      ),
-      GoRoute(
-        path: '/treatment-recommendation',
-        name: 'treatment-recommendation',
-        builder: (context, state) {
-          final record = state.extra;
-          return TreatmentRecommendationPage(
-            record: record is HistoryRecord ? record : HistoryData.records.first,
-          );
-        },
-      ),
-      GoRoute(
-        path: '/history-disease-detail',
-        name: 'history-disease-detail',
-        builder: (context, state) {
-          final record = state.extra;
-          return HistoryDiseaseDetailPage(
-            record: record is HistoryRecord ? record : HistoryData.records.first,
-          );
-        },
-      ),
-      GoRoute(
-        path: '/sync-status',
-        name: 'sync-status',
-        builder: (context, state) => const SyncStatusPage(),
-      ),
-      GoRoute(
-        path: '/sync-process',
-        name: 'sync-process',
-        builder: (context, state) {
-          final failure = state.extra;
-          return SyncProcessPage(isFailure: failure is bool && failure);
-        },
-      ),
-      GoRoute(
-        path: '/sync-result',
-        name: 'sync-result',
-        builder: (context, state) {
-          final failure = state.extra;
-          return SyncResultPage(isFailure: failure is bool && failure);
-        },
-      ),
-      GoRoute(
-        path: '/profile',
-        name: 'profile',
-        builder: (context, state) => const ProfilePage(),
-      ),
+
+      // Profile
       GoRoute(
         path: '/personal-information',
         name: 'personal-information',
@@ -253,6 +294,50 @@ abstract final class AppRouter {
         path: '/about',
         name: 'about',
         builder: (context, state) => const AboutPage(),
+      ),
+
+      GoRoute(
+        path: '/sync-status',
+        name: 'sync-status',
+        builder: (context, state) {
+          final selectedPlant = state.extra;
+
+          return SyncProcessPage(
+            plant: selectedPlant is history_data.HistoryPlant
+                ? selectedPlant
+                : history_data.HistoryData.plants.first,
+          );
+        },
+      ),
+
+      GoRoute(
+        path: '/sync-result',
+        name: 'sync-result',
+        builder: (context, state) {
+          final extra = state.extra;
+
+          history_data.HistoryPlant selectedPlant =
+              history_data.HistoryData.plants.first;
+          bool isFailure = false;
+
+          if (extra is Map<String, dynamic>) {
+            final plantData = extra['plant'];
+            final failureData = extra['isFailure'];
+
+            if (plantData is history_data.HistoryPlant) {
+              selectedPlant = plantData;
+            }
+
+            if (failureData is bool) {
+              isFailure = failureData;
+            }
+          }
+
+          return SyncResultPage(
+            plant: selectedPlant,
+            isFailure: isFailure,
+          );
+        },
       ),
     ],
   );

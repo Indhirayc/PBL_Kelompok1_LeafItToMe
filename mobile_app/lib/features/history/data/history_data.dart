@@ -78,7 +78,11 @@ class HistoryRecord {
 
 abstract final class HistoryData {
   static const List<HistoryPlant> plants = [
-    HistoryPlant(id: 'TMT-001', name: 'Tomat Pot Depan', location: 'Teras depan'),
+    HistoryPlant(
+      id: 'TMT-001',
+      name: 'Tomat Pot Depan',
+      location: 'Teras depan',
+    ),
     HistoryPlant(
       id: 'TMT-002',
       name: 'Tomat Kebun Belakang',
@@ -87,6 +91,7 @@ abstract final class HistoryData {
   ];
 
   static final List<HistoryRecord> records = [
+    // TMT-001 mempunyai 5 riwayat pemeriksaan.
     HistoryRecord(
       id: 'H-001',
       plantId: 'TMT-001',
@@ -119,23 +124,55 @@ abstract final class HistoryData {
     ),
     HistoryRecord(
       id: 'H-004',
-      plantId: 'TMT-002',
+      plantId: 'TMT-001',
       diseaseName: 'Leaf Mold',
       latinName: 'Passalora fulva',
-      date: DateTime(2026, 9, 26),
-      accuracy: 87,
+      date: DateTime(2026, 8, 24),
+      accuracy: 91,
       isHealthy: false,
-      note: 'Bercak kuning pada daun bagian bawah.',
+      note: 'Terlihat bercak kekuningan dan lapisan seperti jamur pada daun.',
     ),
     HistoryRecord(
       id: 'H-005',
+      plantId: 'TMT-001',
+      diseaseName: 'Late Blight',
+      latinName: 'Phytophthora infestans',
+      date: DateTime(2026, 8, 12),
+      accuracy: 87,
+      isHealthy: false,
+      note: 'Ditemukan bercak berwarna cokelat gelap pada bagian tepi daun.',
+    ),
+
+    // TMT-002 mempunyai 3 riwayat pemeriksaan.
+    HistoryRecord(
+      id: 'H-006',
+      plantId: 'TMT-002',
+      diseaseName: 'Healthy',
+      latinName: 'Solanum lycopersicum',
+      date: DateTime(2026, 9, 25),
+      accuracy: 95,
+      isHealthy: true,
+      note: 'Kondisi tanaman sehat dan daun tidak menunjukkan gejala penyakit.',
+    ),
+    HistoryRecord(
+      id: 'H-007',
+      plantId: 'TMT-002',
+      diseaseName: 'Leaf Mold',
+      latinName: 'Passalora fulva',
+      date: DateTime(2026, 9, 10),
+      accuracy: 88,
+      isHealthy: false,
+      note: 'Ditemukan bercak kekuningan pada permukaan bagian atas daun.',
+    ),
+    HistoryRecord(
+      id: 'H-008',
       plantId: 'TMT-002',
       diseaseName: 'Late Blight',
       latinName: 'Phytophthora infestans',
-      date: DateTime(2026, 9, 12),
-      accuracy: 91,
+      date: DateTime(2026, 8, 22),
+      accuracy: 90,
       isHealthy: false,
-      note: 'Bercak basah kehitaman di tepi daun.',
+      note: 'Ditemukan bercak basah kehitaman pada bagian tepi daun.',
     ),
   ];
 
@@ -221,6 +258,7 @@ abstract final class HistoryData {
     if (name == null) {
       return null;
     }
+
     return _diseasesByName[name];
   }
 
@@ -230,6 +268,17 @@ abstract final class HistoryData {
         return plant;
       }
     }
+
     return null;
+  }
+
+  static List<HistoryRecord> recordsByPlantId(String plantId) {
+    final recordsForPlant = records
+        .where((record) => record.plantId == plantId)
+        .toList();
+
+    recordsForPlant.sort((first, second) => second.date.compareTo(first.date));
+
+    return recordsForPlant;
   }
 }

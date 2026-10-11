@@ -15,58 +15,77 @@ class HistoryPageHeader extends StatelessWidget {
   final Widget? action;
   final String fallbackRoute;
 
-  static const Color _darkGreen = Color(0xFF183E2D);
+  static const Color _titleColor = Color(0xFF1F3826);
   static const Color _secondaryText = Color(0xFF75857B);
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 6, 16, 4),
-      child: Row(
+    return Container(
+      width: double.infinity,
+      color: Colors.white,
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          IconButton(
-            onPressed: () => context.canPop()
-                ? context.pop()
-                : context.goNamed(fallbackRoute),
-            tooltip: 'Kembali',
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-            splashRadius: 22,
-            icon: const Icon(
-              Icons.arrow_back_ios_new_rounded,
-              color: _darkGreen,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 4),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          SizedBox(
+            height: 56,
+            child: Row(
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: _darkGreen,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.3,
-                    height: 1.2,
+                SizedBox(
+                  width: 56,
+                  height: 56,
+                  child: IconButton(
+                    tooltip: 'Kembali',
+                    onPressed: () {
+                      if (context.canPop()) {
+                        context.pop();
+                      } else {
+                        context.goNamed(fallbackRoute);
+                      }
+                    },
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      color: _titleColor,
+                      size: 20,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    color: _secondaryText,
-                    fontSize: 13,
-                    height: 1.3,
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: _titleColor,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
+                if (action != null)
+                  SizedBox(width: 56, height: 56, child: Center(child: action))
+                else
+                  const SizedBox(width: 16),
               ],
             ),
           ),
-          ?action,
+          if (subtitle.trim().isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(56, 0, 20, 0),
+              child: Transform.translate(
+                offset: const Offset(0, -10),
+                child: Text(
+                  subtitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: _secondaryText,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                    height: 1.35,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );

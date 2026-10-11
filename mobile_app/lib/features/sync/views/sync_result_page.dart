@@ -2,11 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../history/widgets/history_page_header.dart';
+import '../../history/data/history_data.dart';
 import '../data/sync_data.dart';
 
 class SyncResultPage extends StatelessWidget {
-  const SyncResultPage({super.key, this.isFailure = false});
+  const SyncResultPage({
+    super.key,
+    required this.plant,
+    required this.isFailure,
+  });
 
+  final HistoryPlant plant;
   final bool isFailure;
 
   static const Color _background = Color(0xFFF8FAF5);
@@ -38,7 +44,9 @@ class SyncResultPage extends StatelessWidget {
                     _buildStatusIcon(),
                     const SizedBox(height: 26),
                     Text(
-                      isFailure ? 'Sinkronisasi Gagal' : 'Sinkronisasi Berhasil',
+                      isFailure
+                          ? 'Sinkronisasi Gagal'
+                          : 'Sinkronisasi Berhasil',
                       style: TextStyle(
                         color: isFailure ? _dangerRed : _primaryGreen,
                         fontSize: 20,
@@ -65,8 +73,8 @@ class SyncResultPage extends StatelessWidget {
                         icon: Icons.refresh_rounded,
                         label: 'Coba Lagi',
                         onPressed: () => context.pushReplacementNamed(
-                          'sync-process',
-                          extra: true,
+                          'sync-status',
+                          extra: plant,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -75,9 +83,9 @@ class SyncResultPage extends StatelessWidget {
                         height: 50,
                         child: OutlinedButton(
                           key: const Key('backFromFailureButton'),
-                          onPressed: () => context.canPop()
-                              ? context.pop()
-                              : context.goNamed('history'),
+                          onPressed: () {
+                            context.goNamed('history', extra: plant);
+                          },
                           style: OutlinedButton.styleFrom(
                             foregroundColor: _primaryGreen,
                             side: const BorderSide(color: _primaryGreen),
@@ -97,7 +105,9 @@ class SyncResultPage extends StatelessWidget {
                         key: const Key('backToHistoryButton'),
                         icon: Icons.history_rounded,
                         label: 'Kembali ke Riwayat',
-                        onPressed: () => context.goNamed('history'),
+                        onPressed: () {
+                          context.goNamed('history', extra: plant);
+                        },
                       ),
                   ],
                 ),

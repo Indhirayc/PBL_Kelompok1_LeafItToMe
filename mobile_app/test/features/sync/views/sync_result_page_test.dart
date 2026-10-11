@@ -1,10 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mobile_app/features/history/data/history_data.dart';
 import 'package:mobile_app/features/sync/views/sync_result_page.dart';
 
 void main() {
+  const testPlant = HistoryPlant(
+    id: 'TMT-002',
+    name: 'Tomat Kebun Belakang',
+    location: 'Kebun belakang',
+  );
+
   testWidgets('menampilkan hasil sinkronisasi berhasil', (tester) async {
-    await tester.pumpWidget(const MaterialApp(home: SyncResultPage()));
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: SyncResultPage(plant: testPlant, isFailure: false),
+      ),
+    );
 
     expect(find.text('Sinkronisasi Data'), findsOneWidget);
     expect(find.text('Hasil proses sinkronisasi data.'), findsOneWidget);
@@ -22,13 +33,16 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      const MaterialApp(home: SyncResultPage(isFailure: true)),
+      const MaterialApp(
+        home: SyncResultPage(plant: testPlant, isFailure: true),
+      ),
     );
 
     expect(find.text('Sinkronisasi Gagal'), findsOneWidget);
     expect(
       find.text(
-        'Koneksi terputus saat mengunggah data. Periksa internet lalu coba lagi.',
+        'Koneksi terputus saat mengunggah data. '
+        'Periksa internet lalu coba lagi.',
       ),
       findsOneWidget,
     );
