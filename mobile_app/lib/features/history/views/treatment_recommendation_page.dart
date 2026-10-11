@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../data/history_data.dart';
@@ -44,18 +45,6 @@ class TreatmentRecommendationPage extends StatelessWidget {
         backgroundColor: _primaryGreen,
       ),
     );
-  }
-
-  void _showUiOnlyMessage(BuildContext context) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(
-          content: Text('Detail penyakit segera hadir.'),
-          duration: Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
   }
 
   @override
@@ -111,7 +100,10 @@ class TreatmentRecommendationPage extends StatelessWidget {
                     height: 50,
                     child: OutlinedButton(
                       key: const Key('diseaseDetailButton'),
-                      onPressed: () => _showUiOnlyMessage(context),
+                      onPressed: () => context.pushNamed(
+                        'history-disease-detail',
+                        extra: record,
+                      ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: _primaryGreen,
                         side: const BorderSide(color: _primaryGreen),
