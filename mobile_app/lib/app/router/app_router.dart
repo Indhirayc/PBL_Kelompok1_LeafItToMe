@@ -24,6 +24,7 @@ import '../../features/history/views/history_page.dart';
 import '../../features/history/views/history_detail_page.dart';
 import '../../features/history/views/treatment_recommendation_page.dart';
 import '../../features/history/views/disease_detail_page.dart';
+import '../../features/sync/views/sync_status_page.dart';
 
 abstract final class AppRouter {
   static final GoRouter router = GoRouter(
@@ -207,6 +208,11 @@ abstract final class AppRouter {
             record: record is HistoryRecord ? record : HistoryData.records.first,
           );
         },
+      ),
+      GoRoute(
+        path: '/sync-status',
+        name: 'sync-status',
+        builder: (context, state) => const SyncStatusPage(),
       ),
       GoRoute(
         path: '/profile',

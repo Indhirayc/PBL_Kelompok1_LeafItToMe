@@ -18,18 +18,6 @@ class HistoryPage extends StatelessWidget {
   static const Color _avatarGreen = Color(0xFFDCEFD9);
   static const Color _primaryGreen = Color(0xFF2F7D4A);
 
-  void _showSyncPlaceholder(BuildContext context) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(
-          content: Text('Sinkronisasi data segera hadir.'),
-          duration: Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-  }
-
   @override
   Widget build(BuildContext context) {
     final HistoryPlant selected = plant ?? HistoryData.plants.first;
@@ -47,7 +35,7 @@ class HistoryPage extends StatelessWidget {
               title: 'Riwayat Pemeriksaan',
               subtitle: 'Hasil pemeriksaan untuk tanaman ini.',
               action: IconButton(
-                onPressed: () => _showSyncPlaceholder(context),
+                onPressed: () => context.pushNamed('sync-status'),
                 tooltip: 'Sinkronisasi data',
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
