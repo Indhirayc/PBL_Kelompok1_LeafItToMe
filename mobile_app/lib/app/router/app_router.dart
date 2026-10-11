@@ -21,6 +21,7 @@ import '../../features/detection/presentation/pages/photo_preview_page.dart';
 import '../../features/detection/presentation/pages/detection_result_page.dart';
 import '../../features/history/data/history_data.dart';
 import '../../features/history/views/history_page.dart';
+import '../../features/history/views/history_detail_page.dart';
 
 abstract final class AppRouter {
   static final GoRouter router = GoRouter(
@@ -173,6 +174,16 @@ abstract final class AppRouter {
         builder: (context, state) {
           final plant = state.extra;
           return HistoryPage(plant: plant is HistoryPlant ? plant : null);
+        },
+      ),
+      GoRoute(
+        path: '/history-detail',
+        name: 'history-detail',
+        builder: (context, state) {
+          final record = state.extra;
+          return HistoryDetailPage(
+            record: record is HistoryRecord ? record : HistoryData.records.first,
+          );
         },
       ),
       GoRoute(
