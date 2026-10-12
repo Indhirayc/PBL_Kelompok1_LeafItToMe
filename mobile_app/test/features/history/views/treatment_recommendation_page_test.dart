@@ -42,8 +42,7 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.scrollUntilVisible(find.text('Lihat di Marketplace'), 300.0);
-    await tester.drag(find.byType(ListView), const Offset(0, -500));
+    await tester.ensureVisible(find.text('Pencegahan'));
     await tester.pumpAndSettle();
 
     expect(find.text('Pencegahan'), findsOneWidget);
@@ -104,9 +103,13 @@ void main() {
       addTearDown(router.dispose);
 
       await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-      await tester.drag(find.byType(ListView), const Offset(0, -700));
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('diseaseDetailButton')),
+        250,
+      );
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.byKey(const Key('diseaseDetailButton')));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('diseaseDetailButton')));
       await tester.pumpAndSettle();
 
@@ -140,7 +143,13 @@ void main() {
       ),
     );
 
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('diseaseDetailButton')),
+      250,
+    );
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.byKey(const Key('diseaseDetailButton')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('diseaseDetailButton')));
     await tester.pump();
 
@@ -157,7 +166,13 @@ void main() {
       ),
     );
 
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('diseaseDetailButton')),
+      250,
+    );
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.byKey(const Key('diseaseDetailButton')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('diseaseDetailButton')));
     await tester.pump();
 

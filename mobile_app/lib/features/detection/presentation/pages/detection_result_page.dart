@@ -41,6 +41,7 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
       accuracy: 94,
       isHealthy: false,
       note: draft.note,
+      isSynced: false,
       plantName: draft.plant.name,
       plantLocation: draft.plant.location,
       photoAssetPath: InspectionPhotoSelection.sampleImageAsset,

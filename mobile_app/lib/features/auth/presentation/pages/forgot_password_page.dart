@@ -73,17 +73,25 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFBFCF9),
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: AppContentLayout(
           maxWidth: 480,
+          alignment: Alignment.topCenter,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 22, 20, 30),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _buildTopBar(),
-                const SizedBox(height: 42),
-                _buildLogo(),
-                const SizedBox(height: 22),
+                const SizedBox(height: 32),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [_buildLogo()],
+                ),
+                const SizedBox(height: 28),
 
                 const Text(
                   'Lupa kata sandi?',
@@ -94,7 +102,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
 
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
@@ -109,7 +117,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 38),
+                const SizedBox(height: 36),
 
                 if (!_emailSent) _buildEmailForm() else _buildSuccessContent(),
               ],

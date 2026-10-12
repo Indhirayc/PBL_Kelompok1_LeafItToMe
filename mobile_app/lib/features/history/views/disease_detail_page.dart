@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/widgets/app_content_layout.dart';
-import '../../../../core/widgets/marketplace_button.dart';
+import '../../../../core/widgets/marketplace_card.dart';
 import '../data/history_data.dart';
 import '../widgets/history_page_header.dart';
 
@@ -104,8 +104,12 @@ class HistoryDiseaseDetailPage extends StatelessWidget {
                     const SizedBox(height: 12),
                     _buildBulletCard(disease?.preventions ?? const []),
                     const SizedBox(height: 22),
-                    MarketplaceButton(
+                    MarketplaceCard(
                       key: const Key('marketplaceButton'),
+                      description:
+                          'Temukan produk penanganan yang sesuai melalui '
+                          'marketplace. Periksa kembali informasi dan '
+                          'petunjuk penggunaan produk sebelum membeli.',
                       onPressed: () => _openMarketplace(
                         context,
                         disease?.searchKeyword ?? 'perawatan tanaman tomat',

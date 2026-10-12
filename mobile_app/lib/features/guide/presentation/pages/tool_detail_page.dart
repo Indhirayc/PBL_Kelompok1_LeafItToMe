@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/widgets/app_content_layout.dart';
-import '../../../../core/widgets/marketplace_button.dart';
+import '../../../../core/widgets/marketplace_card.dart';
 import '../../data/guide_data.dart';
 import '../widgets/guide_illustrations.dart';
 
@@ -248,7 +248,13 @@ class ToolDetailPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 22),
 
-                MarketplaceButton(onPressed: () => _openMarketplace(context)),
+                MarketplaceCard(
+                  description:
+                      'Temukan alat dan bahan yang sesuai melalui '
+                      'marketplace. Periksa kembali informasi dan petunjuk '
+                      'penggunaan produk sebelum membeli.',
+                  onPressed: () => _openMarketplace(context),
+                ),
               ],
             ),
           ),

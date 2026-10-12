@@ -63,6 +63,7 @@ class HistoryRecord {
   final int accuracy;
   final bool isHealthy;
   final String note;
+  final bool isSynced;
   final String? plantName;
   final String? plantLocation;
   final String? photoAssetPath;
@@ -77,6 +78,7 @@ class HistoryRecord {
     required this.accuracy,
     required this.isHealthy,
     required this.note,
+    this.isSynced = true,
     this.plantName,
     this.plantLocation,
     this.photoAssetPath,

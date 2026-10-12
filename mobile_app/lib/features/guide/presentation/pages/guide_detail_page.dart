@@ -402,6 +402,7 @@ class _GuideDetailPageState extends State<GuideDetailPage>
                 ],
               ),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
                     width: 40,
@@ -420,6 +421,7 @@ class _GuideDetailPageState extends State<GuideDetailPage>
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           c['title'] as String,
@@ -438,27 +440,29 @@ class _GuideDetailPageState extends State<GuideDetailPage>
                             height: 1.35,
                           ),
                         ),
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: GuideDetailPage.backgroundColor,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: GuideDetailPage.borderColor,
+                            ),
+                          ),
+                          child: Text(
+                            c['subtitle'] as String,
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: GuideDetailPage.secondaryText,
+                            ),
+                          ),
+                        ),
                       ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: GuideDetailPage.backgroundColor,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: GuideDetailPage.borderColor),
-                    ),
-                    child: Text(
-                      c['subtitle'] as String,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: GuideDetailPage.secondaryText,
-                      ),
                     ),
                   ),
                 ],
@@ -509,6 +513,7 @@ class _GuideDetailPageState extends State<GuideDetailPage>
                     ],
                   ),
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
                         width: 40,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_app/features/history/data/history_data.dart';
+import 'package:mobile_app/features/history/views/history_page.dart';
 import 'package:mobile_app/features/history/views/treatment_recommendation_page.dart';
 import 'package:mobile_app/features/detection/presentation/pages/data_inspection_page.dart';
 import 'package:mobile_app/features/detection/presentation/pages/detection_result_page.dart';
@@ -49,6 +50,12 @@ void main() {
             record: state.extra! as HistoryRecord,
           ),
         ),
+        GoRoute(
+          path: '/history',
+          name: 'history',
+          builder: (context, state) =>
+              HistoryPage(plant: state.extra! as HistoryPlant),
+        ),
       ],
     );
     addTearDown(router.dispose);
@@ -90,6 +97,7 @@ void main() {
 
     final detectionRecord = HistoryData.records.last;
     expect(detectionRecord.plantId, 'TMT-002');
+    expect(detectionRecord.isSynced, isFalse);
     expect(detectionRecord.plantName, 'Tomat Kebun Belakang');
     expect(detectionRecord.diseaseName, 'Bacterial Spot');
     expect(detectionRecord.accuracy, 94);
@@ -118,5 +126,20 @@ void main() {
       ),
       findsOneWidget,
     );
+
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('finishAndViewHistoryButton')),
+      300,
+    );
+    await tester.ensureVisible(
+      find.byKey(const Key('finishAndViewHistoryButton')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('finishAndViewHistoryButton')));
+    await tester.pumpAndSettle();
+
+    final historyPage = tester.widget<HistoryPage>(find.byType(HistoryPage));
+    expect(historyPage.plant?.id, 'TMT-002');
+    expect(find.text('Belum tersinkronisasi'), findsOneWidget);
   });
 }

@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/widgets/app_content_layout.dart';
-import '../../../../core/widgets/marketplace_button.dart';
+import '../../../../core/widgets/marketplace_card.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
 
 class HistoryRecord {
@@ -502,107 +502,12 @@ class _MarketplaceSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.only(left: 6, bottom: 7),
-          child: Text(
-            'Produk Pendukung',
-            style: TextStyle(
-              color: HistoryDetailPage._darkGreen,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFD5E5D6)),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 42,
-                height: 58,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF2F5F1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFD8E0D8)),
-                ),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    const Icon(
-                      Icons.local_drink_outlined,
-                      color: Color(0xFF8EA08F),
-                      size: 34,
-                    ),
-                    Positioned(
-                      bottom: 10,
-                      child: Container(
-                        width: 21,
-                        height: 16,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: HistoryDetailPage._primaryGreen,
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                        child: const Icon(
-                          Icons.eco_rounded,
-                          color: Colors.white,
-                          size: 10,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 11),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Bakterisida Tembaga',
-                      style: TextStyle(
-                        color: HistoryDetailPage._darkGreen,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    const Text(
-                      'Referensi produk pendukung untuk membantu '
-                      'mengendalikan bakteri.',
-                      style: TextStyle(
-                        color: HistoryDetailPage._secondaryText,
-                        fontSize: 9,
-                        height: 1.3,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    MarketplaceButton(onPressed: onMarketplacePressed),
-                    const SizedBox(height: 5),
-                    const Text(
-                      'Produk hanya sebagai referensi. '
-                      'Transaksi dilakukan di luar aplikasi.',
-                      style: TextStyle(
-                        color: HistoryDetailPage._secondaryText,
-                        fontSize: 7,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+    return MarketplaceCard(
+      description:
+          'Temukan produk pendukung yang sesuai melalui marketplace. '
+          'Periksa kembali informasi dan petunjuk penggunaan produk sebelum '
+          'membeli.',
+      onPressed: onMarketplacePressed,
     );
   }
 }

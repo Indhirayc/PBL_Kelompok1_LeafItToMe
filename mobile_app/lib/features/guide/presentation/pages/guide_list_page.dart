@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../app/theme/app_breakpoints.dart';
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
 
@@ -93,11 +92,14 @@ class GuideListPage extends StatelessWidget {
             children: [
               // Plant illustration on right
               Positioned(
-                right: 12,
-                bottom: 8,
-                top: 8,
+                right: 8,
+                bottom: 4,
+                top: 4,
                 child: SizedBox(
-                  width: 100,
+                  width: (MediaQuery.sizeOf(context).width * 0.33).clamp(
+                    100.0,
+                    125.0,
+                  ),
                   child: Image.asset(
                     'assets/images/tomato_plant.png',
                     fit: BoxFit.contain,
@@ -114,7 +116,7 @@ class GuideListPage extends StatelessWidget {
 
               // Editorial Content
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 22, 110, 22),
+                padding: const EdgeInsets.fromLTRB(20, 22, 138, 22),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -238,9 +240,7 @@ class GuideListPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         child: Container(
           padding: const EdgeInsets.all(16),
-          height: MediaQuery.sizeOf(context).width < AppBreakpoints.tablet
-              ? 144
-              : 120,
+          height: 168,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: borderColor),
@@ -254,19 +254,20 @@ class GuideListPage extends StatelessWidget {
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Container(
-                width: 36,
-                height: 36,
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
                   color: cardGreenBg,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: Center(
-                  child: Icon(iconData, color: primaryGreen, size: 20),
+                  child: Icon(iconData, color: primaryGreen, size: 24),
                 ),
               ),
+              const SizedBox(height: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

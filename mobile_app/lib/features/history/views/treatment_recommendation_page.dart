@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../../../../core/widgets/marketplace_card.dart';
 import '../../guide/data/guide_data.dart';
 import '../data/history_data.dart';
 import '../widgets/history_page_header.dart';
@@ -111,7 +112,15 @@ class TreatmentRecommendationPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bottomSafeArea = MediaQuery.viewPaddingOf(context).bottom;
     final HistoryPlant? plant = HistoryData.plantById(record.plantId);
+    final selectedPlant =
+        plant ??
+        HistoryPlant(
+          id: record.plantId,
+          name: record.plantName ?? record.plantId,
+          location: record.plantLocation ?? '',
+        );
     final HistoryDisease? disease = HistoryData.byDisease(record.diseaseName);
     final List<String> treatments = disease?.treatments ?? const [];
     final List<String> preventions = disease?.preventions ?? const [];
@@ -121,18 +130,17 @@ class TreatmentRecommendationPage extends StatelessWidget {
       backgroundColor: _background,
       body: AppContentLayout(
         child: SafeArea(
-          bottom: false,
           child: Column(
             children: [
               HistoryPageHeader(
                 title: 'Rekomendasi Penanganan',
                 subtitle: 'Langkah penanganan dan pencegahan.',
                 fallbackRoute: 'history',
-                fallbackExtra: plant,
+                fallbackExtra: selectedPlant,
               ),
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                  padding: EdgeInsets.fromLTRB(20, 8, 20, bottomSafeArea + 24),
                   children: [
                     _buildContextCard(plantLabel, disease),
                     const SizedBox(height: 22),
@@ -160,10 +168,12 @@ class TreatmentRecommendationPage extends StatelessWidget {
                     const SizedBox(height: 12),
                     _buildBulletCard(preventions),
                     const SizedBox(height: 22),
-                    AppButton(
+                    MarketplaceCard(
                       key: const Key('marketplaceButton'),
-                      icon: Icons.open_in_new_rounded,
-                      label: 'Lihat di Marketplace',
+                      description:
+                          'Temukan produk untuk penanganan tanaman melalui '
+                          'marketplace. Periksa kembali informasi dan '
+                          'petunjuk penggunaan produk sebelum membeli.',
                       onPressed: () => _openMarketplace(
                         context,
                         disease?.searchKeyword ?? 'perawatan tanaman tomat',
@@ -176,6 +186,16 @@ class TreatmentRecommendationPage extends StatelessWidget {
                       label: 'Lihat Detail Penyakit',
                       variant: AppButtonVariant.secondary,
                       onPressed: () => _openDiseaseDetails(context),
+                    ),
+                    const SizedBox(height: 12),
+                    AppButton(
+                      key: const Key('finishAndViewHistoryButton'),
+                      icon: Icons.history_rounded,
+                      label: 'Selesai & Lihat Riwayat',
+                      onPressed: () => context.pushNamed(
+                        'history',
+                        extra: selectedPlant,
+                      ),
                     ),
                   ],
                 ),
