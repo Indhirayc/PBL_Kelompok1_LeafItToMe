@@ -28,10 +28,10 @@ class _DashboardPageState extends State<DashboardPage> {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        toolbarHeight: 80,
-        backgroundColor: Colors.white,
+        toolbarHeight: 72,
+        backgroundColor: backgroundColor,
         elevation: 0,
-        scrolledUnderElevation: 0.5,
+        scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         titleSpacing: 20,
         title: Padding(
@@ -56,15 +56,19 @@ class _DashboardPageState extends State<DashboardPage> {
                   Text(
                     'LeafItToMe',
                     style: TextStyle(
-                      color: darkGreen,
-                      fontSize: 18,
+                      color: Color(0xFF1F3826),
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   SizedBox(height: 1),
                   Text(
                     'Beranda',
-                    style: TextStyle(color: secondaryText, fontSize: 12),
+                    style: TextStyle(
+                      color: Color(0xFF75857B),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
                 ],
               ),

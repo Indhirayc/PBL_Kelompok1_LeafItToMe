@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/widgets/app_page_header.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
 import 'data_inspection_page.dart';
 import 'photo_preview_page.dart';
@@ -120,45 +121,10 @@ class _PhotoSourcePageState extends State<PhotoSourcePage> {
   }
 
   Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-      child: SizedBox(
-        height: 48,
-        child: Row(
-          children: [
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () => context.pop(),
-                borderRadius: BorderRadius.circular(20),
-                child: const SizedBox(
-                  width: 32,
-                  height: 40,
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      color: _darkGreen,
-                      size: 20,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 13),
-            const Expanded(
-              child: Text(
-                'Deteksi Daun Tomat',
-                style: TextStyle(
-                  color: _darkGreen,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+    return AppPageHeader(
+      title: 'Deteksi Daun Tomat',
+      showBackButton: true,
+      onBack: () => context.pop(),
     );
   }
 

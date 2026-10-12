@@ -110,64 +110,69 @@ class _PlantListPageState extends State<PlantListPage> {
             children: [
               const SizedBox(height: 16),
               // Bagian Header & Tombol Tambah
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Tanamanku",
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Tanamanku",
+                          style: TextStyle(
+                            color: Color(0xFF1F3826),
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                      ),
-                      Text(
-                        "Pantau setiap tanaman berdasarkan ID.",
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 12,
+                        const Text(
+                          "Pantau setiap tanaman berdasarkan ID.",
+                          style: TextStyle(
+                            color: Color(0xFF75857B),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 36,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2F7D4A),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        minimumSize: const Size(0, 36),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 36,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2F7D4A),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          minimumSize: const Size(0, 36),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18),
+                          ),
                         ),
-                      ),
-                      onPressed: () async {
-                        final newPlant = await context.pushNamed<Plant>(
-                          'add-plant',
-                          extra: _generateNextPlantId(),
-                        );
-                        if (newPlant != null) {
-                          setState(() {
-                            _plants.add(newPlant);
-                          });
-                        }
-                      },
-                      icon: const Icon(Icons.add, size: 14),
-                      label: const Text(
-                        "Tambah",
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                        onPressed: () async {
+                          final newPlant = await context.pushNamed<Plant>(
+                            'add-plant',
+                            extra: _generateNextPlantId(),
+                          );
+                          if (newPlant != null) {
+                            setState(() {
+                              _plants.add(newPlant);
+                            });
+                          }
+                        },
+                        icon: const Icon(Icons.add, size: 14),
+                        label: const Text(
+                          "Tambah",
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               const SizedBox(height: 16),
               // Card Ringkasan Statistik

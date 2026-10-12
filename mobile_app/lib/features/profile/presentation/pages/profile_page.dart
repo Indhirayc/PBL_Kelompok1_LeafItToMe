@@ -76,8 +76,8 @@ class ProfilePage extends StatelessWidget {
         title: const Text(
           'Profil',
           style: TextStyle(
-            color: darkGreen,
-            fontSize: 24,
+            color: Color(0xFF1F3826),
+            fontSize: 22,
             fontWeight: FontWeight.w700,
           ),
         ),

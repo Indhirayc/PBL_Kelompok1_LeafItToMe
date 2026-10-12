@@ -69,10 +69,11 @@ class _SyncProcessPageState extends State<SyncProcessPage>
         bottom: false,
         child: Column(
           children: [
-            const HistoryPageHeader(
+            HistoryPageHeader(
               title: 'Menyinkronkan Data',
               subtitle: 'Sedang mengunggah data pemeriksaan.',
               fallbackRoute: 'history',
+              fallbackExtra: widget.plant,
             ),
             Expanded(
               child: AnimatedBuilder(

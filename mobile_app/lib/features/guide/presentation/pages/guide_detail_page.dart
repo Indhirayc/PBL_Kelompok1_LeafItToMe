@@ -47,13 +47,13 @@ class _GuideDetailPageState extends State<GuideDetailPage>
       appBar: AppBar(
         toolbarHeight: 56,
         backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
-        scrolledUnderElevation: 0.5,
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: GuideDetailPage.darkGreen,
-            size: 18,
+            color: Color(0xFF1F3826),
+            size: 20,
           ),
           onPressed: () {
             if (context.canPop()) {
@@ -66,11 +66,13 @@ class _GuideDetailPageState extends State<GuideDetailPage>
         title: const Text(
           'Panduan Menanam Tomat',
           style: TextStyle(
-            color: GuideDetailPage.darkGreen,
-            fontSize: 17,
-            fontWeight: FontWeight.w700,
+            color: Color(0xFF1F3826),
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
           ),
         ),
+        centerTitle: false,
+        titleSpacing: 0,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(46),
           child: Container(

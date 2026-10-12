@@ -64,9 +64,11 @@ class TreatmentRecommendationPage extends StatelessWidget {
         bottom: false,
         child: Column(
           children: [
-            const HistoryPageHeader(
+            HistoryPageHeader(
               title: 'Rekomendasi Penanganan',
               subtitle: 'Langkah penanganan dan pencegahan.',
+              fallbackRoute: 'history',
+              fallbackExtra: plant,
             ),
             Expanded(
               child: ListView(

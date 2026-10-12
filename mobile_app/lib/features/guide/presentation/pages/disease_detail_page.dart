@@ -55,13 +55,13 @@ class DiseaseDetailPage extends StatelessWidget {
       appBar: AppBar(
         toolbarHeight: 56,
         backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
-        scrolledUnderElevation: 0.5,
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: darkGreen,
-            size: 18,
+            color: Color(0xFF1F3826),
+            size: 20,
           ),
           onPressed: () {
             if (context.canPop()) {
@@ -74,11 +74,13 @@ class DiseaseDetailPage extends StatelessWidget {
         title: const Text(
           'Detail Penyakit',
           style: TextStyle(
-            color: darkGreen,
-            fontSize: 17,
-            fontWeight: FontWeight.w700,
+            color: Color(0xFF1F3826),
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
           ),
         ),
+        centerTitle: false,
+        titleSpacing: 0,
       ),
       body: SafeArea(
         child: SingleChildScrollView(

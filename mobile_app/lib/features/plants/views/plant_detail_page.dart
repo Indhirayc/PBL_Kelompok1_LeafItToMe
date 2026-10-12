@@ -367,6 +367,7 @@ class PlantDetailPage extends StatelessWidget {
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
+        toolbarHeight: 56,
         leading: IconButton(
           tooltip: 'Kembali',
           onPressed: () {

@@ -31,10 +31,11 @@ class SyncResultPage extends StatelessWidget {
         bottom: false,
         child: Column(
           children: [
-            const HistoryPageHeader(
+            HistoryPageHeader(
               title: 'Sinkronisasi Data',
               subtitle: 'Hasil proses sinkronisasi data.',
               fallbackRoute: 'history',
+              fallbackExtra: plant,
             ),
             Expanded(
               child: Padding(

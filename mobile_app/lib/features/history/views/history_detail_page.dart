@@ -31,9 +31,11 @@ class HistoryDetailPage extends StatelessWidget {
         bottom: false,
         child: Column(
           children: [
-            const HistoryPageHeader(
+            HistoryPageHeader(
               title: 'Detail Riwayat',
               subtitle: 'Rincian hasil pemeriksaan tanaman.',
+              fallbackRoute: 'history',
+              fallbackExtra: HistoryData.plantById(record.plantId),
             ),
             Expanded(
               child: ListView(

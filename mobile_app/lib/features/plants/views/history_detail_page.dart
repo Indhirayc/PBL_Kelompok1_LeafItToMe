@@ -79,9 +79,10 @@ class HistoryDetailPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: _backgroundColor,
       appBar: AppBar(
-        backgroundColor: _backgroundColor,
+        backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
+        toolbarHeight: 56,
         leading: IconButton(
           tooltip: 'Kembali',
           onPressed: () {
@@ -89,7 +90,7 @@ class HistoryDetailPage extends StatelessWidget {
           },
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: _primaryGreen,
+            color: Color(0xFF1F3826),
             size: 20,
           ),
         ),

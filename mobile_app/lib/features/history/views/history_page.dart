@@ -36,6 +36,7 @@ class HistoryPage extends StatelessWidget {
             HistoryPageHeader(
               title: 'Riwayat Pemeriksaan',
               subtitle: 'Hasil pemeriksaan untuk tanaman ini.',
+              fallbackRoute: 'plants',
               action: IconButton(
                 onPressed: () {
                   context.pushNamed('sync-status', extra: selected);

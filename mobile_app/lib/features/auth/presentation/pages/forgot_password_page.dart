@@ -125,9 +125,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           child: const Padding(
             padding: EdgeInsets.symmetric(horizontal: 2, vertical: 6),
             child: Icon(
-              Icons.chevron_left_rounded,
-              color: Color(0xFF124B35),
-              size: 28,
+              Icons.arrow_back_ios_new_rounded,
+              color: Color(0xFF1F3826),
+              size: 20,
             ),
           ),
         ),
@@ -135,9 +135,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         const Text(
           'Lupa Kata Sandi',
           style: TextStyle(
-            color: Color(0xFF123F2F),
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
+            color: Color(0xFF1F3826),
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ],

@@ -129,10 +129,12 @@ class _AddPlantPageState extends State<AddPlantPage> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
+        toolbarHeight: 56,
         leading: IconButton(
           icon: const Icon(
-            Icons.arrow_back_ios_new,
+            Icons.arrow_back_ios_new_rounded,
             color: Color(0xFF1F3826),
             size: 20,
           ),

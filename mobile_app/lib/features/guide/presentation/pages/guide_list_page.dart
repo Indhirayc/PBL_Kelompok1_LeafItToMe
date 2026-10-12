@@ -26,7 +26,7 @@ class GuideListPage extends StatelessWidget {
         title: const Text(
           'Panduan Budidaya',
           style: TextStyle(
-            color: darkGreen,
+            color: Color(0xFF1F3826),
             fontSize: 22,
             fontWeight: FontWeight.w700,
             letterSpacing: -0.3,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/widgets/app_page_header.dart';
+
 class InspectionPlant {
   const InspectionPlant({
     required this.name,
@@ -113,52 +115,11 @@ class _DataInspectionPageState extends State<DataInspectionPage> {
       body: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
-              child: Row(
-                children: [
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () => context.pop(),
-                      borderRadius: BorderRadius.circular(20),
-                      child: const SizedBox(
-                        width: 32,
-                        height: 40,
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Icon(
-                            Icons.arrow_back_ios_new_rounded,
-                            color: _darkGreen,
-                            size: 20,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 13),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Data Pemeriksaan',
-                          style: TextStyle(
-                            color: _darkGreen,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Lengkapi data sebelum memindai daun.',
-                          style: TextStyle(color: _secondaryText, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+            AppPageHeader(
+              title: 'Data Pemeriksaan',
+              subtitle: 'Lengkapi data sebelum memindai daun.',
+              showBackButton: true,
+              onBack: context.pop,
             ),
             Expanded(
               child: SingleChildScrollView(

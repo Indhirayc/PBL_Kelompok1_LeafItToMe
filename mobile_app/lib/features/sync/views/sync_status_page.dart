@@ -40,7 +40,6 @@ class _SyncStatusPageState extends State<SyncStatusPage> {
             const HistoryPageHeader(
               title: 'Sinkronisasi Data',
               subtitle: 'Kelola data pemeriksaan yang belum tersinkron.',
-              fallbackRoute: 'history',
             ),
             Expanded(
               child: ListView(

@@ -124,48 +124,33 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
     return Scaffold(
       backgroundColor: _ProfileColors.background,
 
-      // Header dibuat sama seperti halaman Daftar Akun.
       appBar: AppBar(
-        backgroundColor: _ProfileColors.background,
+        backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
-        toolbarHeight: 64,
-        automaticallyImplyLeading: false,
+        scrolledUnderElevation: 0,
+        toolbarHeight: 56,
+        leading: IconButton(
+          tooltip: 'Kembali',
+          onPressed: () {
+            context.pop();
+          },
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF1F3826),
+            size: 20,
+          ),
+        ),
+        centerTitle: false,
         titleSpacing: 0,
-        title: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Row(
-            children: [
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => context.pop(),
-                  borderRadius: BorderRadius.circular(20),
-                  child: const SizedBox(
-                    width: 32,
-                    height: 40,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Icon(
-                        Icons.arrow_back_ios_new_rounded,
-                        color: _ProfileColors.darkGreen,
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 13),
-              const Text(
-                'Edit Profil',
-                style: TextStyle(
-                  color: _ProfileColors.darkGreen,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  height: 1,
-                ),
-              ),
-            ],
+        title: const Text(
+          'Edit Profil',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: Color(0xFF1F3826),
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
