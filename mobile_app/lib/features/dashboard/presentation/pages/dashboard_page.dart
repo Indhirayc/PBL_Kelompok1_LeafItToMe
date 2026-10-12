@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
+import '../../../../features/detection/presentation/pages/data_inspection_page.dart'
+    show InspectionPlant;
+import '../../../../features/history/data/history_data.dart' show HistoryData;
+import '../../../../features/plants/views/plant_list_page.dart' show Plant;
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -22,6 +27,109 @@ class _DashboardPageState extends State<DashboardPage> {
   static const Color secondaryText = Color(0xFF75857B);
   static const Color borderColor = Color(0xFFE3EAE4);
   static const Color accentGreen = Color(0xFFE8F5E9);
+
+  void _showNavigationError(BuildContext context) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(
+          content: Text('Data tanaman tidak ditemukan.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+  }
+
+  Plant? _plantForDetail({
+    required String id,
+    required String plantDate,
+    required String status,
+  }) {
+    final plantData = HistoryData.plantById(id);
+    if (plantData == null) {
+      return null;
+    }
+
+    return Plant(
+      id: plantData.id,
+      name: plantData.name,
+      location: plantData.location,
+      plantDate: plantDate,
+      status: status,
+    );
+  }
+
+  void _openPlantDetail(
+    BuildContext context, {
+    required String id,
+    required String plantDate,
+    required String status,
+  }) {
+    final plant = _plantForDetail(id: id, plantDate: plantDate, status: status);
+    if (plant == null) {
+      _showNavigationError(context);
+      return;
+    }
+
+    context.pushNamed(
+      'plant-detail',
+      pathParameters: {'plantId': id},
+      extra: plant,
+    );
+  }
+
+  void _openPlantHistory(BuildContext context, String plantId) {
+    final plant = HistoryData.plantById(plantId);
+    if (plant == null) {
+      _showNavigationError(context);
+      return;
+    }
+
+    context.pushNamed('history', extra: plant);
+  }
+
+  void _openLatestHistoryDetail(BuildContext context, String plantId) {
+    final records = HistoryData.recordsByPlantId(plantId);
+    if (records.isEmpty) {
+      _showNavigationError(context);
+      return;
+    }
+
+    context.pushNamed('history-detail', extra: records.first);
+  }
+
+  void _openInspection(BuildContext context, String plantId) {
+    final plant = HistoryData.plantById(plantId);
+    if (plant == null) {
+      _showNavigationError(context);
+      return;
+    }
+
+    context.pushNamed(
+      'data-inspection',
+      extra: InspectionPlant(
+        id: plant.id,
+        name: plant.name,
+        location: plant.location,
+      ),
+    );
+  }
+
+  String _nextPlantId() {
+    var maxNumber = 0;
+    for (final plant in HistoryData.plants) {
+      final parts = plant.id.split('-');
+      if (parts.length < 2) {
+        continue;
+      }
+
+      final number = int.tryParse(parts.last);
+      if (number != null && number > maxNumber) {
+        maxNumber = number;
+      }
+    }
+
+    return 'TMT-${(maxNumber + 1).toString().padLeft(3, '0')}';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -255,18 +363,8 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
           const SizedBox(height: 20),
           ElevatedButton.icon(
-            onPressed: () {
-              ScaffoldMessenger.of(context).hideCurrentSnackBar();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'Fitur Tambah Tanaman akan dikembangkan oleh tim.',
-                  ),
-                  duration: Duration(seconds: 2),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
+            onPressed: () =>
+                context.pushNamed('add-plant', extra: _nextPlantId()),
             style: ElevatedButton.styleFrom(
               backgroundColor: primaryGreen,
               foregroundColor: Colors.white,
@@ -326,12 +424,15 @@ class _DashboardPageState extends State<DashboardPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Tanamanku',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: darkGreen,
+            GestureDetector(
+              onTap: () => context.goNamed('plants'),
+              child: const Text(
+                'Tanamanku',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: darkGreen,
+                ),
               ),
             ),
           ],
@@ -346,6 +447,14 @@ class _DashboardPageState extends State<DashboardPage> {
           status: 'Sehat',
           isHealthy: true,
           onTap: () {
+            _openPlantDetail(
+              context,
+              id: 'TMT-001',
+              plantDate: '28 Sep 2026',
+              status: 'Sehat',
+            );
+          },
+          onOpenSummary: () {
             _showPlantDetailModal(
               context,
               'Tomat Pot Depan',
@@ -353,6 +462,10 @@ class _DashboardPageState extends State<DashboardPage> {
               'Sehat',
             );
           },
+          onOpenHistory: () => _openPlantHistory(context, 'TMT-001'),
+          onOpenLatestHistory: () =>
+              _openLatestHistoryDetail(context, 'TMT-001'),
+          onInspect: () => _openInspection(context, 'TMT-001'),
         ),
         const SizedBox(height: 12),
         _buildPlantItemCard(
@@ -363,6 +476,14 @@ class _DashboardPageState extends State<DashboardPage> {
           status: 'Perlu perhatian',
           isHealthy: false,
           onTap: () {
+            _openPlantDetail(
+              context,
+              id: 'TMT-002',
+              plantDate: '25 Sep 2026',
+              status: 'Perlu perhatian',
+            );
+          },
+          onOpenSummary: () {
             _showPlantDetailModal(
               context,
               'Tomat Kebun Belakang',
@@ -370,6 +491,10 @@ class _DashboardPageState extends State<DashboardPage> {
               'Perlu perhatian',
             );
           },
+          onOpenHistory: () => _openPlantHistory(context, 'TMT-002'),
+          onOpenLatestHistory: () =>
+              _openLatestHistoryDetail(context, 'TMT-002'),
+          onInspect: () => _openInspection(context, 'TMT-002'),
         ),
       ],
     );
@@ -426,6 +551,10 @@ class _DashboardPageState extends State<DashboardPage> {
     required String status,
     required bool isHealthy,
     required VoidCallback onTap,
+    required VoidCallback onOpenSummary,
+    required VoidCallback onOpenHistory,
+    required VoidCallback onOpenLatestHistory,
+    required VoidCallback onInspect,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -471,12 +600,15 @@ class _DashboardPageState extends State<DashboardPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: darkGreen,
+                    GestureDetector(
+                      onTap: onOpenSummary,
+                      child: Text(
+                        name,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: darkGreen,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -488,25 +620,28 @@ class _DashboardPageState extends State<DashboardPage> {
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isHealthy
-                            ? const Color(0xFFE8F5E9)
-                            : const Color(0xFFFFF3E0),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        status,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
+                    GestureDetector(
+                      onTap: onInspect,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
                           color: isHealthy
-                              ? const Color(0xFF2E7D32)
-                              : const Color(0xFFED6C02),
+                              ? const Color(0xFFE8F5E9)
+                              : const Color(0xFFFFF3E0),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          status,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: isHealthy
+                                ? const Color(0xFF2E7D32)
+                                : const Color(0xFFED6C02),
+                          ),
                         ),
                       ),
                     ),
@@ -524,17 +659,23 @@ class _DashboardPageState extends State<DashboardPage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Pemeriksaan terakhir',
-                    style: TextStyle(fontSize: 11, color: secondaryText),
+                  GestureDetector(
+                    onTap: onOpenHistory,
+                    child: const Text(
+                      'Pemeriksaan terakhir',
+                      style: TextStyle(fontSize: 11, color: secondaryText),
+                    ),
                   ),
                   const SizedBox(height: 2),
-                  Text(
-                    lastCheck,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: darkGreen,
+                  GestureDetector(
+                    onTap: onOpenLatestHistory,
+                    child: Text(
+                      lastCheck,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: darkGreen,
+                      ),
                     ),
                   ),
                 ],

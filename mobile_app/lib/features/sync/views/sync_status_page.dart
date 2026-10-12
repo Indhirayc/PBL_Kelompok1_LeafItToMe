@@ -55,7 +55,7 @@ class _SyncStatusPageState extends State<SyncStatusPage> {
                   const SizedBox(height: 20),
                   AppButton(
                     key: const Key('syncNowButton'),
-                    icon: Icons.cloud_upload_outlined,
+                    icon: Icons.sync_rounded,
                     label: 'Sinkronkan Sekarang',
                     onPressed: () => context.pushNamed(
                       'sync-process',

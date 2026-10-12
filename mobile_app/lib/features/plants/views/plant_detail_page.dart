@@ -390,22 +390,20 @@ class PlantDetailPage extends StatelessWidget {
         centerTitle: false,
         titleSpacing: 0,
         actions: [
-          IconButton(
-            tooltip: 'Hapus tanaman',
-            onPressed: () {
-              _showDeleteDialog(context);
-            },
-            style: IconButton.styleFrom(
-              foregroundColor: const Color(0xFFD32F2F),
-              side: const BorderSide(color: Color(0xFFD32F2F), width: 1),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
-              ),
-              minimumSize: const Size(36, 36),
+          Padding(
+            padding: const EdgeInsets.only(right: 20),
+            child: IconButton(
+              tooltip: 'Hapus Tanaman',
+              onPressed: () {
+                _showDeleteDialog(context);
+              },
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+              splashRadius: 22,
+              color: const Color(0xFFD32F2F),
+              icon: const Icon(Icons.delete_outline_rounded, size: 22),
             ),
-            icon: const Icon(Icons.delete_outline_rounded),
           ),
-          const SizedBox(width: 8),
         ],
       ),
       body: SafeArea(

@@ -333,10 +333,7 @@ abstract final class AppRouter {
             }
           }
 
-          return SyncResultPage(
-            plant: selectedPlant,
-            isFailure: isFailure,
-          );
+          return SyncResultPage(plant: selectedPlant, isFailure: isFailure);
         },
       ),
     ],
