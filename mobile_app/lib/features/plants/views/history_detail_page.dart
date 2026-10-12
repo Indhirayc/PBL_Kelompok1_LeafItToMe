@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/widgets/marketplace_button.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
 
 class HistoryRecord {
@@ -52,26 +53,34 @@ class HistoryDetailPage extends StatelessWidget {
       '?st=product&q=bakterisida%20tembaga',
     );
 
-    final bool canOpen = await canLaunchUrl(marketplaceUrl);
+    try {
+      final bool launched = await launchUrl(
+        marketplaceUrl,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && context.mounted) {
+        _showMarketplaceError(context);
+      }
+    } catch (_) {
+      if (context.mounted) {
+        _showMarketplaceError(context);
+      }
+    }
+  }
 
+  void _showMarketplaceError(BuildContext context) {
     if (!context.mounted) {
       return;
     }
 
-    if (!canOpen) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(
-            content: Text('Tautan marketplace tidak dapat dibuka.'),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-
-      return;
-    }
-
-    await launchUrl(marketplaceUrl, mode: LaunchMode.externalApplication);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(
+          content: Text('Tautan marketplace tidak dapat dibuka.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
   }
 
   @override
@@ -574,30 +583,7 @@ class _MarketplaceSection extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 30,
-                      child: ElevatedButton.icon(
-                        onPressed: onMarketplacePressed,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: HistoryDetailPage._primaryGreen,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        icon: const Icon(Icons.open_in_new_rounded, size: 13),
-                        label: const Text(
-                          'Lihat di Marketplace',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ),
+                    MarketplaceButton(onPressed: onMarketplacePressed),
                     const SizedBox(height: 5),
                     const Text(
                       'Produk hanya sebagai referensi. '

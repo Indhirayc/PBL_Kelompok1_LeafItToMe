@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/widgets/marketplace_button.dart';
 import '../../data/guide_data.dart';
 import '../widgets/guide_illustrations.dart';
 
@@ -29,23 +30,24 @@ class DiseaseDetailPage extends StatelessWidget {
         mode: LaunchMode.externalApplication,
       );
       if (!launched && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Membuka produk perawatan untuk: ${disease.name}'),
-            backgroundColor: primaryGreen,
-          ),
-        );
+        _showMarketplaceError(context);
       }
     } catch (_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Membuka produk perawatan untuk: ${disease.name}'),
-            backgroundColor: primaryGreen,
-          ),
-        );
+        _showMarketplaceError(context);
       }
     }
+  }
+
+  void _showMarketplaceError(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Tautan marketplace untuk ${disease.name} tidak dapat dibuka.',
+        ),
+        backgroundColor: primaryGreen,
+      ),
+    );
   }
 
   @override
@@ -306,29 +308,7 @@ class DiseaseDetailPage extends StatelessWidget {
               ),
               const SizedBox(height: 22),
 
-              // Tasteful Inline Treatment Search Button
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => _openMarketplace(context),
-                  icon: const Icon(Icons.medication_outlined, size: 16),
-                  label: const Text('Cari Produk Penanganan / Obat Terkait'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: primaryGreen,
-                    side: BorderSide(
-                      color: primaryGreen.withValues(alpha: 0.3),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    textStyle: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
+              MarketplaceButton(onPressed: () => _openMarketplace(context)),
             ],
           ),
         ),

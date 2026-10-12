@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/widgets/app_button.dart';
+import '../../../../core/widgets/marketplace_button.dart';
 import '../data/history_data.dart';
 import '../widgets/history_page_header.dart';
 
@@ -44,7 +45,9 @@ class TreatmentRecommendationPage extends StatelessWidget {
   void _showMarketplaceFallback(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Membuka produk penanganan di marketplace.'),
+        content: Text(
+          'Tautan marketplace produk penanganan tidak dapat dibuka.',
+        ),
         backgroundColor: _primaryGreen,
       ),
     );
@@ -111,10 +114,8 @@ class TreatmentRecommendationPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  AppButton(
+                  MarketplaceButton(
                     key: const Key('marketplaceButton'),
-                    icon: Icons.shopping_bag_outlined,
-                    label: 'Cari Produk Penanganan',
                     onPressed: () => _openMarketplace(
                       context,
                       disease?.searchKeyword ?? 'perawatan tanaman tomat',

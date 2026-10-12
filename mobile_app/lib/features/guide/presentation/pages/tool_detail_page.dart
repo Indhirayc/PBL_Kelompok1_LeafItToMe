@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/widgets/marketplace_button.dart';
 import '../../data/guide_data.dart';
 import '../widgets/guide_illustrations.dart';
 
@@ -29,23 +30,24 @@ class ToolDetailPage extends StatelessWidget {
         mode: LaunchMode.externalApplication,
       );
       if (!launched && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Membuka tautan produk: ${tool.name}'),
-            backgroundColor: primaryGreen,
-          ),
-        );
+        _showMarketplaceError(context);
       }
     } catch (_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Membuka tautan produk: ${tool.name}'),
-            backgroundColor: primaryGreen,
-          ),
-        );
+        _showMarketplaceError(context);
       }
     }
+  }
+
+  void _showMarketplaceError(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Tautan marketplace untuk ${tool.name} tidak dapat dibuka.',
+        ),
+        backgroundColor: primaryGreen,
+      ),
+    );
   }
 
   @override
@@ -240,29 +242,7 @@ class ToolDetailPage extends StatelessWidget {
               ),
               const SizedBox(height: 22),
 
-              // Non-intrusive Marketplace Action Button inside content
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => _openMarketplace(context),
-                  icon: const Icon(Icons.open_in_new_rounded, size: 16),
-                  label: const Text('Cari di Marketplace'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: primaryGreen,
-                    side: BorderSide(
-                      color: primaryGreen.withValues(alpha: 0.3),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    textStyle: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
+              MarketplaceButton(onPressed: () => _openMarketplace(context)),
             ],
           ),
         ),
