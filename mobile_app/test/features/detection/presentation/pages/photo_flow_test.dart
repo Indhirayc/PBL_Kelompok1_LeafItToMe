@@ -112,7 +112,10 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.text('Aplikasikan bakterisida berbahan tembaga'),
+      find.text(
+        'Gunakan bakterisida berbahan aktif tembaga yang sesuai untuk tomat '
+        'dan ikuti petunjuk pada label produk.',
+      ),
       findsOneWidget,
     );
   });

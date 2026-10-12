@@ -11,6 +11,20 @@ void main() {
     (item) => item.diseaseName == 'Bacterial Spot',
   );
 
+  HistoryRecord recordForDisease(String diseaseName) {
+    return HistoryRecord(
+      id: 'TEST-$diseaseName',
+      plantId: record.plantId,
+      diseaseName: diseaseName,
+      latinName: record.latinName,
+      date: record.date,
+      accuracy: record.accuracy,
+      isHealthy: diseaseName.toLowerCase() == 'healthy',
+      note: record.note,
+      plantName: record.plantName,
+    );
+  }
+
   testWidgets('menampilkan langkah penanganan dan pencegahan', (tester) async {
     await tester.pumpWidget(
       MaterialApp(home: TreatmentRecommendationPage(record: record)),
@@ -20,14 +34,26 @@ void main() {
     expect(find.text('Langkah penanganan dan pencegahan.'), findsOneWidget);
     expect(find.text('Bacterial Spot'), findsOneWidget);
     expect(find.text('Penanganan Awal'), findsOneWidget);
-    expect(find.text('Pangkas dan buang daun yang terinfeksi'), findsOneWidget);
+    expect(
+      find.text(
+        'Pangkas bagian daun yang menunjukkan gejala, lalu buang dengan aman '
+        'dan jangan dijadikan kompos.',
+      ),
+      findsOneWidget,
+    );
 
     await tester.scrollUntilVisible(find.text('Lihat di Marketplace'), 300.0);
     await tester.drag(find.byType(ListView), const Offset(0, -500));
     await tester.pumpAndSettle();
 
     expect(find.text('Pencegahan'), findsOneWidget);
-    expect(find.text('Hindari menyiram bagian daun'), findsOneWidget);
+    expect(
+      find.text(
+        'Siram langsung ke media tanam dan hindari membasahi daun, '
+        'terutama pada sore atau malam hari.',
+      ),
+      findsOneWidget,
+    );
     expect(find.text('Lihat Detail Penyakit'), findsOneWidget);
     expect(find.text('Lihat di Marketplace'), findsOneWidget);
     expect(
@@ -48,13 +74,17 @@ void main() {
     expect(find.text('Tomat Pot Depan  •  18 September 2026'), findsOneWidget);
   });
 
-  for (final diseaseName in ['Bacterial Spot', 'Leaf Mold', 'Late Blight']) {
+  for (final diseaseName in [
+    'Bacterial Spot',
+    'Leaf Mold',
+    'Late Blight',
+    'Tomato Yellow Leaf Curl Virus',
+    ' tomato_yellow-leaf curl virus ',
+  ]) {
     testWidgets('membuka detail penyakit $diseaseName yang sesuai', (
       tester,
     ) async {
-      final diseaseRecord = HistoryData.records.firstWhere(
-        (item) => item.diseaseName == diseaseName,
-      );
+      final diseaseRecord = recordForDisease(diseaseName);
       final router = GoRouter(
         initialLocation: '/recommendation',
         routes: [
@@ -81,7 +111,57 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Detail Penyakit'), findsOneWidget);
-      expect(find.text(diseaseName), findsOneWidget);
+      final normalizedName = diseaseName.trim().toLowerCase();
+      final expectedDisease = GuideData.diseases.firstWhere(
+        (disease) =>
+            disease.name.toLowerCase() == normalizedName ||
+            disease.name
+                    .replaceAll(RegExp(r'\s*\([^)]*\)'), '')
+                    .toLowerCase() ==
+                normalizedName.replaceAll('_', ' ').replaceAll('-', ' '),
+      );
+      expect(
+        tester
+            .widget<DiseaseDetailPage>(find.byType(DiseaseDetailPage))
+            .disease,
+        same(expectedDisease),
+      );
     });
   }
+
+  testWidgets('menampilkan pesan untuk penyakit yang tidak dikenal', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: TreatmentRecommendationPage(
+          record: recordForDisease('Unknown Disease'),
+        ),
+      ),
+    );
+
+    await tester.ensureVisible(find.byKey(const Key('diseaseDetailButton')));
+    await tester.tap(find.byKey(const Key('diseaseDetailButton')));
+    await tester.pump();
+
+    expect(find.text('Detail penyakit belum tersedia.'), findsOneWidget);
+    expect(find.text('Rekomendasi Penanganan'), findsOneWidget);
+  });
+
+  testWidgets('menampilkan pesan untuk hasil sehat tanpa membuka detail', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: TreatmentRecommendationPage(record: recordForDisease('Healthy')),
+      ),
+    );
+
+    await tester.ensureVisible(find.byKey(const Key('diseaseDetailButton')));
+    await tester.tap(find.byKey(const Key('diseaseDetailButton')));
+    await tester.pump();
+
+    expect(find.text('Daun sehat. Tidak ada detail penyakit.'), findsOneWidget);
+    expect(find.text('Rekomendasi Penanganan'), findsOneWidget);
+  });
 }

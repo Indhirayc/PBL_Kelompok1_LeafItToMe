@@ -53,46 +53,52 @@ class TreatmentRecommendationPage extends StatelessWidget {
     );
   }
 
-  DiseaseModel? _guideDiseaseFor(HistoryDisease? disease) {
-    if (disease == null) {
-      return null;
-    }
+  String _normalizeDiseaseName(String value) {
+    return value
+        .toLowerCase()
+        .replaceAll('_', ' ')
+        .replaceAll('-', ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+  }
 
+  DiseaseModel? _guideDiseaseFor(String detectedDisease) {
+    final normalizedResult = _normalizeDiseaseName(detectedDisease);
     for (final guideDisease in GuideData.diseases) {
-      if (guideDisease.name.toLowerCase() == disease.name.toLowerCase()) {
+      final normalizedName = _normalizeDiseaseName(guideDisease.name);
+      final normalizedNameWithoutAlias = _normalizeDiseaseName(
+        guideDisease.name.replaceAll(RegExp(r'\s*\([^)]*\)'), ''),
+      );
+      if (normalizedName == normalizedResult ||
+          normalizedNameWithoutAlias == normalizedResult) {
         return guideDisease;
       }
     }
 
-    if (disease.name.toLowerCase() != 'bacterial spot') {
-      return null;
-    }
-
-    return DiseaseModel(
-      id: 'bacterial-spot',
-      name: disease.name,
-      latinName: disease.latinName,
-      category: disease.category,
-      severity: disease.severity,
-      severityColor: disease.severityColor,
-      shortDescription: disease.symptoms.isEmpty
-          ? disease.name
-          : disease.symptoms.first,
-      symptoms: disease.symptoms,
-      preventions: disease.preventions,
-      imageAssetPath: '',
-      searchKeyword: disease.searchKeyword,
-    );
+    return null;
   }
 
-  void _openDiseaseDetails(BuildContext context, HistoryDisease? disease) {
-    final guideDisease = _guideDiseaseFor(disease);
+  void _openDiseaseDetails(BuildContext context) {
+    final normalizedDisease = _normalizeDiseaseName(record.diseaseName);
+    if (normalizedDisease == 'healthy' || normalizedDisease == 'sehat') {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('Daun sehat. Tidak ada detail penyakit.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      return;
+    }
+
+    final guideDisease = _guideDiseaseFor(record.diseaseName);
     if (guideDisease == null) {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
           const SnackBar(
-            content: Text('Detail penyakit ini belum tersedia.'),
+            content: Text('Detail penyakit belum tersedia.'),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -168,7 +174,7 @@ class TreatmentRecommendationPage extends StatelessWidget {
                     icon: Icons.arrow_forward_rounded,
                     label: 'Lihat Detail Penyakit',
                     variant: AppButtonVariant.secondary,
-                    onPressed: () => _openDiseaseDetails(context, disease),
+                    onPressed: () => _openDiseaseDetails(context),
                   ),
                 ],
               ),

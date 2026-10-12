@@ -33,7 +33,13 @@ void main() {
     await tester.scrollUntilVisible(find.text('Lihat di Marketplace'), 300.0);
 
     expect(find.text('Pencegahan'), findsOneWidget);
-    expect(find.text('Gunakan benih bebas penyakit'), findsOneWidget);
+    expect(
+      find.text(
+        'Gunakan benih atau bibit sehat bersertifikat, serta bersihkan alat '
+        'pemangkasan sebelum digunakan kembali.',
+      ),
+      findsOneWidget,
+    );
     expect(find.text('Lihat di Marketplace'), findsOneWidget);
   });
 }

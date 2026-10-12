@@ -151,6 +151,27 @@ abstract final class GuideData {
 
   static const List<DiseaseModel> diseases = [
     DiseaseModel(
+      id: 'bacterial-spot',
+      name: 'Bacterial Spot',
+      latinName: 'Xanthomonas spp. • Penyakit Bakteri',
+      category: 'Bakteri',
+      severity: 'RISIKO SEDANG',
+      severityColor: Color(0xFFE65100),
+      shortDescription: 'Bercak kecil berwarna cokelat kehitaman muncul pada daun dan dapat meluas hingga menyebabkan daun menguning.',
+      symptoms: [
+        'Muncul bercak kecil berwarna cokelat kehitaman, terkadang tampak basah, pada permukaan daun.',
+        'Bercak dapat membesar dan menyatu, sementara jaringan di sekitarnya menguning lalu mengering.',
+        'Pada serangan berat, daun dapat gugur dan bercak kasar juga bisa muncul pada batang atau buah.',
+      ],
+      preventions: [
+        'Siram langsung ke media tanam dan hindari membasahi daun, terutama pada sore atau malam hari.',
+        'Beri jarak tanam yang cukup agar sirkulasi udara baik dan daun cepat kering setelah terkena air.',
+        'Gunakan benih atau bibit sehat bersertifikat, serta bersihkan alat pemangkasan sebelum digunakan kembali.',
+      ],
+      imageAssetPath: 'assets/images/bacterial_spot.jpg',
+      searchKeyword: 'bakterisida tembaga bacterial spot tomat',
+    ),
+    DiseaseModel(
       id: 'late-blight',
       name: 'Late Blight',
       latinName: 'Phytophthora infestans • Penyakit Jamur',

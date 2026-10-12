@@ -196,14 +196,14 @@ abstract final class HistoryData {
       'Bercak dapat menyebar ke buah',
     ],
     preventions: [
-      'Hindari menyiram bagian daun',
-      'Jaga jarak antar tanaman',
-      'Gunakan benih bebas penyakit',
+      'Siram langsung ke media tanam dan hindari membasahi daun, terutama pada sore atau malam hari.',
+      'Beri jarak tanam yang cukup agar sirkulasi udara baik dan daun cepat kering setelah terkena air.',
+      'Gunakan benih atau bibit sehat bersertifikat, serta bersihkan alat pemangkasan sebelum digunakan kembali.',
     ],
     treatments: [
-      'Pangkas dan buang daun yang terinfeksi',
-      'Aplikasikan bakterisida berbahan tembaga',
-      'Kurangi kelembapan berlebih di sekitar tanaman',
+      'Pangkas bagian daun yang menunjukkan gejala, lalu buang dengan aman dan jangan dijadikan kompos.',
+      'Gunakan bakterisida berbahan aktif tembaga yang sesuai untuk tomat dan ikuti petunjuk pada label produk.',
+      'Kurangi kelembapan di sekitar tanaman dengan memperbaiki sirkulasi udara dan menghindari penyiraman berlebih.',
     ],
     searchKeyword: 'bakterisida tembaga bacterial spot tomat',
   );
