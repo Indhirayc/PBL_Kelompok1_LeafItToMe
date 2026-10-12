@@ -82,7 +82,8 @@ abstract final class AppRouter {
         path: '/guide-detail',
         name: 'guide-detail',
         builder: (context, state) {
-          final initialTabIndex = state.extra is int ? state.extra! as int : 0;
+          final extra = state.extra;
+          final initialTabIndex = extra is int ? extra : 0;
 
           return GuideDetailPage(initialTabIndex: initialTabIndex);
         },

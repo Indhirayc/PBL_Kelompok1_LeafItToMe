@@ -12,7 +12,8 @@ class DiseaseLeafIllustration extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (imageAssetPath != null && imageAssetPath!.isNotEmpty) {
+    final assetPath = imageAssetPath;
+    if (assetPath != null && assetPath.isNotEmpty) {
       return Container(
         width: double.infinity,
         height: 220,
@@ -32,7 +33,7 @@ class DiseaseLeafIllustration extends StatelessWidget {
             fit: StackFit.expand,
             children: [
               Image.asset(
-                imageAssetPath!,
+                assetPath,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) =>
                     _buildFallbackBanner(diseaseId),
@@ -96,7 +97,8 @@ class ToolIllustration extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (imageAssetPath != null && imageAssetPath!.isNotEmpty) {
+    final assetPath = imageAssetPath;
+    if (assetPath != null && assetPath.isNotEmpty) {
       return Container(
         width: double.infinity,
         height: 220,
@@ -116,7 +118,7 @@ class ToolIllustration extends StatelessWidget {
             fit: StackFit.expand,
             children: [
               Image.asset(
-                imageAssetPath!,
+                assetPath,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) =>
                     _buildFallbackToolBanner(),

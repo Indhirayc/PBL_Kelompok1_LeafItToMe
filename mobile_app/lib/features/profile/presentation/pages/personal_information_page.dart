@@ -43,7 +43,7 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
   Future<void> _saveProfile() async {
     FocusScope.of(context).unfocus();
 
-    if (!_formKey.currentState!.validate()) {
+    if (!(_formKey.currentState?.validate() ?? false)) {
       return;
     }
 

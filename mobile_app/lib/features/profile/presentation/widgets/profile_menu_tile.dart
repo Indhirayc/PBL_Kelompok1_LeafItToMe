@@ -20,6 +20,8 @@ class ProfileMenuTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final subtitleText = subtitle;
+
     return Column(
       children: [
         InkWell(
@@ -51,10 +53,10 @@ class ProfileMenuTile extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      if (subtitle != null) ...[
+                      if (subtitleText != null) ...[
                         const SizedBox(height: 3),
                         Text(
-                          subtitle!,
+                          subtitleText,
                           style: const TextStyle(
                             color: Color(0xFF7A8D81),
                             fontSize: 11,

@@ -24,12 +24,15 @@ class AppPageHeader extends StatelessWidget {
   final Color backgroundColor;
 
   void _handleBack(BuildContext context) {
-    if (onBack != null) {
-      onBack!();
+    final backCallback = onBack;
+    final route = fallbackRoute;
+
+    if (backCallback != null) {
+      backCallback();
     } else if (context.canPop()) {
       context.pop();
-    } else if (fallbackRoute != null) {
-      context.goNamed(fallbackRoute!, extra: fallbackExtra);
+    } else if (route != null) {
+      context.goNamed(route, extra: fallbackExtra);
     } else {
       Navigator.of(context).maybePop();
     }
@@ -39,6 +42,7 @@ class AppPageHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final titleColor = const Color(0xFF1F3826);
     final subtitleText = subtitle?.trim();
+    final actionWidget = action;
 
     return Container(
       width: double.infinity,
@@ -103,9 +107,9 @@ class AppPageHeader extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (action != null) ...[
+                if (actionWidget != null) ...[
                   const SizedBox(width: 12),
-                  Center(child: action!),
+                  Center(child: actionWidget),
                 ],
               ],
             ),
