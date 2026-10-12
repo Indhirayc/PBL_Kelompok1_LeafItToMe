@@ -297,54 +297,31 @@ class _ActivityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
-
-      // Ukuran atas dan bawah diperkecil dari 20 menjadi 13.
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 13),
-      decoration: BoxDecoration(
-        color: Colors.white,
-
-        // Sedikit diperkecil agar sesuai dengan tinggi kartu baru.
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: ProfilePage.borderColor),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
       child: const Row(
         children: [
           Expanded(
             child: _ActivityItem(
-              icon: Icons.document_scanner_outlined,
-              value: '12',
+              value: '2',
               label: 'Pemindaian',
               color: Color(0xFF2F7D4A),
-              backgroundColor: Color(0xFFEAF4EC),
             ),
           ),
-          _VerticalDivider(),
+          SizedBox(width: 12),
           Expanded(
             child: _ActivityItem(
-              icon: Icons.warning_amber_rounded,
-              value: '4',
+              value: '1',
               label: 'Penyakit',
-              color: Color(0xFFE57E25),
-              backgroundColor: Color(0xFFFFF1E5),
+              color: Color(0xFFED6C02),
             ),
           ),
-          _VerticalDivider(),
+          SizedBox(width: 12),
           Expanded(
             child: _ActivityItem(
-              icon: Icons.eco_outlined,
-              value: '8',
+              value: '1',
               label: 'Sehat',
-              color: Color(0xFF3A9D5D),
-              backgroundColor: Color(0xFFE7F5EA),
+              color: Color(0xFF2E7D32),
             ),
           ),
         ],
@@ -355,81 +332,52 @@ class _ActivityCard extends StatelessWidget {
 
 class _ActivityItem extends StatelessWidget {
   const _ActivityItem({
-    required this.icon,
     required this.value,
     required this.label,
     required this.color,
-    required this.backgroundColor,
   });
 
-  final IconData icon;
   final String value;
   final String label;
   final Color color;
-  final Color backgroundColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          // Kotak ikon diperkecil dari 38 menjadi 32.
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(9),
-          ),
-          child: Icon(
-            icon,
-            color: color,
-
-            // Ikon diperkecil dari 21 menjadi 18.
-            size: 18,
-          ),
-        ),
-
-        // Jarak ikon dengan angka diperkecil.
-        const SizedBox(height: 6),
-
-        Text(
-          value,
-          style: const TextStyle(
-            color: ProfilePage.darkGreen,
-
-            // Angka diperkecil dari 19 menjadi 17.
-            fontSize: 17,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(height: 1),
-        Text(
-          label,
-          style: const TextStyle(
-            color: Color(0xFF7A8D81),
-
-            // Label diperkecil dari 11 menjadi 10.
-            fontSize: 10,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _VerticalDivider extends StatelessWidget {
-  const _VerticalDivider();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 1,
-
-      // Garis mengikuti ukuran kartu yang lebih kecil.
-      height: 58,
-      color: ProfilePage.borderColor,
+      height: 76,
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: ProfilePage.borderColor),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            value,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: color,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: ProfilePage.darkGreen,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

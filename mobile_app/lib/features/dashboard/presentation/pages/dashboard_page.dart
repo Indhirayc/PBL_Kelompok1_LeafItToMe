@@ -299,7 +299,6 @@ class _DashboardPageState extends State<DashboardPage> {
               child: _buildStatCard(
                 title: 'Total Tanaman',
                 value: '2',
-                icon: Icons.grass,
                 color: primaryGreen,
               ),
             ),
@@ -308,16 +307,14 @@ class _DashboardPageState extends State<DashboardPage> {
               child: _buildStatCard(
                 title: 'Kondisi Sehat',
                 value: '1',
-                icon: Icons.check_circle_outline,
                 color: const Color(0xFF2E7D32),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: _buildStatCard(
-                title: 'Perhatian',
+                title: 'Perlu Perhatian',
                 value: '1',
-                icon: Icons.warning_amber_rounded,
                 color: const Color(0xFFED6C02),
               ),
             ),
@@ -381,25 +378,25 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget _buildStatCard({
     required String title,
     required String value,
-    required IconData icon,
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      height: 76,
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: borderColor),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(icon, color: color, size: 22),
-          const SizedBox(height: 10),
           Text(
             value,
+            textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 22,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
               color: color,
             ),
@@ -407,8 +404,11 @@ class _DashboardPageState extends State<DashboardPage> {
           const SizedBox(height: 2),
           Text(
             title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
             style: const TextStyle(
-              fontSize: 11,
+              fontSize: 10,
               fontWeight: FontWeight.w600,
               color: darkGreen,
             ),

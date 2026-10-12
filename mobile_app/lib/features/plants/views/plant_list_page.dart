@@ -63,32 +63,42 @@ class _PlantListPageState extends State<PlantListPage> {
     return "TMT-${(maxNum + 1).toString().padLeft(3, '0')}";
   }
 
-  Widget _buildStatItem(
-    String count,
-    String label,
-    Color countColor,
-    Color labelColor,
-  ) {
-    return Column(
-      children: [
-        Text(
-          count,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w900,
-            color: countColor,
+  Widget _buildStatItem(String count, String label, Color countColor) {
+    return Container(
+      height: 76,
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE3EAE4)),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            count,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: countColor,
+            ),
           ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-            color: labelColor,
+          const SizedBox(height: 2),
+          Text(
+            label,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF183E2D),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -175,39 +185,32 @@ class _PlantListPageState extends State<PlantListPage> {
                 ),
               ),
               const SizedBox(height: 16),
-              // Card Ringkasan Statistik
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 14,
-                  horizontal: 16,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE8F5E9),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildStatItem(
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildStatItem(
                       '$totalCount',
-                      'Tanaman',
+                      'Total Tanaman',
                       const Color(0xFF2E7D32),
-                      const Color(0xFF75857B),
                     ),
-                    _buildStatItem(
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildStatItem(
                       '$healthyCount',
-                      'Sehat',
-                      const Color(0xFF2E7D32),
+                      'Kondisi Sehat',
                       const Color(0xFF2E7D32),
                     ),
-                    _buildStatItem(
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildStatItem(
                       '$attentionCount',
                       'Perlu Perhatian',
                       const Color(0xFFED6C02),
-                      const Color(0xFFED6C02),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               // List Data / Kondisi Kosong
