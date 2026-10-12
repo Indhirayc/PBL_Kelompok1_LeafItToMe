@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../views/plant_list_page.dart';
+import '../models/plant.dart';
 
 class PlantCard extends StatelessWidget {
   final Plant plant;
@@ -141,7 +141,7 @@ class PlantCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      plant.plantDate,
+                      plant.lastInspectionDate,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(

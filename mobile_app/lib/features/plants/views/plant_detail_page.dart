@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme/app_breakpoints.dart';
 import '../../../../core/widgets/app_content_layout.dart';
@@ -7,8 +8,9 @@ import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
 import '../../detection/presentation/pages/data_inspection_page.dart';
 import '../../history/data/history_data.dart' hide HistoryRecord;
+import '../models/plant.dart';
+import '../providers/plant_provider.dart';
 import 'history_detail_page.dart';
-import 'plant_list_page.dart';
 
 class _HistoryPreview {
   const _HistoryPreview({
@@ -26,12 +28,12 @@ class _HistoryPreview {
   final bool isHealthy;
 }
 
-class PlantDetailPage extends StatelessWidget {
-  const PlantDetailPage({super.key, required this.plant});
+class PlantDetailPage extends ConsumerWidget {
+  const PlantDetailPage({super.key, required this.plantId});
 
-  final Plant plant;
+  final String plantId;
 
-  List<_HistoryPreview> get _histories {
+  List<_HistoryPreview> _historiesFor(Plant plant) {
     // Tanaman pertama mempunyai lima riwayat pemeriksaan.
     if (plant.id == 'TMT-001') {
       return const [
@@ -106,7 +108,7 @@ class PlantDetailPage extends StatelessWidget {
     return const [];
   }
 
-  void _showDeleteDialog(BuildContext context) {
+  void _showDeleteDialog(BuildContext context, WidgetRef ref, Plant plant) {
     showDialog<void>(
       context: context,
       builder: (dialogContext) {
@@ -146,9 +148,12 @@ class PlantDetailPage extends StatelessWidget {
               width: null,
               height: 50,
               variant: AppButtonVariant.destructive,
-              onPressed: () {
+              onPressed: () async {
                 Navigator.pop(dialogContext);
-                Navigator.pop(context, true);
+                await ref.read(plantProvider.notifier).deletePlant(plant.id);
+                if (context.mounted) {
+                  context.goNamed('plants');
+                }
               },
             ),
           ],
@@ -320,6 +325,7 @@ class PlantDetailPage extends StatelessWidget {
 
   void _openHistoryDetail(
     BuildContext context, {
+    required Plant plant,
     required _HistoryPreview history,
   }) {
     context.pushNamed(
@@ -335,7 +341,7 @@ class PlantDetailPage extends StatelessWidget {
     );
   }
 
-  void _openAllHistory(BuildContext context) {
+  void _openAllHistory(BuildContext context, Plant plant) {
     context.pushNamed(
       'history',
       extra: HistoryPlant(
@@ -346,7 +352,7 @@ class PlantDetailPage extends StatelessWidget {
     );
   }
 
-  void _openInspectionForm(BuildContext context) {
+  void _openInspectionForm(BuildContext context, Plant plant) {
     context.pushNamed(
       'data-inspection',
       extra: InspectionPlant(
@@ -357,7 +363,7 @@ class PlantDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildPlantInformationCard(BuildContext context) {
+  Widget _buildPlantInformationCard(BuildContext context, Plant plant) {
     return Container(
       key: const Key('plantInformationCard'),
       padding: const EdgeInsets.all(16),
@@ -423,7 +429,7 @@ class PlantDetailPage extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Ditanam ${plant.plantDate}',
+            'Ditanam ${plant.plantedDate}',
             style: const TextStyle(fontSize: 12, color: Color(0xFF65756A)),
           ),
           const SizedBox(height: 12),
@@ -431,7 +437,7 @@ class PlantDetailPage extends StatelessWidget {
             key: const Key('scanPlantButton'),
             label: 'Scan Daun',
             height: 50,
-            onPressed: () => _openInspectionForm(context),
+            onPressed: () => _openInspectionForm(context, plant),
           ),
         ],
       ),
@@ -440,6 +446,7 @@ class PlantDetailPage extends StatelessWidget {
 
   Widget _buildHistorySection(
     BuildContext context, {
+    required Plant plant,
     required List<_HistoryPreview> recentHistories,
     required bool showViewAllButton,
   }) {
@@ -461,7 +468,7 @@ class PlantDetailPage extends StatelessWidget {
             if (showViewAllButton)
               TextButton(
                 key: const Key('viewAllHistoryButton'),
-                onPressed: () => _openAllHistory(context),
+                onPressed: () => _openAllHistory(context, plant),
                 style: TextButton.styleFrom(
                   foregroundColor: const Color(0xFF2F7D4A),
                   padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -491,7 +498,8 @@ class PlantDetailPage extends StatelessWidget {
                   ? const Color(0xFFE2F1E4)
                   : const Color(0xFFFFE0D6),
               isHealthy: history.isHealthy,
-              onTap: () => _openHistoryDetail(context, history: history),
+              onTap: () =>
+                  _openHistoryDetail(context, plant: plant, history: history),
             );
           }),
       ],
@@ -499,10 +507,124 @@ class PlantDetailPage extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final List<_HistoryPreview> recentHistories = _histories.take(3).toList();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final plantsAsync = ref.watch(plantProvider);
+    return plantsAsync.when(
+      loading: () => _buildUnavailablePage(
+        context,
+        message: 'Memuat data tanaman...',
+        loading: true,
+      ),
+      error: (error, stackTrace) => _buildUnavailablePage(
+        context,
+        message: 'Data tanaman belum dapat dimuat.',
+        onRetry: () => ref.read(plantProvider.notifier).refreshPlants(),
+      ),
+      data: (plants) {
+        final plant = ref.watch(plantByIdProvider(plantId));
+        if (plant == null) {
+          return _buildUnavailablePage(
+            context,
+            message: 'Data tanaman tidak ditemukan',
+            onBack: () => context.goNamed('plants'),
+          );
+        }
 
-    final bool showViewAllButton = _histories.isNotEmpty;
+        return _buildPlantDetail(context, ref, plant);
+      },
+    );
+  }
+
+  Widget _buildUnavailablePage(
+    BuildContext context, {
+    required String message,
+    bool loading = false,
+    VoidCallback? onRetry,
+    VoidCallback? onBack,
+  }) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        toolbarHeight: 56,
+        leading: IconButton(
+          tooltip: 'Kembali',
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.goNamed('plants');
+            }
+          },
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF1F3826),
+            size: 20,
+          ),
+        ),
+        title: const Text(
+          'Detail Tanaman',
+          style: TextStyle(
+            color: Color(0xFF1F3826),
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (loading)
+                const CircularProgressIndicator(color: Color(0xFF2F7D4A))
+              else
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Color(0xFF75857B),
+                    fontSize: 14,
+                  ),
+                ),
+              if (loading) ...[
+                const SizedBox(height: 16),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Color(0xFF75857B),
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+              if (onRetry != null) ...[
+                const SizedBox(height: 12),
+                TextButton(onPressed: onRetry, child: const Text('Coba Lagi')),
+              ],
+              if (onBack != null) ...[
+                const SizedBox(height: 16),
+                AppButton(
+                  label: 'Kembali ke Tanamanku',
+                  onPressed: onBack,
+                  width: 220,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: const MainBottomNavigation(currentIndex: 2),
+    );
+  }
+
+  Widget _buildPlantDetail(BuildContext context, WidgetRef ref, Plant plant) {
+    final histories = _historiesFor(plant);
+    final recentHistories = histories.take(3).toList();
+    final showViewAllButton = histories.isNotEmpty;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -514,7 +636,11 @@ class PlantDetailPage extends StatelessWidget {
         leading: IconButton(
           tooltip: 'Kembali',
           onPressed: () {
-            Navigator.pop(context);
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.goNamed('plants');
+            }
           },
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
@@ -538,7 +664,7 @@ class PlantDetailPage extends StatelessWidget {
             child: IconButton(
               tooltip: 'Hapus Tanaman',
               onPressed: () {
-                _showDeleteDialog(context);
+                _showDeleteDialog(context, ref, plant);
               },
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
@@ -556,9 +682,13 @@ class PlantDetailPage extends StatelessWidget {
           child: LayoutBuilder(
             builder: (context, constraints) {
               final isTablet = constraints.maxWidth >= AppBreakpoints.tablet;
-              final plantInformation = _buildPlantInformationCard(context);
+              final plantInformation = _buildPlantInformationCard(
+                context,
+                plant,
+              );
               final historySection = _buildHistorySection(
                 context,
+                plant: plant,
                 recentHistories: recentHistories,
                 showViewAllButton: showViewAllButton,
               );

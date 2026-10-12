@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_app/core/widgets/main_bottom_navigation.dart';
 import 'package:mobile_app/features/dashboard/presentation/pages/dashboard_page.dart';
@@ -16,11 +17,22 @@ import 'package:mobile_app/features/detection/presentation/pages/photo_preview_p
 import 'package:mobile_app/features/history/views/history_page.dart';
 import 'package:mobile_app/features/plants/views/plant_list_page.dart';
 import 'package:mobile_app/features/plants/views/plant_detail_page.dart';
+import 'package:mobile_app/features/plants/models/plant.dart';
+import 'package:mobile_app/features/plants/providers/plant_provider.dart';
 import 'package:mobile_app/features/plants/widgets/plant_card.dart';
 import 'package:mobile_app/features/profile/presentation/pages/personal_information_page.dart';
 import 'package:mobile_app/features/profile/presentation/pages/profile_page.dart';
 import 'package:mobile_app/features/splash/presentation/pages/splash_page.dart';
 import 'package:mobile_app/features/sync/views/sync_status_page.dart';
+
+class _ResponsivePlantNotifier extends PlantNotifier {
+  _ResponsivePlantNotifier(this.plant);
+
+  final Plant plant;
+
+  @override
+  Future<List<Plant>> build() async => [plant];
+}
 
 void main() {
   double contentGapAfterAppBar(WidgetTester tester, Finder content) {
@@ -34,7 +46,9 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(const MaterialApp(home: DashboardPage()));
+    await tester.pumpWidget(
+      const ProviderScope(child: MaterialApp(home: DashboardPage())),
+    );
     await tester.pumpAndSettle();
   }
 
@@ -100,7 +114,9 @@ void main() {
       const Size(1024, 768),
     ]) {
       tester.view.physicalSize = size;
-      await tester.pumpWidget(const MaterialApp(home: PlantListPage()));
+      await tester.pumpWidget(
+        const ProviderScope(child: MaterialApp(home: PlantListPage())),
+      );
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
@@ -121,7 +137,9 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(const MaterialApp(home: PlantListPage()));
+    await tester.pumpWidget(
+      const ProviderScope(child: MaterialApp(home: PlantListPage())),
+    );
     await tester.pumpAndSettle();
 
     final cards = find.byType(PlantCard);
@@ -204,7 +222,8 @@ void main() {
       id: 'TMT-002',
       name: 'Tomat Kebun Belakang',
       location: 'Kebun belakang',
-      plantDate: '25 Sep 2026',
+      plantedDate: '25 Sep 2026',
+      lastInspectionDate: '25 Sep 2026',
       status: 'Perlu perhatian',
     );
 
@@ -215,7 +234,14 @@ void main() {
       const Size(1024, 768),
     ]) {
       tester.view.physicalSize = size;
-      await tester.pumpWidget(MaterialApp(home: PlantDetailPage(plant: plant)));
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            plantProvider.overrideWith(() => _ResponsivePlantNotifier(plant)),
+          ],
+          child: MaterialApp(home: PlantDetailPage(plantId: plant.id)),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);

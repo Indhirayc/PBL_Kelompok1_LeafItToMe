@@ -1,9 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_app/features/detection/presentation/pages/data_inspection_page.dart';
+import 'package:mobile_app/features/plants/models/plant.dart';
+import 'package:mobile_app/features/plants/providers/plant_provider.dart';
 import 'package:mobile_app/features/plants/views/plant_detail_page.dart';
-import 'package:mobile_app/features/plants/views/plant_list_page.dart';
+
+class _InspectionPlantNotifier extends PlantNotifier {
+  @override
+  Future<List<Plant>> build() async => const [
+    Plant(
+      id: 'TMT-456',
+      name: 'Tomat Balkon',
+      location: 'Balkon',
+      plantedDate: '1 Okt 2026',
+      lastInspectionDate: 'Belum ada pemeriksaan',
+      status: 'Sehat',
+    ),
+  ];
+}
 
 void main() {
   testWidgets('menampilkan data tanaman, tanggal, dan catatan saja', (
@@ -88,15 +104,8 @@ void main() {
       routes: [
         GoRoute(
           path: '/plant-detail',
-          builder: (context, state) => PlantDetailPage(
-            plant: Plant(
-              id: 'TMT-456',
-              name: 'Tomat Balkon',
-              location: 'Balkon',
-              plantDate: '1 Okt 2026',
-              status: 'Sehat',
-            ),
-          ),
+          builder: (context, state) =>
+              const PlantDetailPage(plantId: 'TMT-456'),
         ),
         GoRoute(
           path: '/data-inspection',
@@ -108,7 +117,13 @@ void main() {
     );
     addTearDown(router.dispose);
 
-    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [plantProvider.overrideWith(_InspectionPlantNotifier.new)],
+        child: MaterialApp.router(routerConfig: router),
+      ),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('scanPlantButton')));
     await tester.pumpAndSettle();
 

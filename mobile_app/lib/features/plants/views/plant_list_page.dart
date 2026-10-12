@@ -1,59 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_breakpoints.dart';
-// Import halaman dan widget
-import 'plant_detail_page.dart';
+import '../models/plant.dart';
+import '../providers/plant_provider.dart';
 import '../widgets/plant_card.dart';
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
 
-class Plant {
-  final String id;
-  final String name;
-  final String location;
-  final String plantDate;
-  final String status;
-  final String? note;
-
-  Plant({
-    required this.id,
-    required this.name,
-    required this.location,
-    required this.plantDate,
-    required this.status,
-    this.note,
-  });
-}
-
-class PlantListPage extends StatefulWidget {
+class PlantListPage extends ConsumerWidget {
   const PlantListPage({super.key});
-  @override
-  State<PlantListPage> createState() => _PlantListPageState();
-}
 
-class _PlantListPageState extends State<PlantListPage> {
-  // Simulasi data awal tanaman
-  final List<Plant> _plants = [
-    Plant(
-      id: "TMT-001",
-      name: "Tomat Pot Depan",
-      location: "Teras depan",
-      plantDate: "28 Sep 2026",
-      status: "Sehat",
-    ),
-    Plant(
-      id: "TMT-002",
-      name: "Tomat Kebun Belakang",
-      location: "Kebun belakang",
-      plantDate: "25 Sep 2026",
-      status: "Perlu perhatian",
-    ),
-  ];
-
-  String _generateNextPlantId() {
+  String _generateNextPlantId(List<Plant> plants) {
     int maxNum = 0;
-    for (var plant in _plants) {
+    for (final plant in plants) {
       final parts = plant.id.split('-');
       if (parts.length > 1) {
         final num = int.tryParse(parts[1]);
@@ -104,13 +65,83 @@ class _PlantListPageState extends State<PlantListPage> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    int totalCount = _plants.length;
-    int healthyCount = _plants
+  Widget _buildPlantsContent(
+    BuildContext context,
+    WidgetRef ref,
+    List<Plant> plants,
+  ) {
+    final totalCount = plants.length;
+    final healthyCount = plants
         .where((p) => p.status.toLowerCase() == 'sehat')
         .length;
-    int attentionCount = totalCount - healthyCount;
+    final attentionCount = totalCount - healthyCount;
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _buildStatItem(
+                '$totalCount',
+                'Total Tanaman',
+                const Color(0xFF2E7D32),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildStatItem(
+                '$healthyCount',
+                'Kondisi Sehat',
+                const Color(0xFF2E7D32),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildStatItem(
+                '$attentionCount',
+                'Perlu Perhatian',
+                const Color(0xFFED6C02),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Expanded(child: _buildPlantList(context, ref, plants)),
+      ],
+    );
+  }
+
+  Widget _buildPlantState(BuildContext context, WidgetRef ref) {
+    final plantsAsync = ref.watch(plantProvider);
+    return plantsAsync.when(
+      loading: () => const Center(
+        child: CircularProgressIndicator(color: Color(0xFF2F7D4A)),
+      ),
+      error: (error, stackTrace) => Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Tanaman belum dapat dimuat. Silakan coba lagi.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Color(0xFF75857B), fontSize: 14),
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () => ref.read(plantProvider.notifier).refreshPlants(),
+              child: const Text('Coba Lagi'),
+            ),
+          ],
+        ),
+      ),
+      data: (plants) => _buildPlantsContent(context, ref, plants),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final plantsAsync = ref.watch(plantProvider);
+    final plants = plantsAsync.value ?? initialPlants;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9FBF9),
@@ -169,17 +200,12 @@ class _PlantListPageState extends State<PlantListPage> {
                               borderRadius: BorderRadius.circular(18),
                             ),
                           ),
-                          onPressed: () async {
-                            final newPlant = await context.pushNamed<Plant>(
-                              'add-plant',
-                              extra: _generateNextPlantId(),
-                            );
-                            if (newPlant != null) {
-                              setState(() {
-                                _plants.add(newPlant);
-                              });
-                            }
-                          },
+                          onPressed: plantsAsync.hasValue
+                              ? () => context.pushNamed(
+                                  'add-plant',
+                                  extra: _generateNextPlantId(plants),
+                                )
+                              : null,
                           icon: const Icon(Icons.add, size: 14),
                           label: const Text(
                             "Tambah",
@@ -194,48 +220,22 @@ class _PlantListPageState extends State<PlantListPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildStatItem(
-                        '$totalCount',
-                        'Total Tanaman',
-                        const Color(0xFF2E7D32),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildStatItem(
-                        '$healthyCount',
-                        'Kondisi Sehat',
-                        const Color(0xFF2E7D32),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildStatItem(
-                        '$attentionCount',
-                        'Perlu Perhatian',
-                        const Color(0xFFED6C02),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                // List Data / Kondisi Kosong
-                Expanded(child: _buildPlantList()),
+                Expanded(child: _buildPlantState(context, ref)),
               ],
             ),
           ),
         ),
       ),
-      // ✅ GANTI MENJADI:
       bottomNavigationBar: const MainBottomNavigation(currentIndex: 2),
     );
   }
 
-  Widget _buildPlantList() {
-    if (_plants.isEmpty) {
+  Widget _buildPlantList(
+    BuildContext context,
+    WidgetRef ref,
+    List<Plant> plants,
+  ) {
+    if (plants.isEmpty) {
       return const Center(
         child: Text(
           "Belum ada data tanaman.\nTekan tombol Tambah untuk membuat baru.",
@@ -246,23 +246,15 @@ class _PlantListPageState extends State<PlantListPage> {
 
     final isTablet = MediaQuery.sizeOf(context).width >= AppBreakpoints.tablet;
 
-    Widget buildPlantCard(int index) {
-      final plant = _plants[index];
+    Widget buildPlantCard(Plant plant) {
       return PlantCard(
         plant: plant,
         margin: EdgeInsets.only(bottom: isTablet ? 0 : 14),
-        onTapDetail: () async {
-          final bool? shouldDelete = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PlantDetailPage(plant: plant),
-            ),
+        onTapDetail: () {
+          context.pushNamed(
+            'plant-detail',
+            pathParameters: {'plantId': plant.id},
           );
-          if (shouldDelete == true) {
-            setState(() {
-              _plants.removeAt(index);
-            });
-          }
         },
       );
     }
@@ -270,20 +262,20 @@ class _PlantListPageState extends State<PlantListPage> {
     if (isTablet) {
       return GridView.builder(
         padding: const EdgeInsets.only(bottom: 16),
-        itemCount: _plants.length,
+        itemCount: plants.length,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
           mainAxisExtent: 200,
         ),
-        itemBuilder: (context, index) => buildPlantCard(index),
+        itemBuilder: (context, index) => buildPlantCard(plants[index]),
       );
     }
 
     return ListView.builder(
-      itemCount: _plants.length,
-      itemBuilder: (context, index) => buildPlantCard(index),
+      itemCount: plants.length,
+      itemBuilder: (context, index) => buildPlantCard(plants[index]),
     );
   }
 }

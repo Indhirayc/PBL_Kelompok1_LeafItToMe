@@ -129,13 +129,13 @@ abstract final class AppRouter {
         path: '/plants/:plantId',
         name: 'plant-detail',
         builder: (context, state) {
-          final plant = state.extra;
+          final plantId = state.pathParameters['plantId'];
 
-          if (plant is! Plant) {
+          if (plantId == null || plantId.isEmpty) {
             return const PlantListPage();
           }
 
-          return PlantDetailPage(plant: plant);
+          return PlantDetailPage(plantId: plantId);
         },
       ),
 
