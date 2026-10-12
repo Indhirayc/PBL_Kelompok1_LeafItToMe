@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/widgets/app_button.dart';
 import '../widgets/profile_menu_tile.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
 
@@ -36,33 +37,21 @@ class ProfilePage extends StatelessWidget {
             style: TextStyle(color: secondaryText, fontSize: 14, height: 1.5),
           ),
           actions: [
-            TextButton(
+            AppButton(
+              label: 'Batal',
+              width: null,
+              variant: AppButtonVariant.secondary,
               onPressed: () {
                 Navigator.of(dialogContext).pop(false);
               },
-              child: const Text(
-                'Batal',
-                style: TextStyle(
-                  color: secondaryText,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
             ),
-            FilledButton(
+            AppButton(
+              label: 'Keluar',
+              width: null,
+              variant: AppButtonVariant.destructive,
               onPressed: () {
                 Navigator.of(dialogContext).pop(true);
               },
-              style: FilledButton.styleFrom(
-                backgroundColor: dangerColor,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: const Text(
-                'Keluar',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
             ),
           ],
         );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
 import '../../detection/presentation/pages/data_inspection_page.dart';
 import '../../history/data/history_data.dart' hide HistoryRecord;
@@ -129,35 +130,24 @@ class PlantDetailPage extends StatelessWidget {
             ),
           ),
           actions: [
-            TextButton(
+            AppButton(
+              label: 'Batal',
+              width: null,
+              height: 50,
+              variant: AppButtonVariant.secondary,
               onPressed: () {
                 Navigator.pop(dialogContext);
               },
-              child: const Text(
-                'Batal',
-                style: TextStyle(
-                  color: Color(0xFF65756A),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
             ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE53935),
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
+            AppButton(
+              label: 'Hapus',
+              width: null,
+              height: 50,
+              variant: AppButtonVariant.destructive,
               onPressed: () {
                 Navigator.pop(dialogContext);
                 Navigator.pop(context, true);
               },
-              child: const Text(
-                'Hapus',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
             ),
           ],
         );
@@ -404,10 +394,15 @@ class PlantDetailPage extends StatelessWidget {
             onPressed: () {
               _showDeleteDialog(context);
             },
-            icon: const Icon(
-              Icons.delete_outline_rounded,
-              color: Color(0xFFE53935),
+            style: IconButton.styleFrom(
+              foregroundColor: const Color(0xFFD32F2F),
+              side: const BorderSide(color: Color(0xFFD32F2F), width: 1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+              minimumSize: const Size(36, 36),
             ),
+            icon: const Icon(Icons.delete_outline_rounded),
           ),
           const SizedBox(width: 8),
         ],
@@ -493,30 +488,14 @@ class PlantDetailPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      ElevatedButton(
+                      AppButton(
                         key: const Key('scanPlantButton'),
+                        label: 'Scan Daun',
+                        width: null,
+                        height: 50,
                         onPressed: () {
                           _openInspectionForm(context);
                         },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1B5E20),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 18,
-                            vertical: 10,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: const Text(
-                          'Scan Daun',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
                       ),
                     ],
                   ),
@@ -545,16 +524,19 @@ class PlantDetailPage extends StatelessWidget {
                       _openAllHistory(context);
                     },
                     style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFF1B5E20),
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      foregroundColor: const Color(0xFF2F7D4A),
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      minimumSize: const Size(0, 36),
+                      tapTargetSize: MaterialTapTargetSize.padded,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
                     ),
                     child: const Text(
                       'Lihat Semua',
                       style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),

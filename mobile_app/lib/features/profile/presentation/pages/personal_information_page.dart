@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import '../../../../core/widgets/app_button.dart';
+
 import 'package:go_router/go_router.dart';
 
 class PersonalInformationPage extends StatefulWidget {
@@ -267,37 +270,10 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
                   },
                 ),
                 const SizedBox(height: 29),
-                SizedBox(
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _isSaving ? null : _saveProfile,
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: _ProfileColors.primaryGreen,
-                      disabledBackgroundColor: _ProfileColors.primaryGreen
-                          .withValues(alpha: 0.65),
-                      foregroundColor: _ProfileColors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(13),
-                      ),
-                    ),
-                    child: _isSaving
-                        ? const SizedBox(
-                            width: 22,
-                            height: 22,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.3,
-                              color: _ProfileColors.white,
-                            ),
-                          )
-                        : const Text(
-                            'Simpan Perubahan',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                  ),
+                AppButton(
+                  label: 'Simpan Perubahan',
+                  isLoading: _isSaving,
+                  onPressed: _isSaving ? null : _saveProfile,
                 ),
               ],
             ),

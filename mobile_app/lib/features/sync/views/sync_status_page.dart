@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/widgets/app_button.dart';
 import '../../history/widgets/history_page_header.dart';
 import '../data/sync_data.dart';
 
@@ -53,35 +54,13 @@ class _SyncStatusPageState extends State<SyncStatusPage> {
                   const SizedBox(height: 14),
                   _buildSimulateFailureCard(),
                   const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      key: const Key('syncNowButton'),
-                      onPressed: () => context.pushNamed(
-                        'sync-process',
-                        extra: _simulateFailure,
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _primaryGreen,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(13),
-                        ),
-                        textStyle: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.cloud_upload_outlined, size: 19),
-                          SizedBox(width: 8),
-                          Text('Sinkronkan Sekarang'),
-                        ],
-                      ),
+                  AppButton(
+                    key: const Key('syncNowButton'),
+                    icon: Icons.cloud_upload_outlined,
+                    label: 'Sinkronkan Sekarang',
+                    onPressed: () => context.pushNamed(
+                      'sync-process',
+                      extra: _simulateFailure,
                     ),
                   ),
                 ],

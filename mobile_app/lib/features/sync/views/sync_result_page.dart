@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/widgets/app_button.dart';
 import '../../history/widgets/history_page_header.dart';
 import '../../history/data/history_data.dart';
 import '../data/sync_data.dart';
@@ -78,27 +79,13 @@ class SyncResultPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: OutlinedButton(
-                          key: const Key('backFromFailureButton'),
-                          onPressed: () {
-                            context.goNamed('history', extra: plant);
-                          },
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: _primaryGreen,
-                            side: const BorderSide(color: _primaryGreen),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(13),
-                            ),
-                            textStyle: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          child: const Text('Kembali'),
-                        ),
+                      AppButton(
+                        key: const Key('backFromFailureButton'),
+                        label: 'Kembali',
+                        variant: AppButtonVariant.secondary,
+                        onPressed: () {
+                          context.goNamed('history', extra: plant);
+                        },
                       ),
                     ] else
                       _buildPrimaryButton(
@@ -158,30 +145,6 @@ class SyncResultPage extends StatelessWidget {
     required String label,
     required VoidCallback onPressed,
   }) {
-    return SizedBox(
-      width: double.infinity,
-      height: 50,
-      child: ElevatedButton(
-        key: key,
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: _primaryGreen,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(13),
-          ),
-          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 19),
-            const SizedBox(width: 8),
-            Text(label),
-          ],
-        ),
-      ),
-    );
+    return AppButton(key: key, icon: icon, label: label, onPressed: onPressed);
   }
 }

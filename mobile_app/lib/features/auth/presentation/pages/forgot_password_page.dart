@@ -191,7 +191,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
           AppButton(
             key: const Key('sendResetLinkButton'),
-            text: 'Kirim Tautan',
+            label: 'Kirim Tautan',
             isLoading: _isLoading,
             onPressed: _sendResetLink,
           ),
@@ -206,15 +206,15 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               ),
               InkWell(
                 onTap: _backToLogin,
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(18),
                 child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 5),
+                  padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   child: Text(
                     'Masuk',
                     style: TextStyle(
-                      color: Color(0xFF1F7338),
+                      color: Color(0xFF2F7D4A),
                       fontSize: 12,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -270,7 +270,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         ),
         const SizedBox(height: 26),
 
-        AppButton(text: 'Kembali ke Login', onPressed: _backToLogin),
+        AppButton(label: 'Kembali ke Login', onPressed: _backToLogin),
         const SizedBox(height: 14),
 
         TextButton(
@@ -279,12 +279,18 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               _emailSent = false;
             });
           },
+          style: TextButton.styleFrom(
+            foregroundColor: const Color(0xFF2F7D4A),
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            minimumSize: const Size(0, 36),
+            tapTargetSize: MaterialTapTargetSize.padded,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+          ),
           child: const Text(
             'Kirim ulang tautan',
-            style: TextStyle(
-              color: Color(0xFF1F7338),
-              fontWeight: FontWeight.w600,
-            ),
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
           ),
         ),
       ],

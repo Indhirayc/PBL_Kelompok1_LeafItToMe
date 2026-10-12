@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 // Import halaman dan widget
-import 'add_plant_page.dart';
 import 'plant_detail_page.dart';
 import '../widgets/plant_card.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
@@ -132,31 +132,40 @@ class _PlantListPageState extends State<PlantListPage> {
                       ),
                     ],
                   ),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1B5E20),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+                  SizedBox(
+                    height: 36,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2F7D4A),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        minimumSize: const Size(0, 36),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                      ),
+                      onPressed: () async {
+                        final newPlant = await context.pushNamed<Plant>(
+                          'add-plant',
+                          extra: _generateNextPlantId(),
+                        );
+                        if (newPlant != null) {
+                          setState(() {
+                            _plants.add(newPlant);
+                          });
+                        }
+                      },
+                      icon: const Icon(Icons.add, size: 14),
+                      label: const Text(
+                        "Tambah",
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                    onPressed: () async {
-                      // Buka halaman tambah dan tunggu hasil return-nya
-                      final newPlant = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              AddPlantPage(nextId: _generateNextPlantId()),
-                        ),
-                      );
-                      if (newPlant != null && newPlant is Plant) {
-                        setState(() {
-                          _plants.add(newPlant);
-                        });
-                      }
-                    },
-                    icon: const Icon(Icons.add, size: 16),
-                    label: const Text("Tambah"),
                   ),
                 ],
               ),

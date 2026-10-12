@@ -144,15 +144,14 @@ class PlantCard extends StatelessWidget {
               OutlinedButton(
                 onPressed: onTapDetail,
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: primaryGreen,
-                  side: const BorderSide(color: borderColor),
+                  foregroundColor: const Color(0xFF2F7D4A),
+                  side: const BorderSide(color: Color(0xFF2F7D4A), width: 1),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(18),
                   ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  minimumSize: const Size(0, 36),
+                  tapTargetSize: MaterialTapTargetSize.padded,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,

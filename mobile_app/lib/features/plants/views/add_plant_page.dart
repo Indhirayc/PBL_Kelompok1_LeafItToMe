@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
 import 'plant_list_page.dart';
 
@@ -381,25 +382,7 @@ class _AddPlantPageState extends State<AddPlantPage> {
             const SizedBox(height: 24),
 
             // Tombol Simpan Tanaman
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1B5E20),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 0,
-                ),
-                onPressed: _savePlant,
-                child: const Text(
-                  "Simpan Tanaman",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
+            AppButton(label: "Simpan Tanaman", onPressed: _savePlant),
             const SizedBox(height: 16),
           ],
         ),

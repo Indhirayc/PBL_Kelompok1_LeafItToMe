@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
 import '../data/history_data.dart';
 import '../widgets/history_page_header.dart';
@@ -44,28 +45,12 @@ class HistoryDetailPage extends StatelessWidget {
                   const SizedBox(height: 16),
                   _buildInfoCard(plant),
                   const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      key: const Key('recommendationButton'),
-                      onPressed: () => context.pushNamed(
-                        'treatment-recommendation',
-                        extra: record,
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _primaryGreen,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(13),
-                        ),
-                        textStyle: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      child: const Text('Lihat Rekomendasi Penanganan'),
+                  AppButton(
+                    key: const Key('recommendationButton'),
+                    label: 'Lihat Rekomendasi Penanganan',
+                    onPressed: () => context.pushNamed(
+                      'treatment-recommendation',
+                      extra: record,
                     ),
                   ),
                 ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/widgets/app_button.dart';
 import '../data/history_data.dart';
 import '../widgets/history_page_header.dart';
 
@@ -97,66 +98,24 @@ class TreatmentRecommendationPage extends StatelessWidget {
                   const SizedBox(height: 12),
                   _buildBulletCard(preventions),
                   const SizedBox(height: 22),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: OutlinedButton(
-                      key: const Key('diseaseDetailButton'),
-                      onPressed: () => context.pushNamed(
-                        'history-disease-detail',
-                        extra: record,
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: _primaryGreen,
-                        side: const BorderSide(color: _primaryGreen),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(13),
-                        ),
-                        textStyle: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('Lihat Detail Penyakit'),
-                          SizedBox(width: 8),
-                          Icon(Icons.arrow_forward_rounded, size: 18),
-                        ],
-                      ),
+                  AppButton(
+                    key: const Key('diseaseDetailButton'),
+                    icon: Icons.arrow_forward_rounded,
+                    label: 'Lihat Detail Penyakit',
+                    variant: AppButtonVariant.secondary,
+                    onPressed: () => context.pushNamed(
+                      'history-disease-detail',
+                      extra: record,
                     ),
                   ),
                   const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      key: const Key('marketplaceButton'),
-                      onPressed: () => _openMarketplace(
-                        context,
-                        disease?.searchKeyword ?? 'perawatan tanaman tomat',
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _primaryGreen,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(13),
-                        ),
-                        textStyle: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.shopping_bag_outlined, size: 18),
-                          SizedBox(width: 8),
-                          Text('Cari Produk Penanganan'),
-                        ],
-                      ),
+                  AppButton(
+                    key: const Key('marketplaceButton'),
+                    icon: Icons.shopping_bag_outlined,
+                    label: 'Cari Produk Penanganan',
+                    onPressed: () => _openMarketplace(
+                      context,
+                      disease?.searchKeyword ?? 'perawatan tanaman tomat',
                     ),
                   ),
                 ],

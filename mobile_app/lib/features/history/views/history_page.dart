@@ -38,20 +38,20 @@ class HistoryPage extends StatelessWidget {
               subtitle: 'Hasil pemeriksaan untuk tanaman ini.',
               action: IconButton(
                 onPressed: () {
-                  context.pushNamed(
-                    'sync-status',
-                    extra: selected,
-                  );
+                  context.pushNamed('sync-status', extra: selected);
                 },
                 tooltip: 'Sinkronisasi data',
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
                 splashRadius: 22,
-                icon: const Icon(
-                  Icons.sync_rounded,
-                  color: _darkGreen,
-                  size: 22,
+                style: IconButton.styleFrom(
+                  foregroundColor: const Color(0xFF2F7D4A),
+                  side: const BorderSide(color: Color(0xFF2F7D4A), width: 1),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
                 ),
+                icon: const Icon(Icons.sync_rounded, size: 22),
               ),
             ),
             Expanded(

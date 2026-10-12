@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/widgets/app_button.dart';
 import 'photo_preview_page.dart';
 import '../../../history/data/history_data.dart';
 import '../widgets/confidence_indicator.dart';
@@ -14,7 +15,6 @@ class DetectionResultPage extends StatelessWidget {
 
   static const Color _background = Color(0xFFFBFCF9);
   static const Color _darkGreen = Color(0xFF183E2D);
-  static const Color _primaryGreen = Color(0xFF1F7338);
   static const Color _secondaryText = Color(0xFF718478);
   static const Color _border = Color(0xFFE4EBE5);
   static const Color _paleGreen = Color(0xFFEEF6E8);
@@ -53,60 +53,30 @@ class DetectionResultPage extends StatelessWidget {
                     const SizedBox(height: 18),
                     _buildDiseaseCard(),
                     const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        key: const Key('treatmentButton'),
-                        onPressed: () => context.pushNamed(
-                          'treatment-recommendation',
-                          extra: HistoryRecord(
-                            id: 'DET-001',
-                            plantId: selection.draft.plant.id,
-                            diseaseName: 'Bacterial Spot',
-                            latinName: 'Xanthomonas spp.',
-                            date: selection.draft.inspectionDate,
-                            accuracy: 94,
-                            isHealthy: false,
-                            note: selection.draft.note,
-                          ),
+                    AppButton(
+                      key: const Key('treatmentButton'),
+                      label: 'Lihat Penanganan  ›',
+                      onPressed: () => context.pushNamed(
+                        'treatment-recommendation',
+                        extra: HistoryRecord(
+                          id: 'DET-001',
+                          plantId: selection.draft.plant.id,
+                          diseaseName: 'Bacterial Spot',
+                          latinName: 'Xanthomonas spp.',
+                          date: selection.draft.inspectionDate,
+                          accuracy: 94,
+                          isHealthy: false,
+                          note: selection.draft.note,
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _primaryGreen,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(13),
-                          ),
-                          textStyle: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        child: const Text('Lihat Penanganan  ›'),
                       ),
                     ),
                     const SizedBox(height: 9),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 46,
-                      child: OutlinedButton(
-                        key: const Key('saveToHistoryButton'),
-                        onPressed: () =>
-                            _showUiOnlyMessage(context, 'Simpan ke Riwayat'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: _primaryGreen,
-                          side: const BorderSide(color: _primaryGreen),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(13),
-                          ),
-                          textStyle: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        child: const Text('Simpan ke Riwayat'),
-                      ),
+                    AppButton(
+                      key: const Key('saveToHistoryButton'),
+                      label: 'Simpan ke Riwayat',
+                      variant: AppButtonVariant.secondary,
+                      onPressed: () =>
+                          _showUiOnlyMessage(context, 'Simpan ke Riwayat'),
                     ),
                     const SizedBox(height: 12),
                     const Text(

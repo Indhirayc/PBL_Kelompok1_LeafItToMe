@@ -162,11 +162,19 @@ class _LoginPageState extends State<LoginPage> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: _forgotPassword,
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFF2F7D4A),
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      minimumSize: const Size(0, 36),
+                      tapTargetSize: MaterialTapTargetSize.padded,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                    ),
                     child: const Text(
                       'Lupa kata sandi?',
                       style: TextStyle(
-                        color: Color(0xFF1F7338),
-                        fontSize: 13,
+                        fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -176,7 +184,7 @@ class _LoginPageState extends State<LoginPage> {
 
                 AppButton(
                   key: const Key('loginButton'),
-                  text: 'Masuk',
+                  label: 'Masuk',
                   isLoading: _isLoading,
                   onPressed: _login,
                 ),
@@ -193,16 +201,19 @@ class _LoginPageState extends State<LoginPage> {
                       key: const Key('registerButton'),
                       onPressed: _openRegisterPage,
                       style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        foregroundColor: const Color(0xFF2F7D4A),
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        minimumSize: const Size(0, 36),
+                        tapTargetSize: MaterialTapTargetSize.padded,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                        ),
                       ),
                       child: const Text(
                         'Daftar sekarang',
                         style: TextStyle(
-                          color: Color(0xFFD7442D),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),

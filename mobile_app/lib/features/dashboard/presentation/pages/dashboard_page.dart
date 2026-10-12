@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -538,14 +539,13 @@ class _DashboardPageState extends State<DashboardPage> {
                 onPressed: onTap,
                 style: OutlinedButton.styleFrom(
                   foregroundColor: primaryGreen,
-                  side: const BorderSide(color: borderColor),
+                  side: const BorderSide(color: primaryGreen, width: 1),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(18),
                   ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  minimumSize: const Size(0, 36),
+                  tapTargetSize: MaterialTapTargetSize.padded,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -632,18 +632,10 @@ class _DashboardPageState extends State<DashboardPage> {
               ),
               const SizedBox(height: 20),
               SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
+                child: AppButton(
+                  label: 'Tutup',
+                  variant: AppButtonVariant.secondary,
                   onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryGreen,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text('Tutup'),
                 ),
               ),
             ],

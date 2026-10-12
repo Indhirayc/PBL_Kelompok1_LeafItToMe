@@ -270,7 +270,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 AppButton(
                   key: const Key('registerSubmitButton'),
-                  text: 'Daftar',
+                  label: 'Daftar',
                   isLoading: _isLoading,
                   onPressed: _register,
                 ),
@@ -394,15 +394,15 @@ class _RegisterPageState extends State<RegisterPage> {
         InkWell(
           key: const Key('loginButton'),
           onTap: _openLoginPage,
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(18),
           child: const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 2, vertical: 6),
+            padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: Text(
               'Masuk',
               style: TextStyle(
-                color: Color(0xFFD7442D),
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
+                color: Color(0xFF2F7D4A),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),

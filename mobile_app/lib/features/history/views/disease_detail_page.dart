@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/widgets/app_button.dart';
 import '../data/history_data.dart';
 import '../widgets/history_page_header.dart';
 
@@ -97,35 +98,13 @@ class HistoryDiseaseDetailPage extends StatelessWidget {
                   const SizedBox(height: 12),
                   _buildBulletCard(disease?.preventions ?? const []),
                   const SizedBox(height: 22),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      key: const Key('marketplaceButton'),
-                      onPressed: () => _openMarketplace(
-                        context,
-                        disease?.searchKeyword ?? 'perawatan tanaman tomat',
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _primaryGreen,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(13),
-                        ),
-                        textStyle: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.shopping_bag_outlined, size: 18),
-                          SizedBox(width: 8),
-                          Text('Cari Produk Penanganan'),
-                        ],
-                      ),
+                  AppButton(
+                    key: const Key('marketplaceButton'),
+                    icon: Icons.shopping_bag_outlined,
+                    label: 'Cari Produk Penanganan',
+                    onPressed: () => _openMarketplace(
+                      context,
+                      disease?.searchKeyword ?? 'perawatan tanaman tomat',
                     ),
                   ),
                 ],
