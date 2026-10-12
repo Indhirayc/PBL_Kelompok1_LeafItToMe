@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
 
@@ -141,143 +142,152 @@ class _RegisterPageState extends State<RegisterPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFFBFCF9),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 22, 20, 30),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                _buildTopBar(),
-                const SizedBox(height: 12),
+        child: AppContentLayout(
+          maxWidth: 480,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 22, 20, 30),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  _buildTopBar(),
+                  const SizedBox(height: 12),
 
-                _buildLogo(),
-                const SizedBox(height: 14),
+                  _buildLogo(),
+                  const SizedBox(height: 14),
 
-                const Text(
-                  'Buat akun baru',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Color(0xFF124B35),
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 5),
-
-                const Text(
-                  'Simpan riwayat dan pantau tanamanmu.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Color(0xFF718478),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-                const SizedBox(height: 27),
-
-                AppTextField(
-                  key: const Key('nameField'),
-                  controller: _nameController,
-                  label: 'Nama lengkap',
-                  hintText: 'Masukkan nama lengkap',
-                  keyboardType: TextInputType.name,
-                  textInputAction: TextInputAction.next,
-                  validator: _validateName,
-                  prefixIcon: const Icon(
-                    Icons.person_outline_rounded,
-                    color: Color(0xFF1F7338),
-                    size: 21,
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                AppTextField(
-                  key: const Key('registerEmailField'),
-                  controller: _emailController,
-                  label: 'Email',
-                  hintText: 'nama@email.com',
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next,
-                  validator: _validateEmail,
-                  prefixIcon: const Icon(
-                    Icons.mail_outline_rounded,
-                    color: Color(0xFF1F7338),
-                    size: 21,
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                AppTextField(
-                  key: const Key('registerPasswordField'),
-                  controller: _passwordController,
-                  label: 'Kata sandi',
-                  hintText: 'Masukkan kata sandi',
-                  textInputAction: TextInputAction.next,
-                  obscureText: _obscurePassword,
-                  validator: _validatePassword,
-                  prefixIcon: const Icon(
-                    Icons.lock_outline_rounded,
-                    color: Color(0xFF1F7338),
-                    size: 21,
-                  ),
-                  suffixIcon: IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _obscurePassword = !_obscurePassword;
-                      });
-                    },
-                    icon: Icon(
-                      _obscurePassword
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
-                      color: const Color(0xFF1F7338),
+                  const Text(
+                    'Buat akun baru',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFF124B35),
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                ),
-                const SizedBox(height: 12),
+                  const SizedBox(height: 5),
 
-                AppTextField(
-                  key: const Key('confirmPasswordField'),
-                  controller: _confirmPasswordController,
-                  label: 'Konfirmasi kata sandi',
-                  hintText: 'Masukkan kembali kata sandi',
-                  textInputAction: TextInputAction.done,
-                  obscureText: _obscureConfirmPassword,
-                  validator: _validateConfirmPassword,
-                  prefixIcon: const Icon(
-                    Icons.lock_outline_rounded,
-                    color: Color(0xFF1F7338),
-                    size: 21,
-                  ),
-                  suffixIcon: IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _obscureConfirmPassword = !_obscureConfirmPassword;
-                      });
-                    },
-                    icon: Icon(
-                      _obscureConfirmPassword
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
-                      color: const Color(0xFF1F7338),
+                  const Text(
+                    'Simpan riwayat dan pantau tanamanmu.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFF718478),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
                     ),
                   ),
-                ),
-                const SizedBox(height: 18),
+                  const SizedBox(height: 27),
 
-                _buildAgreement(),
-                const SizedBox(height: 28),
+                  AppTextField(
+                    key: const Key('nameField'),
+                    controller: _nameController,
+                    label: 'Nama lengkap',
+                    hintText: 'Masukkan nama lengkap',
+                    keyboardType: TextInputType.name,
+                    textInputAction: TextInputAction.next,
+                    validator: _validateName,
+                    prefixIcon: const Icon(
+                      Icons.person_outline_rounded,
+                      color: Color(0xFF1F7338),
+                      size: 21,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
 
-                AppButton(
-                  key: const Key('registerSubmitButton'),
-                  label: 'Daftar',
-                  isLoading: _isLoading,
-                  onPressed: _register,
-                ),
-                const SizedBox(height: 18),
+                  AppTextField(
+                    key: const Key('registerEmailField'),
+                    controller: _emailController,
+                    label: 'Email',
+                    hintText: 'nama@email.com',
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                    validator: _validateEmail,
+                    prefixIcon: const Icon(
+                      Icons.mail_outline_rounded,
+                      color: Color(0xFF1F7338),
+                      size: 21,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
 
-                _buildLoginPrompt(),
-              ],
+                  AppTextField(
+                    key: const Key('registerPasswordField'),
+                    controller: _passwordController,
+                    label: 'Kata sandi',
+                    hintText: 'Masukkan kata sandi',
+                    textInputAction: TextInputAction.next,
+                    obscureText: _obscurePassword,
+                    validator: _validatePassword,
+                    prefixIcon: const Icon(
+                      Icons.lock_outline_rounded,
+                      color: Color(0xFF1F7338),
+                      size: 21,
+                    ),
+                    suffixIcon: IconButton(
+                      tooltip: _obscurePassword
+                          ? 'Tampilkan kata sandi'
+                          : 'Sembunyikan kata sandi',
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        color: const Color(0xFF1F7338),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  AppTextField(
+                    key: const Key('confirmPasswordField'),
+                    controller: _confirmPasswordController,
+                    label: 'Konfirmasi kata sandi',
+                    hintText: 'Masukkan kembali kata sandi',
+                    textInputAction: TextInputAction.done,
+                    obscureText: _obscureConfirmPassword,
+                    validator: _validateConfirmPassword,
+                    prefixIcon: const Icon(
+                      Icons.lock_outline_rounded,
+                      color: Color(0xFF1F7338),
+                      size: 21,
+                    ),
+                    suffixIcon: IconButton(
+                      tooltip: _obscureConfirmPassword
+                          ? 'Tampilkan konfirmasi kata sandi'
+                          : 'Sembunyikan konfirmasi kata sandi',
+                      onPressed: () {
+                        setState(() {
+                          _obscureConfirmPassword = !_obscureConfirmPassword;
+                        });
+                      },
+                      icon: Icon(
+                        _obscureConfirmPassword
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        color: const Color(0xFF1F7338),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+
+                  _buildAgreement(),
+                  const SizedBox(height: 28),
+
+                  AppButton(
+                    key: const Key('registerSubmitButton'),
+                    label: 'Daftar',
+                    isLoading: _isLoading,
+                    onPressed: _register,
+                  ),
+                  const SizedBox(height: 18),
+
+                  _buildLoginPrompt(),
+                ],
+              ),
             ),
           ),
         ),
@@ -384,8 +394,9 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Widget _buildLoginPrompt() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         const Text(
           'Sudah memiliki akun? ',

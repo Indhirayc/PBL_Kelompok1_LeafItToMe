@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/widgets/app_content_layout.dart';
+
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
 
@@ -40,163 +42,164 @@ class AboutPage extends StatelessWidget {
           ),
         ),
       ),
-      body: SafeArea(
-        top: false,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(27, 20, 27, 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildApplicationIdentity(),
-              const SizedBox(height: 28),
+      body: AppContentLayout(
+        child: SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(27, 20, 27, 32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildApplicationIdentity(),
+                const SizedBox(height: 28),
 
-              const _SectionTitle(title: 'Tentang Aplikasi'),
-              const SizedBox(height: 14),
+                const _SectionTitle(title: 'Tentang Aplikasi'),
+                const SizedBox(height: 14),
 
-              const _InformationCard(
-                child: Text(
-                  'LeafItToMe adalah aplikasi mobile yang membantu pengguna '
-                  'mengenali kondisi dan penyakit pada daun tanaman tomat. '
-                  'Aplikasi menggunakan teknologi machine learning untuk '
-                  'melakukan klasifikasi berdasarkan foto daun yang diberikan.',
-                  style: TextStyle(
-                    color: _AboutColors.secondaryText,
-                    fontSize: 13,
-                    height: 1.6,
+                const _InformationCard(
+                  child: Text(
+                    'LeafItToMe adalah aplikasi mobile yang membantu pengguna '
+                    'mengenali kondisi dan penyakit pada daun tanaman tomat. '
+                    'Aplikasi menggunakan teknologi machine learning untuk '
+                    'melakukan klasifikasi berdasarkan foto daun yang diberikan.',
+                    style: TextStyle(
+                      color: _AboutColors.secondaryText,
+                      fontSize: 13,
+                      height: 1.6,
+                    ),
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 26),
+                const SizedBox(height: 26),
 
-              const _SectionTitle(title: 'Fitur Utama'),
-              const SizedBox(height: 14),
+                const _SectionTitle(title: 'Fitur Utama'),
+                const SizedBox(height: 14),
 
-              const _InformationCard(
-                child: Column(
-                  children: [
-                    _FeatureItem(
-                      icon: Icons.eco_outlined,
-                      title: 'Kelola Tanaman',
-                      description:
-                          'Menyimpan dan mengelola data setiap tanaman tomat.',
-                    ),
-                    _CardDivider(),
-                    _FeatureItem(
-                      icon: Icons.document_scanner_outlined,
-                      title: 'Deteksi Penyakit',
-                      description: 'Mendeteksi kondisi daun melalui foto menggunakan model machine learning.',
-                    ),
-                    _CardDivider(),
-                    _FeatureItem(
-                      icon: Icons.history_rounded,
-                      title: 'Riwayat Pemeriksaan',
-                      description:
-                          'Menyimpan hasil pemeriksaan berdasarkan tanaman.',
-                    ),
-                    _CardDivider(),
-                    _FeatureItem(
-                      icon: Icons.menu_book_outlined,
-                      title: 'Panduan Budidaya',
-                      description: 'Menyediakan informasi perawatan dan budidaya tanaman tomat.',
-                    ),
-                  ],
+                const _InformationCard(
+                  child: Column(
+                    children: [
+                      _FeatureItem(
+                        icon: Icons.eco_outlined,
+                        title: 'Kelola Tanaman',
+                        description: 'Menyimpan dan mengelola data setiap tanaman tomat.',
+                      ),
+                      _CardDivider(),
+                      _FeatureItem(
+                        icon: Icons.document_scanner_outlined,
+                        title: 'Deteksi Penyakit',
+                        description: 'Mendeteksi kondisi daun melalui foto menggunakan model machine learning.',
+                      ),
+                      _CardDivider(),
+                      _FeatureItem(
+                        icon: Icons.history_rounded,
+                        title: 'Riwayat Pemeriksaan',
+                        description:
+                            'Menyimpan hasil pemeriksaan berdasarkan tanaman.',
+                      ),
+                      _CardDivider(),
+                      _FeatureItem(
+                        icon: Icons.menu_book_outlined,
+                        title: 'Panduan Budidaya',
+                        description: 'Menyediakan informasi perawatan dan budidaya tanaman tomat.',
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: 26),
+                const SizedBox(height: 26),
 
-              const _SectionTitle(title: 'Informasi Pengembangan'),
-              const SizedBox(height: 14),
+                const _SectionTitle(title: 'Informasi Pengembangan'),
+                const SizedBox(height: 14),
 
-              const _InformationCard(
-                child: Column(
-                  children: [
-                    _InformationRow(
-                      icon: Icons.school_outlined,
-                      label: 'Institusi',
-                      value: 'Politeknik Negeri Malang',
-                    ),
-                    _CardDivider(),
-                    _InformationRow(
-                      icon: Icons.groups_outlined,
-                      label: 'Pengembang',
-                      value: 'Kelompok 1 PBL',
-                    ),
-                    _CardDivider(),
-                    _InformationRow(
-                      icon: Icons.phone_android_rounded,
-                      label: 'Platform',
-                      value: 'Flutter',
-                    ),
-                    _CardDivider(),
-                    _InformationRow(
-                      icon: Icons.info_outline_rounded,
-                      label: 'Versi',
-                      value: _appVersion,
-                    ),
-                  ],
+                const _InformationCard(
+                  child: Column(
+                    children: [
+                      _InformationRow(
+                        icon: Icons.school_outlined,
+                        label: 'Institusi',
+                        value: 'Politeknik Negeri Malang',
+                      ),
+                      _CardDivider(),
+                      _InformationRow(
+                        icon: Icons.groups_outlined,
+                        label: 'Pengembang',
+                        value: 'Kelompok 1 PBL',
+                      ),
+                      _CardDivider(),
+                      _InformationRow(
+                        icon: Icons.phone_android_rounded,
+                        label: 'Platform',
+                        value: 'Flutter',
+                      ),
+                      _CardDivider(),
+                      _InformationRow(
+                        icon: Icons.info_outline_rounded,
+                        label: 'Versi',
+                        value: _appVersion,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: 26),
+                const SizedBox(height: 26),
 
-              Container(
-                padding: const EdgeInsets.all(17),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF8E8),
-                  borderRadius: BorderRadius.circular(15),
-                  border: Border.all(color: const Color(0xFFF2E3B8)),
-                ),
-                child: const Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.warning_amber_rounded,
-                      color: Color(0xFFD89116),
-                      size: 22,
-                    ),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Hasil deteksi LeafItToMe merupakan informasi awal '
-                        'dan bukan diagnosis mutlak. Lakukan pemeriksaan '
-                        'lebih lanjut jika kondisi tanaman memburuk.',
-                        style: TextStyle(
-                          color: Color(0xFF80662C),
-                          fontSize: 12,
-                          height: 1.5,
+                Container(
+                  padding: const EdgeInsets.all(17),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF8E8),
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(color: const Color(0xFFF2E3B8)),
+                  ),
+                  child: const Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.warning_amber_rounded,
+                        color: Color(0xFFD89116),
+                        size: 22,
+                      ),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Hasil deteksi LeafItToMe merupakan informasi awal '
+                          'dan bukan diagnosis mutlak. Lakukan pemeriksaan '
+                          'lebih lanjut jika kondisi tanaman memburuk.',
+                          style: TextStyle(
+                            color: Color(0xFF80662C),
+                            fontSize: 12,
+                            height: 1.5,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: 30),
+                const SizedBox(height: 30),
 
-              const Text(
-                'Dibuat untuk membantu menjaga tanaman tomat tetap sehat.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: _AboutColors.secondaryText,
-                  fontSize: 12,
-                  height: 1.5,
+                const Text(
+                  'Dibuat untuk membantu menjaga tanaman tomat tetap sehat.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: _AboutColors.secondaryText,
+                    fontSize: 12,
+                    height: 1.5,
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: 5),
+                const SizedBox(height: 5),
 
-              const Text(
-                '© 2026 LeafItToMe',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: _AboutColors.darkGreen,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+                const Text(
+                  '© 2026 LeafItToMe',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: _AboutColors.darkGreen,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

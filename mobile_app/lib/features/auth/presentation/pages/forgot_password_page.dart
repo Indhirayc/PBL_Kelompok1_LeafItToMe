@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
 
@@ -73,43 +74,46 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFFBFCF9),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 22, 20, 30),
-          child: Column(
-            children: [
-              _buildTopBar(),
-              const SizedBox(height: 42),
-              _buildLogo(),
-              const SizedBox(height: 22),
+        child: AppContentLayout(
+          maxWidth: 480,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 22, 20, 30),
+            child: Column(
+              children: [
+                _buildTopBar(),
+                const SizedBox(height: 42),
+                _buildLogo(),
+                const SizedBox(height: 22),
 
-              const Text(
-                'Lupa kata sandi?',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Color(0xFF124B35),
-                  fontSize: 25,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 10),
-
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Text(
-                  'Masukkan email yang terdaftar. Kami akan '
-                  'mengirimkan tautan untuk mengatur ulang kata sandimu.',
+                const Text(
+                  'Lupa kata sandi?',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Color(0xFF718478),
-                    fontSize: 13,
-                    height: 1.5,
+                    color: Color(0xFF124B35),
+                    fontSize: 25,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-              ),
-              const SizedBox(height: 38),
+                const SizedBox(height: 10),
 
-              if (!_emailSent) _buildEmailForm() else _buildSuccessContent(),
-            ],
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Text(
+                    'Masukkan email yang terdaftar. Kami akan '
+                    'mengirimkan tautan untuk mengatur ulang kata sandimu.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFF718478),
+                      fontSize: 13,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 38),
+
+                if (!_emailSent) _buildEmailForm() else _buildSuccessContent(),
+              ],
+            ),
           ),
         ),
       ),
@@ -132,12 +136,16 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           ),
         ),
         const SizedBox(width: 14),
-        const Text(
-          'Lupa Kata Sandi',
-          style: TextStyle(
-            color: Color(0xFF1F3826),
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+        const Expanded(
+          child: Text(
+            'Lupa Kata Sandi',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Color(0xFF1F3826),
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ],
@@ -197,8 +205,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           ),
           const SizedBox(height: 22),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               const Text(
                 'Sudah ingat kata sandimu? ',

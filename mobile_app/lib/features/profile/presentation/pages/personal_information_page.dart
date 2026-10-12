@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
 
 import 'package:go_router/go_router.dart';
@@ -155,112 +156,125 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
         ),
       ),
 
-      body: SafeArea(
-        top: false,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(27, 10, 27, 32),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildProfilePhoto(),
-                const SizedBox(height: 40),
-                const Text(
-                  'Informasi Pribadi',
-                  style: TextStyle(
-                    color: _ProfileColors.darkGreen,
-                    fontSize: 19,
-                    fontWeight: FontWeight.w700,
+      body: AppContentLayout(
+        maxWidth: 560,
+        alignment: Alignment.topCenter,
+        child: SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(27, 24, 27, 32),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildProfilePhoto(),
+                  const SizedBox(height: 40),
+                  const Text(
+                    'Informasi Pribadi',
+                    style: TextStyle(
+                      color: _ProfileColors.darkGreen,
+                      fontSize: 19,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 7),
-                const Text(
-                  'Pastikan informasi yang kamu masukkan sudah benar.',
-                  style: TextStyle(
-                    color: _ProfileColors.secondaryText,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w400,
-                    height: 1.4,
+                  const SizedBox(height: 7),
+                  const Text(
+                    'Pastikan informasi yang kamu masukkan sudah benar.',
+                    style: TextStyle(
+                      color: _ProfileColors.secondaryText,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
+                      height: 1.4,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 22),
-                _ProfileTextField(
-                  controller: _nameController,
-                  label: 'Nama Lengkap',
-                  hintText: 'Masukkan nama lengkap',
-                  icon: Icons.person_outline_rounded,
-                  textInputAction: TextInputAction.next,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Nama lengkap wajib diisi.';
-                    }
+                  const SizedBox(height: 22),
+                  _ProfileTextField(
+                    controller: _nameController,
+                    label: 'Nama Lengkap',
+                    hintText: 'Masukkan nama lengkap',
+                    icon: Icons.person_outline_rounded,
+                    textInputAction: TextInputAction.next,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Nama lengkap wajib diisi.';
+                      }
 
-                    if (value.trim().length < 3) {
-                      return 'Nama lengkap minimal 3 karakter.';
-                    }
+                      if (value.trim().length < 3) {
+                        return 'Nama lengkap minimal 3 karakter.';
+                      }
 
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 18),
-                _ProfileTextField(
-                  controller: _emailController,
-                  label: 'Email',
-                  hintText: 'nama@email.com',
-                  icon: Icons.mail_outline_rounded,
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next,
-                  validator: (value) {
-                    final email = value?.trim() ?? '';
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 18),
+                  _ProfileTextField(
+                    controller: _emailController,
+                    label: 'Email',
+                    hintText: 'nama@email.com',
+                    icon: Icons.mail_outline_rounded,
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                    validator: (value) {
+                      final email = value?.trim() ?? '';
 
-                    if (email.isEmpty) {
-                      return 'Email wajib diisi.';
-                    }
+                      if (email.isEmpty) {
+                        return 'Email wajib diisi.';
+                      }
 
-                    final emailPattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+                      final emailPattern = RegExp(
+                        r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+                      );
 
-                    if (!emailPattern.hasMatch(email)) {
-                      return 'Format email belum benar.';
-                    }
+                      if (!emailPattern.hasMatch(email)) {
+                        return 'Format email belum benar.';
+                      }
 
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 18),
-                _ProfileTextField(
-                  controller: _phoneController,
-                  label: 'Nomor Telepon',
-                  hintText: 'Masukkan nomor telepon',
-                  icon: Icons.phone_outlined,
-                  keyboardType: TextInputType.phone,
-                  textInputAction: TextInputAction.done,
-                  onFieldSubmitted: (_) => _saveProfile(),
-                  validator: (value) {
-                    final phone = value?.trim() ?? '';
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 18),
+                  _ProfileTextField(
+                    controller: _phoneController,
+                    label: 'Nomor Telepon',
+                    hintText: 'Masukkan nomor telepon',
+                    icon: Icons.phone_outlined,
+                    keyboardType: TextInputType.phone,
+                    textInputAction: TextInputAction.done,
+                    onFieldSubmitted: (_) => _saveProfile(),
+                    validator: (value) {
+                      final phone = value?.trim() ?? '';
 
-                    if (phone.isEmpty) {
-                      return 'Nomor telepon wajib diisi.';
-                    }
+                      if (phone.isEmpty) {
+                        return 'Nomor telepon wajib diisi.';
+                      }
 
-                    if (phone.length < 10 || phone.length > 15) {
-                      return 'Nomor telepon harus terdiri dari 10–15 digit.';
-                    }
+                      if (phone.length < 10 || phone.length > 15) {
+                        return 'Nomor telepon harus terdiri dari 10–15 digit.';
+                      }
 
-                    if (!RegExp(r'^[0-9]+$').hasMatch(phone)) {
-                      return 'Nomor telepon hanya boleh berisi angka.';
-                    }
+                      if (!RegExp(r'^[0-9]+$').hasMatch(phone)) {
+                        return 'Nomor telepon hanya boleh berisi angka.';
+                      }
 
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 29),
-                AppButton(
-                  label: 'Simpan Perubahan',
-                  isLoading: _isSaving,
-                  onPressed: _isSaving ? null : _saveProfile,
-                ),
-              ],
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 29),
+                  Align(
+                    alignment: Alignment.center,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 480),
+                      child: AppButton(
+                        label: 'Simpan Perubahan',
+                        isLoading: _isSaving,
+                        onPressed: _isSaving ? null : _saveProfile,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -275,6 +289,7 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
           clipBehavior: Clip.none,
           children: [
             Container(
+              key: const Key('profilePhotoAvatar'),
               width: 110,
               height: 110,
               padding: const EdgeInsets.all(17),

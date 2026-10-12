@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../app/theme/app_breakpoints.dart';
+import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../widgets/profile_menu_tile.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
@@ -82,25 +84,46 @@ class ProfilePage extends StatelessWidget {
           ),
         ),
       ),
-      body: SafeArea(
-        top: false,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildProfileCard(context),
-              const SizedBox(height: 24),
-              const _SectionTitle(title: 'Aktivitas Tanaman'),
-              const SizedBox(height: 10),
-              const _ActivityCard(),
-              const SizedBox(height: 24),
-              const _SectionTitle(title: 'Pengaturan Akun'),
-              const SizedBox(height: 12),
-              _buildAccountMenu(context),
-              const SizedBox(height: 26),
-              _buildLogoutButton(context),
-            ],
+      body: AppContentLayout(
+        alignment: Alignment.topCenter,
+        child: SafeArea(
+          top: false,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isTablet =
+                  constraints.maxWidth >= AppBreakpoints.tablet ||
+                  MediaQuery.sizeOf(context).width >= AppBreakpoints.tablet;
+
+              return SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (isTablet)
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(child: _buildProfileCard(context)),
+                          const SizedBox(width: 24),
+                          const Expanded(child: _ActivitySection()),
+                        ],
+                      )
+                    else ...[
+                      _buildProfileCard(context),
+                      const SizedBox(height: 24),
+                      const _ActivitySection(),
+                    ],
+                    const SizedBox(height: 24),
+                    const _SectionTitle(title: 'Pengaturan Akun'),
+                    const SizedBox(height: 12),
+                    _buildAccountMenu(context),
+                    const SizedBox(height: 26),
+                    _buildLogoutButton(context),
+                  ],
+                ),
+              );
+            },
           ),
         ),
       ),
@@ -111,6 +134,7 @@ class ProfilePage extends StatelessWidget {
 
   Widget _buildProfileCard(BuildContext context) {
     return Container(
+      key: const Key('profileOverviewCard'),
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -206,49 +230,92 @@ class ProfilePage extends StatelessWidget {
   }
 
   Widget _buildAccountMenu(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: borderColor),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 14,
-            offset: const Offset(0, 5),
+    final isTablet = MediaQuery.sizeOf(context).width >= AppBreakpoints.tablet;
+    final items = _buildAccountMenuItems(context, isTablet: isTablet);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (isTablet) {
+          final itemWidth = (constraints.maxWidth - 16) / 2;
+          return Wrap(
+            spacing: 16,
+            runSpacing: 12,
+            children: [
+              for (final item in items)
+                SizedBox(
+                  width: itemWidth,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: borderColor),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 14,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: item,
+                  ),
+                ),
+            ],
+          );
+        }
+
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: borderColor),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 14,
+                offset: const Offset(0, 5),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Column(
-        children: [
-          ProfileMenuTile(
-            icon: Icons.person_outline_rounded,
-            title: 'Informasi Pribadi',
-            subtitle: 'Lihat dan ubah informasi akun',
-            onTap: () {
-              context.pushNamed('personal-information');
-            },
-          ),
-          ProfileMenuTile(
-            icon: Icons.help_outline_rounded,
-            title: 'Bantuan & FAQ',
-            subtitle: 'Temukan jawaban dan bantuan',
-            onTap: () {
-              context.pushNamed('help-faq');
-            },
-          ),
-          ProfileMenuTile(
-            icon: Icons.info_outline_rounded,
-            title: 'Tentang LeafItToMe',
-            subtitle: 'Informasi dan versi aplikasi',
-            showDivider: false,
-            onTap: () {
-              context.pushNamed('about');
-            },
-          ),
-        ],
-      ),
+          child: Column(children: items),
+        );
+      },
     );
+  }
+
+  List<Widget> _buildAccountMenuItems(
+    BuildContext context, {
+    required bool isTablet,
+  }) {
+    return [
+      ProfileMenuTile(
+        icon: Icons.person_outline_rounded,
+        title: 'Informasi Pribadi',
+        subtitle: 'Lihat dan ubah informasi akun',
+        showDivider: !isTablet,
+        onTap: () {
+          context.pushNamed('personal-information');
+        },
+      ),
+      ProfileMenuTile(
+        icon: Icons.help_outline_rounded,
+        title: 'Bantuan & FAQ',
+        subtitle: 'Temukan jawaban dan bantuan',
+        showDivider: !isTablet,
+        onTap: () {
+          context.pushNamed('help-faq');
+        },
+      ),
+      ProfileMenuTile(
+        icon: Icons.info_outline_rounded,
+        title: 'Tentang LeafItToMe',
+        subtitle: 'Informasi dan versi aplikasi',
+        showDivider: false,
+        onTap: () {
+          context.pushNamed('about');
+        },
+      ),
+    ];
   }
 
   Widget _buildLogoutButton(BuildContext context) {
@@ -288,6 +355,22 @@ class _SectionTitle extends StatelessWidget {
         fontSize: 16,
         fontWeight: FontWeight.w700,
       ),
+    );
+  }
+}
+
+class _ActivitySection extends StatelessWidget {
+  const _ActivitySection();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionTitle(title: 'Aktivitas Tanaman'),
+        SizedBox(height: 10),
+        _ActivityCard(),
+      ],
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../guide/data/guide_data.dart';
 import '../data/history_data.dart';
@@ -118,67 +119,69 @@ class TreatmentRecommendationPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: _background,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            HistoryPageHeader(
-              title: 'Rekomendasi Penanganan',
-              subtitle: 'Langkah penanganan dan pencegahan.',
-              fallbackRoute: 'history',
-              fallbackExtra: plant,
-            ),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                children: [
-                  _buildContextCard(plantLabel, disease),
-                  const SizedBox(height: 22),
-                  const Text(
-                    'Penanganan Awal',
-                    style: TextStyle(
-                      color: _darkGreen,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildNumberedCard(treatments),
-                  const SizedBox(height: 22),
-                  const Text(
-                    'Pencegahan',
-                    style: TextStyle(
-                      color: _darkGreen,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildBulletCard(preventions),
-                  const SizedBox(height: 22),
-                  AppButton(
-                    key: const Key('marketplaceButton'),
-                    icon: Icons.open_in_new_rounded,
-                    label: 'Lihat di Marketplace',
-                    onPressed: () => _openMarketplace(
-                      context,
-                      disease?.searchKeyword ?? 'perawatan tanaman tomat',
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  AppButton(
-                    key: const Key('diseaseDetailButton'),
-                    icon: Icons.arrow_forward_rounded,
-                    label: 'Lihat Detail Penyakit',
-                    variant: AppButtonVariant.secondary,
-                    onPressed: () => _openDiseaseDetails(context),
-                  ),
-                ],
+      body: AppContentLayout(
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              HistoryPageHeader(
+                title: 'Rekomendasi Penanganan',
+                subtitle: 'Langkah penanganan dan pencegahan.',
+                fallbackRoute: 'history',
+                fallbackExtra: plant,
               ),
-            ),
-          ],
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                  children: [
+                    _buildContextCard(plantLabel, disease),
+                    const SizedBox(height: 22),
+                    const Text(
+                      'Penanganan Awal',
+                      style: TextStyle(
+                        color: _darkGreen,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildNumberedCard(treatments),
+                    const SizedBox(height: 22),
+                    const Text(
+                      'Pencegahan',
+                      style: TextStyle(
+                        color: _darkGreen,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildBulletCard(preventions),
+                    const SizedBox(height: 22),
+                    AppButton(
+                      key: const Key('marketplaceButton'),
+                      icon: Icons.open_in_new_rounded,
+                      label: 'Lihat di Marketplace',
+                      onPressed: () => _openMarketplace(
+                        context,
+                        disease?.searchKeyword ?? 'perawatan tanaman tomat',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    AppButton(
+                      key: const Key('diseaseDetailButton'),
+                      icon: Icons.arrow_forward_rounded,
+                      label: 'Lihat Detail Penyakit',
+                      variant: AppButtonVariant.secondary,
+                      onPressed: () => _openDiseaseDetails(context),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

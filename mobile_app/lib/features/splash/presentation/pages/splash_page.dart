@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../app/theme/app_breakpoints.dart';
+
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
 
@@ -88,7 +90,7 @@ class _SplashContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isLandscape = maxWidth > maxHeight;
-    final bool isTablet = maxWidth >= 600;
+    final bool isTablet = maxWidth >= kTabletBreakpoint;
     final bool isShortScreen = maxHeight < 700;
 
     final double contentWidth = maxWidth.clamp(0.0, isTablet ? 520.0 : 430.0);

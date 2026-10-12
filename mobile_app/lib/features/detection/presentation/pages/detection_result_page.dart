@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_page_header.dart';
 import 'photo_preview_page.dart';
@@ -52,49 +53,51 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(context),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                child: Column(
-                  children: [
-                    _buildResultPhoto(),
-                    const SizedBox(height: 20),
-                    InspectionPlantContextCard(
-                      name: widget.selection.draft.plant.name,
-                      id: widget.selection.draft.plant.id,
-                      location: widget.selection.draft.plant.location,
-                    ),
-                    const SizedBox(height: 18),
-                    _buildDiseaseCard(),
-                    const SizedBox(height: 12),
-                    AppButton(
-                      key: const Key('treatmentButton'),
-                      label: 'Lihat Penanganan  ›',
-                      onPressed: () => context.pushNamed(
-                        'treatment-recommendation',
-                        extra: _detectionRecord,
+      body: AppContentLayout(
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildHeader(context),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                  child: Column(
+                    children: [
+                      _buildResultPhoto(),
+                      const SizedBox(height: 20),
+                      InspectionPlantContextCard(
+                        name: widget.selection.draft.plant.name,
+                        id: widget.selection.draft.plant.id,
+                        location: widget.selection.draft.plant.location,
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Hasil contoh ditambahkan ke riwayat sementara sesi ini; '
-                      'belum tersimpan permanen.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: _secondaryText,
-                        fontSize: 10,
-                        height: 1.4,
+                      const SizedBox(height: 18),
+                      _buildDiseaseCard(),
+                      const SizedBox(height: 12),
+                      AppButton(
+                        key: const Key('treatmentButton'),
+                        label: 'Lihat Penanganan  ›',
+                        onPressed: () => context.pushNamed(
+                          'treatment-recommendation',
+                          extra: _detectionRecord,
+                        ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Hasil contoh ditambahkan ke riwayat sementara sesi ini; '
+                        'belum tersimpan permanen.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: _secondaryText,
+                          fontSize: 10,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

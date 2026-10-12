@@ -46,6 +46,8 @@ class HistoryCard extends StatelessWidget {
                     children: [
                       Text(
                         record.diseaseName,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: _darkGreen,
                           fontSize: 15,
@@ -55,6 +57,8 @@ class HistoryCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         record.latinName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: _secondaryText,
                           fontSize: 13,
@@ -62,22 +66,33 @@ class HistoryCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Row(
+                      Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 10,
+                        runSpacing: 6,
                         children: [
-                          const Icon(
-                            Icons.calendar_today_outlined,
-                            size: 13,
-                            color: _secondaryText,
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.calendar_today_outlined,
+                                size: 13,
+                                color: _secondaryText,
+                              ),
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: Text(
+                                  formatHistoryDate(record.date),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: _secondaryText,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 6),
-                          Text(
-                            formatHistoryDate(record.date),
-                            style: const TextStyle(
-                              color: _secondaryText,
-                              fontSize: 12,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10,

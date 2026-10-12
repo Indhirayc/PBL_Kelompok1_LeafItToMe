@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/widgets/app_content_layout.dart';
+
 class HelpFaqPage extends StatefulWidget {
   const HelpFaqPage({super.key});
 
@@ -198,42 +200,44 @@ class _HelpFaqPageState extends State<HelpFaqPage> {
           ),
         ),
       ),
-      body: SafeArea(
-        top: false,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(27, 18, 27, 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHelpHeader(),
-              const SizedBox(height: 24),
-              _buildSearchField(),
-              const SizedBox(height: 28),
-              const Text(
-                'Pertanyaan yang Sering Diajukan',
-                style: TextStyle(
-                  color: _HelpColors.darkGreen,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
+      body: AppContentLayout(
+        child: SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(27, 18, 27, 32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHelpHeader(),
+                const SizedBox(height: 24),
+                _buildSearchField(),
+                const SizedBox(height: 28),
+                const Text(
+                  'Pertanyaan yang Sering Diajukan',
+                  style: TextStyle(
+                    color: _HelpColors.darkGreen,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 7),
-              const Text(
-                'Temukan jawaban mengenai penggunaan LeafItToMe.',
-                style: TextStyle(
-                  color: _HelpColors.secondaryText,
-                  fontSize: 13,
-                  height: 1.4,
+                const SizedBox(height: 7),
+                const Text(
+                  'Temukan jawaban mengenai penggunaan LeafItToMe.',
+                  style: TextStyle(
+                    color: _HelpColors.secondaryText,
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 18),
-              if (filteredItems.isEmpty)
-                _buildEmptySearchResult()
-              else
-                _buildFaqList(filteredItems),
-              const SizedBox(height: 28),
-              _buildContactCard(),
-            ],
+                const SizedBox(height: 18),
+                if (filteredItems.isEmpty)
+                  _buildEmptySearchResult()
+                else
+                  _buildFaqList(filteredItems),
+                const SizedBox(height: 28),
+                _buildContactCard(),
+              ],
+            ),
           ),
         ),
       ),

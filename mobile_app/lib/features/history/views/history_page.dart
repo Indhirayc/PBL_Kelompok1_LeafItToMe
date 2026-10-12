@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/widgets/app_content_layout.dart';
+
 import '../../../../core/widgets/main_bottom_navigation.dart';
 import '../data/history_data.dart';
 import '../widgets/history_card.dart';
@@ -29,49 +31,54 @@ class HistoryPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: _background,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            HistoryPageHeader(
-              title: 'Riwayat Pemeriksaan',
-              subtitle: 'Hasil pemeriksaan untuk tanaman ini.',
-              fallbackRoute: 'plants',
-              action: IconButton(
-                tooltip: 'Sinkronisasi Data',
-                onPressed: () {
-                  context.pushNamed('sync-status', extra: selected);
-                },
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-                splashRadius: 22,
-                color: const Color(0xFF2F7D4A),
-                icon: const Icon(Icons.sync_rounded, size: 22),
+      body: AppContentLayout(
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              HistoryPageHeader(
+                title: 'Riwayat Pemeriksaan',
+                subtitle: 'Hasil pemeriksaan untuk tanaman ini.',
+                fallbackRoute: 'plants',
+                action: IconButton(
+                  tooltip: 'Sinkronisasi Data',
+                  onPressed: () {
+                    context.pushNamed('sync-status', extra: selected);
+                  },
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 40,
+                    minHeight: 40,
+                  ),
+                  splashRadius: 22,
+                  color: const Color(0xFF2F7D4A),
+                  icon: const Icon(Icons.sync_rounded, size: 22),
+                ),
               ),
-            ),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                children: [
-                  _buildPlantBanner(selected, historyCount: records.length),
-                  const SizedBox(height: 22),
-                  _buildSectionHeader(records.length),
-                  const SizedBox(height: 12),
-                  if (records.isEmpty)
-                    _buildEmptyState()
-                  else
-                    ...records.map(
-                      (record) => HistoryCard(
-                        record: record,
-                        onTap: () {
-                          context.pushNamed('history-detail', extra: record);
-                        },
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                  children: [
+                    _buildPlantBanner(selected, historyCount: records.length),
+                    const SizedBox(height: 22),
+                    _buildSectionHeader(records.length),
+                    const SizedBox(height: 12),
+                    if (records.isEmpty)
+                      _buildEmptyState()
+                    else
+                      ...records.map(
+                        (record) => HistoryCard(
+                          record: record,
+                          onTap: () {
+                            context.pushNamed('history-detail', extra: record);
+                          },
+                        ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: const MainBottomNavigation(currentIndex: 2),

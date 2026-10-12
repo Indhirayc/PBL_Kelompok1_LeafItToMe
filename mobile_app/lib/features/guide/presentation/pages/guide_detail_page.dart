@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/widgets/app_content_layout.dart';
 import '../../data/guide_data.dart';
 
 class GuideDetailPage extends StatefulWidget {
@@ -50,6 +51,7 @@ class _GuideDetailPageState extends State<GuideDetailPage>
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
+          tooltip: 'Kembali',
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
             color: Color(0xFF1F3826),
@@ -109,15 +111,17 @@ class _GuideDetailPageState extends State<GuideDetailPage>
           ),
         ),
       ),
-      body: SafeArea(
-        child: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildToolsAndMaterialsTab(),
-            _buildPlantingStepsTab(),
-            _buildDailyCareTab(),
-            _buildDiseasePreventionTab(),
-          ],
+      body: AppContentLayout(
+        child: SafeArea(
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildToolsAndMaterialsTab(),
+              _buildPlantingStepsTab(),
+              _buildDailyCareTab(),
+              _buildDiseasePreventionTab(),
+            ],
+          ),
         ),
       ),
     );

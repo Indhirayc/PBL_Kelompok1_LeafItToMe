@@ -5,8 +5,14 @@ import '../views/plant_list_page.dart';
 class PlantCard extends StatelessWidget {
   final Plant plant;
   final VoidCallback onTapDetail;
+  final EdgeInsetsGeometry margin;
 
-  const PlantCard({super.key, required this.plant, required this.onTapDetail});
+  const PlantCard({
+    super.key,
+    required this.plant,
+    required this.onTapDetail,
+    this.margin = const EdgeInsets.only(bottom: 14),
+  });
 
   static const Color primaryGreen = Color(0xFF2F7D4A);
   static const Color darkGreen = Color(0xFF183E2D);
@@ -18,7 +24,7 @@ class PlantCard extends StatelessWidget {
     final bool isHealthy = plant.status.toLowerCase() == 'sehat';
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
+      margin: margin,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -34,6 +40,7 @@ class PlantCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // ── BARIS ATAS: Avatar + Nama + ID + Badge Status ──
           Row(
@@ -71,6 +78,8 @@ class PlantCard extends StatelessWidget {
                   children: [
                     Text(
                       plant.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -85,12 +94,12 @@ class PlantCard extends StatelessWidget {
                         color: secondaryText,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     // Badge Chip Status
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
-                        vertical: 3,
+                        vertical: 2,
                       ),
                       decoration: BoxDecoration(
                         color: isHealthy
@@ -114,31 +123,35 @@ class PlantCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 8),
           const Divider(height: 1, color: borderColor),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           // ── BARIS BAWAH: Tanggal Pemeriksaan + Tombol 'Lihat Detail ›' ──
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Pemeriksaan terakhir',
-                    style: TextStyle(fontSize: 11, color: secondaryText),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    plant.plantDate,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: darkGreen,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Pemeriksaan terakhir',
+                      style: TextStyle(fontSize: 11, color: secondaryText),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 2),
+                    Text(
+                      plant.plantDate,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: darkGreen,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               // Tombol Lihat Detail Berbentuk Pill
               OutlinedButton(

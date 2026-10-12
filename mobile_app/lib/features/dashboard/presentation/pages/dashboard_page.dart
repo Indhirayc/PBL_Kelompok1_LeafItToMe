@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../app/theme/app_breakpoints.dart';
+import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
 import '../../../../features/detection/presentation/pages/data_inspection_page.dart'
@@ -133,6 +135,8 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isNarrowScreen = MediaQuery.sizeOf(context).width < 380;
+
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
@@ -147,38 +151,46 @@ class _DashboardPageState extends State<DashboardPage> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: primaryGreen.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
+              if (!isNarrowScreen) ...[
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: primaryGreen.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.eco, color: primaryGreen, size: 22),
                 ),
-                child: const Icon(Icons.eco, color: primaryGreen, size: 22),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
-                    'LeafItToMe',
-                    style: TextStyle(
-                      color: Color(0xFF1F3826),
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
+                const SizedBox(width: 12),
+              ],
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'LeafItToMe',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Color(0xFF1F3826),
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 1),
-                  Text(
-                    'Beranda',
-                    style: TextStyle(
-                      color: Color(0xFF75857B),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ],
+                    if (!isNarrowScreen) ...[
+                      const SizedBox(height: 1),
+                      const Text(
+                        'Beranda',
+                        style: TextStyle(
+                          color: Color(0xFF75857B),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
             ],
           ),
@@ -204,25 +216,30 @@ class _DashboardPageState extends State<DashboardPage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      _hasPlants ? 'Ada Tanaman' : 'Belum Ada',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: primaryGreen,
+                    if (!isNarrowScreen)
+                      Text(
+                        _hasPlants ? 'Ada Tanaman' : 'Belum Ada',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: primaryGreen,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 6),
-                    Transform.scale(
-                      scale: 0.72,
-                      child: Switch(
-                        value: _hasPlants,
-                        activeTrackColor: primaryGreen,
-                        onChanged: (val) {
-                          setState(() {
-                            _hasPlants = val;
-                          });
-                        },
+                    if (!isNarrowScreen) const SizedBox(width: 6),
+                    Semantics(
+                      label: 'Tampilkan status tanaman pada beranda',
+                      value: _hasPlants ? 'Ada tanaman' : 'Belum ada tanaman',
+                      child: Transform.scale(
+                        scale: 0.72,
+                        child: Switch(
+                          value: _hasPlants,
+                          activeTrackColor: primaryGreen,
+                          onChanged: (val) {
+                            setState(() {
+                              _hasPlants = val;
+                            });
+                          },
+                        ),
                       ),
                     ),
                   ],
@@ -234,21 +251,25 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 12),
-              // Banner Salam & Perkenalan
-              _buildGreetingHeader(),
-              const SizedBox(height: 20),
+          child: AppContentLayout(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 12),
+                  // Banner Salam & Perkenalan
+                  _buildGreetingHeader(),
+                  const SizedBox(height: 20),
 
-              // Tampilan Kondisi (Sudah vs Belum Memiliki Tanaman)
-              if (_hasPlants)
-                _buildActivePlantsDashboard(context)
-              else
-                _buildEmptyDashboard(context),
-            ],
+                  // Tampilan Kondisi (Sudah vs Belum Memiliki Tanaman)
+                  if (_hasPlants)
+                    _buildActivePlantsDashboard(context)
+                  else
+                    _buildEmptyDashboard(context),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -439,62 +460,72 @@ class _DashboardPageState extends State<DashboardPage> {
         ),
         const SizedBox(height: 12),
 
-        _buildPlantItemCard(
-          name: 'Tomat Pot Depan',
-          code: 'TMT-001',
-          location: 'Teras depan',
-          lastCheck: '28 Sep 2026',
-          status: 'Sehat',
-          isHealthy: true,
-          onTap: () {
-            _openPlantDetail(
-              context,
-              id: 'TMT-001',
-              plantDate: '28 Sep 2026',
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final firstPlant = _buildPlantItemCard(
+              name: 'Tomat Pot Depan',
+              code: 'TMT-001',
+              location: 'Teras depan',
+              lastCheck: '28 Sep 2026',
               status: 'Sehat',
+              isHealthy: true,
+              onTap: () => _openPlantDetail(
+                context,
+                id: 'TMT-001',
+                plantDate: '28 Sep 2026',
+                status: 'Sehat',
+              ),
+              onOpenSummary: () => _showPlantDetailModal(
+                context,
+                'Tomat Pot Depan',
+                'TMT-001',
+                'Sehat',
+              ),
+              onOpenHistory: () => _openPlantHistory(context, 'TMT-001'),
+              onOpenLatestHistory: () =>
+                  _openLatestHistoryDetail(context, 'TMT-001'),
+              onInspect: () => _openInspection(context, 'TMT-001'),
             );
-          },
-          onOpenSummary: () {
-            _showPlantDetailModal(
-              context,
-              'Tomat Pot Depan',
-              'TMT-001',
-              'Sehat',
-            );
-          },
-          onOpenHistory: () => _openPlantHistory(context, 'TMT-001'),
-          onOpenLatestHistory: () =>
-              _openLatestHistoryDetail(context, 'TMT-001'),
-          onInspect: () => _openInspection(context, 'TMT-001'),
-        ),
-        const SizedBox(height: 12),
-        _buildPlantItemCard(
-          name: 'Tomat Kebun Belakang',
-          code: 'TMT-002',
-          location: 'Kebun belakang',
-          lastCheck: '25 Sep 2026',
-          status: 'Perlu perhatian',
-          isHealthy: false,
-          onTap: () {
-            _openPlantDetail(
-              context,
-              id: 'TMT-002',
-              plantDate: '25 Sep 2026',
+            final secondPlant = _buildPlantItemCard(
+              name: 'Tomat Kebun Belakang',
+              code: 'TMT-002',
+              location: 'Kebun belakang',
+              lastCheck: '25 Sep 2026',
               status: 'Perlu perhatian',
+              isHealthy: false,
+              onTap: () => _openPlantDetail(
+                context,
+                id: 'TMT-002',
+                plantDate: '25 Sep 2026',
+                status: 'Perlu perhatian',
+              ),
+              onOpenSummary: () => _showPlantDetailModal(
+                context,
+                'Tomat Kebun Belakang',
+                'TMT-002',
+                'Perlu perhatian',
+              ),
+              onOpenHistory: () => _openPlantHistory(context, 'TMT-002'),
+              onOpenLatestHistory: () =>
+                  _openLatestHistoryDetail(context, 'TMT-002'),
+              onInspect: () => _openInspection(context, 'TMT-002'),
+            );
+
+            if (constraints.maxWidth >= AppBreakpoints.tablet) {
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: firstPlant),
+                  const SizedBox(width: 12),
+                  Expanded(child: secondPlant),
+                ],
+              );
+            }
+
+            return Column(
+              children: [firstPlant, const SizedBox(height: 12), secondPlant],
             );
           },
-          onOpenSummary: () {
-            _showPlantDetailModal(
-              context,
-              'Tomat Kebun Belakang',
-              'TMT-002',
-              'Perlu perhatian',
-            );
-          },
-          onOpenHistory: () => _openPlantHistory(context, 'TMT-002'),
-          onOpenLatestHistory: () =>
-              _openLatestHistoryDetail(context, 'TMT-002'),
-          onInspect: () => _openInspection(context, 'TMT-002'),
         ),
       ],
     );
@@ -614,6 +645,8 @@ class _DashboardPageState extends State<DashboardPage> {
                     const SizedBox(height: 2),
                     Text(
                       '$code • $location',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 12,
                         color: secondaryText,
@@ -656,29 +689,33 @@ class _DashboardPageState extends State<DashboardPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  GestureDetector(
-                    onTap: onOpenHistory,
-                    child: const Text(
-                      'Pemeriksaan terakhir',
-                      style: TextStyle(fontSize: 11, color: secondaryText),
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  GestureDetector(
-                    onTap: onOpenLatestHistory,
-                    child: Text(
-                      lastCheck,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: darkGreen,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                      onTap: onOpenHistory,
+                      child: const Text(
+                        'Pemeriksaan terakhir',
+                        style: TextStyle(fontSize: 11, color: secondaryText),
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 2),
+                    GestureDetector(
+                      onTap: onOpenLatestHistory,
+                      child: Text(
+                        lastCheck,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: darkGreen,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               OutlinedButton(
                 onPressed: onTap,
@@ -745,6 +782,8 @@ class _DashboardPageState extends State<DashboardPage> {
               const SizedBox(height: 20),
               Text(
                 name,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,

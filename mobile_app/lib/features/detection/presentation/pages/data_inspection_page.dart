@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_page_header.dart';
 
 class InspectionPlant {
@@ -112,57 +113,62 @@ class _DataInspectionPageState extends State<DataInspectionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            AppPageHeader(
-              title: 'Data Pemeriksaan',
-              subtitle: 'Lengkapi data sebelum memindai daun.',
-              showBackButton: true,
-              onBack: context.pop,
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildPlantCard(),
-                    const SizedBox(height: 22),
-                    _buildDateField(),
-                    const SizedBox(height: 18),
-                    _buildNoteField(),
-                    const SizedBox(height: 18),
-                    _buildInformationNotice(),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: ElevatedButton.icon(
-                        key: const Key('continueToPhotoButton'),
-                        onPressed: _continueToPhotoSelection,
-                        iconAlignment: IconAlignment.end,
-                        icon: const Icon(Icons.arrow_forward_rounded, size: 19),
-                        label: const Text('Lanjut Pilih Foto'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _primaryGreen,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(13),
+      body: AppContentLayout(
+        child: SafeArea(
+          child: Column(
+            children: [
+              AppPageHeader(
+                title: 'Data Pemeriksaan',
+                subtitle: 'Lengkapi data sebelum memindai daun.',
+                showBackButton: true,
+                onBack: context.pop,
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildPlantCard(),
+                      const SizedBox(height: 22),
+                      _buildDateField(),
+                      const SizedBox(height: 18),
+                      _buildNoteField(),
+                      const SizedBox(height: 18),
+                      _buildInformationNotice(),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton.icon(
+                          key: const Key('continueToPhotoButton'),
+                          onPressed: _continueToPhotoSelection,
+                          iconAlignment: IconAlignment.end,
+                          icon: const Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 19,
                           ),
-                          textStyle: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
+                          label: const Text('Lanjut Pilih Foto'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _primaryGreen,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(13),
+                            ),
+                            textStyle: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

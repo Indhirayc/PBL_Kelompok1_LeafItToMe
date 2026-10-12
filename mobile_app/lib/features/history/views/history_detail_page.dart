@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/widgets/app_content_layout.dart';
+
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
 import '../data/history_data.dart';
@@ -27,38 +29,40 @@ class HistoryDetailPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: _background,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            HistoryPageHeader(
-              title: 'Detail Riwayat',
-              subtitle: 'Rincian hasil pemeriksaan tanaman.',
-              fallbackRoute: 'history',
-              fallbackExtra: HistoryData.plantById(record.plantId),
-            ),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                children: [
-                  _buildBanner(disease),
-                  const SizedBox(height: 18),
-                  _buildResultCard(),
-                  const SizedBox(height: 16),
-                  _buildInfoCard(plant),
-                  const SizedBox(height: 20),
-                  AppButton(
-                    key: const Key('recommendationButton'),
-                    label: 'Lihat Rekomendasi Penanganan',
-                    onPressed: () => context.pushNamed(
-                      'treatment-recommendation',
-                      extra: record,
-                    ),
-                  ),
-                ],
+      body: AppContentLayout(
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              HistoryPageHeader(
+                title: 'Detail Riwayat',
+                subtitle: 'Rincian hasil pemeriksaan tanaman.',
+                fallbackRoute: 'history',
+                fallbackExtra: HistoryData.plantById(record.plantId),
               ),
-            ),
-          ],
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                  children: [
+                    _buildBanner(disease),
+                    const SizedBox(height: 18),
+                    _buildResultCard(),
+                    const SizedBox(height: 16),
+                    _buildInfoCard(plant),
+                    const SizedBox(height: 20),
+                    AppButton(
+                      key: const Key('recommendationButton'),
+                      label: 'Lihat Rekomendasi Penanganan',
+                      onPressed: () => context.pushNamed(
+                        'treatment-recommendation',
+                        extra: record,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: const MainBottomNavigation(currentIndex: 2),

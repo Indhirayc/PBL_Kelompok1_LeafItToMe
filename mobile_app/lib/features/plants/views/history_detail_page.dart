@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/marketplace_button.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
 
@@ -113,29 +114,31 @@ class HistoryDetailPage extends StatelessWidget {
           ),
         ),
       ),
-      body: SafeArea(
-        top: false,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-          children: [
-            _PlantInformationCard(record: record),
-            const SizedBox(height: 12),
-            _DetectionResultCard(record: record, isHealthy: _isHealthy),
-            const SizedBox(height: 12),
-            _TreatmentCard(isHealthy: _isHealthy),
-            const SizedBox(height: 12),
-            if (!_isHealthy) ...[
-              _MarketplaceSection(
-                onMarketplacePressed: () {
-                  _openMarketplace(context);
-                },
-              ),
+      body: AppContentLayout(
+        child: SafeArea(
+          top: false,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+            children: [
+              _PlantInformationCard(record: record),
               const SizedBox(height: 12),
+              _DetectionResultCard(record: record, isHealthy: _isHealthy),
+              const SizedBox(height: 12),
+              _TreatmentCard(isHealthy: _isHealthy),
+              const SizedBox(height: 12),
+              if (!_isHealthy) ...[
+                _MarketplaceSection(
+                  onMarketplacePressed: () {
+                    _openMarketplace(context);
+                  },
+                ),
+                const SizedBox(height: 12),
+              ],
+              if (record.note.isNotEmpty &&
+                  record.note != 'Tidak ada catatan tambahan.')
+                _NoteCard(note: record.note),
             ],
-            if (record.note.isNotEmpty &&
-                record.note != 'Tidak ada catatan tambahan.')
-              _NoteCard(note: record.note),
-          ],
+          ),
         ),
       ),
       bottomNavigationBar: const MainBottomNavigation(currentIndex: 2),

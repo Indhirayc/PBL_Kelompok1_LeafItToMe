@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../app/theme/app_breakpoints.dart';
+import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
 
 class GuideListPage extends StatelessWidget {
@@ -33,33 +35,37 @@ class GuideListPage extends StatelessWidget {
           ),
         ),
       ),
-      body: SafeArea(
-        top: false,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Featured Hero Card (Tappable Magazine-style)
-              _buildFeaturedCard(context),
-              const SizedBox(height: 24),
+      body: AppContentLayout(
+        alignment: Alignment.topCenter,
+        child: SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Featured Hero Card (Tappable Magazine-style)
+                _buildFeaturedCard(context),
+                const SizedBox(height: 24),
 
-              // Section: Topik Panduan
-              const Text(
-                'Topik Panduan',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                  color: darkGreen,
-                  letterSpacing: -0.2,
+                // Section: Topik Panduan
+                const Text(
+                  'Topik Panduan',
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: darkGreen,
+                    letterSpacing: -0.2,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
+                const SizedBox(height: 12),
 
-              // 2x2 Clean Topic Grid
-              _buildTopicGrid(context),
-              const SizedBox(height: 24),
-            ],
+                // 2x2 Clean Topic Grid
+                _buildTopicGrid(context),
+                const SizedBox(height: 24),
+              ],
+            ),
           ),
         ),
       ),
@@ -77,6 +83,7 @@ class GuideListPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         child: Container(
           width: double.infinity,
+          key: const Key('guideFeaturedCard'),
           decoration: BoxDecoration(
             color: cardGreenBg,
             borderRadius: BorderRadius.circular(20),
@@ -231,7 +238,9 @@ class GuideListPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         child: Container(
           padding: const EdgeInsets.all(16),
-          height: 120,
+          height: MediaQuery.sizeOf(context).width < AppBreakpoints.tablet
+              ? 144
+              : 120,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: borderColor),

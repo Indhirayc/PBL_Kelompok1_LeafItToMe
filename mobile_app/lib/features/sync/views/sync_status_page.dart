@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../history/widgets/history_page_header.dart';
 import '../data/sync_data.dart';
@@ -35,37 +36,39 @@ class _SyncStatusPageState extends State<SyncStatusPage> {
       backgroundColor: _background,
       body: SafeArea(
         bottom: false,
-        child: Column(
-          children: [
-            const HistoryPageHeader(
-              title: 'Sinkronisasi Data',
-              subtitle: 'Kelola data pemeriksaan yang belum tersinkron.',
-            ),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                children: [
-                  _buildConnectionBanner(),
-                  const SizedBox(height: 16),
-                  _buildOfflineToggleCard(),
-                  const SizedBox(height: 14),
-                  _buildPendingCard(items),
-                  const SizedBox(height: 14),
-                  _buildSimulateFailureCard(),
-                  const SizedBox(height: 20),
-                  AppButton(
-                    key: const Key('syncNowButton'),
-                    icon: Icons.sync_rounded,
-                    label: 'Sinkronkan Sekarang',
-                    onPressed: () => context.pushNamed(
-                      'sync-process',
-                      extra: _simulateFailure,
-                    ),
-                  ),
-                ],
+        child: AppContentLayout(
+          child: Column(
+            children: [
+              const HistoryPageHeader(
+                title: 'Sinkronisasi Data',
+                subtitle: 'Kelola data pemeriksaan yang belum tersinkron.',
               ),
-            ),
-          ],
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                  children: [
+                    _buildConnectionBanner(),
+                    const SizedBox(height: 16),
+                    _buildOfflineToggleCard(),
+                    const SizedBox(height: 14),
+                    _buildPendingCard(items),
+                    const SizedBox(height: 14),
+                    _buildSimulateFailureCard(),
+                    const SizedBox(height: 20),
+                    AppButton(
+                      key: const Key('syncNowButton'),
+                      icon: Icons.sync_rounded,
+                      label: 'Sinkronkan Sekarang',
+                      onPressed: () => context.pushNamed(
+                        'sync-process',
+                        extra: _simulateFailure,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -177,12 +180,16 @@ class _SyncStatusPageState extends State<SyncStatusPage> {
             children: [
               const Icon(Icons.sync_rounded, color: _primaryGreen, size: 20),
               const SizedBox(width: 10),
-              Text(
-                '${items.length} data belum disinkronkan',
-                style: const TextStyle(
-                  color: _darkGreen,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
+              Expanded(
+                child: Text(
+                  '${items.length} data belum disinkronkan',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: _darkGreen,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],

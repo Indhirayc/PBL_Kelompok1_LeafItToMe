@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_page_header.dart';
 import 'data_inspection_page.dart';
 import '../widgets/image_preview.dart';
@@ -33,81 +34,86 @@ class PhotoPreviewPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(context),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                child: Column(
-                  children: [
-                    ImagePreview(
-                      imageAsset: InspectionPhotoSelection.sampleImageAsset,
-                      semanticLabel: 'Contoh foto daun tomat',
-                      source: selection.source,
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Pastikan daun terlihat jelas dan tidak buram.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: _secondaryText, fontSize: 11),
-                    ),
-                    const SizedBox(height: 14),
-                    _buildSampleNotice(),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: OutlinedButton.icon(
-                        key: const Key('retakePhotoButton'),
-                        onPressed: () => context.pop(),
-                        icon: const Icon(Icons.refresh_rounded, size: 18),
-                        label: const Text('Ambil Ulang'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: _primaryGreen,
-                          side: const BorderSide(color: _primaryGreen),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(13),
-                          ),
-                          textStyle: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
+      body: AppContentLayout(
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildHeader(context),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                  child: Column(
+                    children: [
+                      ImagePreview(
+                        imageAsset: InspectionPhotoSelection.sampleImageAsset,
+                        semanticLabel: 'Contoh foto daun tomat',
+                        source: selection.source,
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Pastikan daun terlihat jelas dan tidak buram.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: _secondaryText, fontSize: 11),
+                      ),
+                      const SizedBox(height: 14),
+                      _buildSampleNotice(),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: OutlinedButton.icon(
+                          key: const Key('retakePhotoButton'),
+                          onPressed: () => context.pop(),
+                          icon: const Icon(Icons.refresh_rounded, size: 18),
+                          label: const Text('Ambil Ulang'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: _primaryGreen,
+                            side: const BorderSide(color: _primaryGreen),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(13),
+                            ),
+                            textStyle: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton.icon(
-                        key: const Key('analyzeNowButton'),
-                        onPressed: () => _analyzeSample(context),
-                        iconAlignment: IconAlignment.end,
-                        icon: const Icon(Icons.arrow_forward_rounded, size: 18),
-                        label: const Text('Analisis Sekarang'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _primaryGreen,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(13),
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton.icon(
+                          key: const Key('analyzeNowButton'),
+                          onPressed: () => _analyzeSample(context),
+                          iconAlignment: IconAlignment.end,
+                          icon: const Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 18,
                           ),
-                          textStyle: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
+                          label: const Text('Analisis Sekarang'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _primaryGreen,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(13),
+                            ),
+                            textStyle: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildPrivacyNotice(),
-                  ],
+                      const SizedBox(height: 12),
+                      _buildPrivacyNotice(),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

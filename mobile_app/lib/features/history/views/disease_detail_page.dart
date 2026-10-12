@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/marketplace_button.dart';
 import '../data/history_data.dart';
 import '../widgets/history_page_header.dart';
@@ -60,59 +61,61 @@ class HistoryDiseaseDetailPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: _background,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            HistoryPageHeader(
-              title: 'Detail Penyakit',
-              subtitle: 'Gejala dan cara pencegahan.',
-              fallbackRoute: 'history',
-              fallbackExtra: HistoryData.plantById(record.plantId),
-            ),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                children: [
-                  _buildBanner(disease),
-                  const SizedBox(height: 18),
-                  _buildTitleCard(disease),
-                  const SizedBox(height: 22),
-                  const Text(
-                    'Gejala',
-                    style: TextStyle(
-                      color: _darkGreen,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildBulletCard(disease?.symptoms ?? const []),
-                  const SizedBox(height: 22),
-                  const Text(
-                    'Pencegahan',
-                    style: TextStyle(
-                      color: _darkGreen,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildBulletCard(disease?.preventions ?? const []),
-                  const SizedBox(height: 22),
-                  MarketplaceButton(
-                    key: const Key('marketplaceButton'),
-                    onPressed: () => _openMarketplace(
-                      context,
-                      disease?.searchKeyword ?? 'perawatan tanaman tomat',
-                    ),
-                  ),
-                ],
+      body: AppContentLayout(
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              HistoryPageHeader(
+                title: 'Detail Penyakit',
+                subtitle: 'Gejala dan cara pencegahan.',
+                fallbackRoute: 'history',
+                fallbackExtra: HistoryData.plantById(record.plantId),
               ),
-            ),
-          ],
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                  children: [
+                    _buildBanner(disease),
+                    const SizedBox(height: 18),
+                    _buildTitleCard(disease),
+                    const SizedBox(height: 22),
+                    const Text(
+                      'Gejala',
+                      style: TextStyle(
+                        color: _darkGreen,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildBulletCard(disease?.symptoms ?? const []),
+                    const SizedBox(height: 22),
+                    const Text(
+                      'Pencegahan',
+                      style: TextStyle(
+                        color: _darkGreen,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildBulletCard(disease?.preventions ?? const []),
+                    const SizedBox(height: 22),
+                    MarketplaceButton(
+                      key: const Key('marketplaceButton'),
+                      onPressed: () => _openMarketplace(
+                        context,
+                        disease?.searchKeyword ?? 'perawatan tanaman tomat',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

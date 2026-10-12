@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/theme/app_breakpoints.dart';
+import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
 import '../../detection/presentation/pages/data_inspection_page.dart';
@@ -355,6 +357,147 @@ class PlantDetailPage extends StatelessWidget {
     );
   }
 
+  Widget _buildPlantInformationCard(BuildContext context) {
+    return Container(
+      key: const Key('plantInformationCard'),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE8F5E9),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildPlantAvatar(size: 60),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      plant.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1F3826),
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      '${plant.id} • ${plant.location}',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF65756A),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        plant.status,
+                        style: const TextStyle(
+                          color: Color(0xFF1B5E20),
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Ditanam ${plant.plantDate}',
+            style: const TextStyle(fontSize: 12, color: Color(0xFF65756A)),
+          ),
+          const SizedBox(height: 12),
+          AppButton(
+            key: const Key('scanPlantButton'),
+            label: 'Scan Daun',
+            height: 50,
+            onPressed: () => _openInspectionForm(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHistorySection(
+    BuildContext context, {
+    required List<_HistoryPreview> recentHistories,
+    required bool showViewAllButton,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Expanded(
+              child: Text(
+                'Riwayat Pemeriksaan',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1F3826),
+                ),
+              ),
+            ),
+            if (showViewAllButton)
+              TextButton(
+                key: const Key('viewAllHistoryButton'),
+                onPressed: () => _openAllHistory(context),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF2F7D4A),
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  minimumSize: const Size(0, 36),
+                  tapTargetSize: MaterialTapTargetSize.padded,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                ),
+                child: const Text(
+                  'Lihat Semua',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (recentHistories.isEmpty)
+          _buildEmptyHistory()
+        else
+          ...recentHistories.map((history) {
+            return _buildHistoryItem(
+              title: history.disease,
+              date: history.date,
+              accuracy: 'Akurasi ${history.accuracy}',
+              avatarColor: history.isHealthy
+                  ? const Color(0xFFE2F1E4)
+                  : const Color(0xFFFFE0D6),
+              isHealthy: history.isHealthy,
+              onTap: () => _openHistoryDetail(context, history: history),
+            );
+          }),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final List<_HistoryPreview> recentHistories = _histories.take(3).toList();
@@ -406,164 +549,50 @@ class PlantDetailPage extends StatelessWidget {
           ),
         ],
       ),
-      body: SafeArea(
-        top: false,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-          children: [
-            // Informasi tanaman.
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE8F5E9),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+      body: AppContentLayout(
+        alignment: Alignment.topCenter,
+        child: SafeArea(
+          top: false,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isTablet = constraints.maxWidth >= AppBreakpoints.tablet;
+              final plantInformation = _buildPlantInformationCard(context);
+              final historySection = _buildHistorySection(
+                context,
+                recentHistories: recentHistories,
+                showViewAllButton: showViewAllButton,
+              );
+
+              if (isTablet) {
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                  child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildPlantAvatar(size: 60),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              plant.name,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1F3826),
-                              ),
-                            ),
-                            const SizedBox(height: 3),
-                            Text(
-                              '${plant.id} • ${plant.location}',
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Color(0xFF65756A),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 5,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                plant.status,
-                                style: const TextStyle(
-                                  color: Color(0xFF1B5E20),
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                      SizedBox(
+                        width: (constraints.maxWidth - 64) / 2,
+                        child: plantInformation,
+                      ),
+                      const SizedBox(width: 24),
+                      SizedBox(
+                        width: (constraints.maxWidth - 64) / 2,
+                        child: historySection,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Ditanam ${plant.plantDate}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF65756A),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      AppButton(
-                        key: const Key('scanPlantButton'),
-                        label: 'Scan Daun',
-                        width: null,
-                        height: 50,
-                        onPressed: () {
-                          _openInspectionForm(context);
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Judul dan tombol Lihat Semua.
-            Row(
-              children: [
-                const Expanded(
-                  child: Text(
-                    'Riwayat Pemeriksaan',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1F3826),
-                    ),
-                  ),
-                ),
-                if (showViewAllButton)
-                  TextButton(
-                    key: const Key('viewAllHistoryButton'),
-                    onPressed: () {
-                      _openAllHistory(context);
-                    },
-                    style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFF2F7D4A),
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      minimumSize: const Size(0, 36),
-                      tapTargetSize: MaterialTapTargetSize.padded,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                    ),
-                    child: const Text(
-                      'Lihat Semua',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            // Kondisi daftar riwayat.
-            if (_histories.isEmpty)
-              _buildEmptyHistory()
-            else
-              ...recentHistories.map((history) {
-                return _buildHistoryItem(
-                  title: history.disease,
-                  date: history.date,
-                  accuracy: 'Akurasi ${history.accuracy}',
-                  avatarColor: history.isHealthy
-                      ? const Color(0xFFE2F1E4)
-                      : const Color(0xFFFFE0D6),
-                  isHealthy: history.isHealthy,
-                  onTap: () {
-                    _openHistoryDetail(context, history: history);
-                  },
                 );
-              }),
+              }
 
-            const SizedBox(height: 16),
-          ],
+              return ListView(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                children: [
+                  plantInformation,
+                  const SizedBox(height: 24),
+                  historySection,
+                ],
+              );
+            },
+          ),
         ),
       ),
       bottomNavigationBar: const MainBottomNavigation(currentIndex: 2),

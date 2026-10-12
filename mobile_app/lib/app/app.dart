@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'theme/app_theme.dart';
 import 'router/app_router.dart';
 
 class LeafItToMeApp extends StatelessWidget {
@@ -10,6 +11,8 @@ class LeafItToMeApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'LeafItToMe',
       debugShowCheckedModeBanner: false,
+      theme: AppTheme.light,
+      themeMode: ThemeMode.light,
       routerConfig: AppRouter.router,
     );
   }
