@@ -19,12 +19,12 @@ void main() {
     expect(find.text('Penanganan Awal'), findsOneWidget);
     expect(find.text('Pangkas dan buang daun yang terinfeksi'), findsOneWidget);
 
-    await tester.scrollUntilVisible(find.text('Cari Produk Penanganan'), 300.0);
+    await tester.scrollUntilVisible(find.text('Lihat di Marketplace'), 300.0);
 
     expect(find.text('Pencegahan'), findsOneWidget);
     expect(find.text('Hindari menyiram bagian daun'), findsOneWidget);
     expect(find.text('Lihat Detail Penyakit'), findsOneWidget);
-    expect(find.text('Cari Produk Penanganan'), findsOneWidget);
+    expect(find.text('Lihat di Marketplace'), findsOneWidget);
   });
 
   testWidgets('menampilkan konteks tanaman dan tanggal pemeriksaan', (

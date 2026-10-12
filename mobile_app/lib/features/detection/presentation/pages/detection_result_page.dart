@@ -9,26 +9,43 @@ import '../widgets/confidence_indicator.dart';
 import '../widgets/image_preview.dart';
 import '../widgets/plant_context_card.dart';
 
-class DetectionResultPage extends StatelessWidget {
+class DetectionResultPage extends StatefulWidget {
   const DetectionResultPage({super.key, required this.selection});
 
   final InspectionPhotoSelection selection;
 
+  @override
+  State<DetectionResultPage> createState() => _DetectionResultPageState();
+}
+
+class _DetectionResultPageState extends State<DetectionResultPage> {
   static const Color _background = Color(0xFFFBFCF9);
   static const Color _darkGreen = Color(0xFF183E2D);
   static const Color _secondaryText = Color(0xFF718478);
   static const Color _border = Color(0xFFE4EBE5);
   static const Color _paleGreen = Color(0xFFEEF6E8);
 
-  void _showUiOnlyMessage(BuildContext context, String feature) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text('$feature belum tersedia pada prototipe UI ini.'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+  late final HistoryRecord _detectionRecord;
+
+  @override
+  void initState() {
+    super.initState();
+    final draft = widget.selection.draft;
+    _detectionRecord = HistoryRecord(
+      id: 'DET-${DateTime.now().microsecondsSinceEpoch}',
+      plantId: draft.plant.id,
+      diseaseName: 'Bacterial Spot',
+      latinName: 'Xanthomonas spp.',
+      date: draft.inspectionDate,
+      accuracy: 94,
+      isHealthy: false,
+      note: draft.note,
+      plantName: draft.plant.name,
+      plantLocation: draft.plant.location,
+      photoAssetPath: InspectionPhotoSelection.sampleImageAsset,
+      photoSource: widget.selection.source,
+    );
+    HistoryData.records.add(_detectionRecord);
   }
 
   @override
@@ -47,9 +64,9 @@ class DetectionResultPage extends StatelessWidget {
                     _buildResultPhoto(),
                     const SizedBox(height: 20),
                     InspectionPlantContextCard(
-                      name: selection.draft.plant.name,
-                      id: selection.draft.plant.id,
-                      location: selection.draft.plant.location,
+                      name: widget.selection.draft.plant.name,
+                      id: widget.selection.draft.plant.id,
+                      location: widget.selection.draft.plant.location,
                     ),
                     const SizedBox(height: 18),
                     _buildDiseaseCard(),
@@ -59,29 +76,13 @@ class DetectionResultPage extends StatelessWidget {
                       label: 'Lihat Penanganan  ›',
                       onPressed: () => context.pushNamed(
                         'treatment-recommendation',
-                        extra: HistoryRecord(
-                          id: 'DET-001',
-                          plantId: selection.draft.plant.id,
-                          diseaseName: 'Bacterial Spot',
-                          latinName: 'Xanthomonas spp.',
-                          date: selection.draft.inspectionDate,
-                          accuracy: 94,
-                          isHealthy: false,
-                          note: selection.draft.note,
-                        ),
+                        extra: _detectionRecord,
                       ),
-                    ),
-                    const SizedBox(height: 9),
-                    AppButton(
-                      key: const Key('saveToHistoryButton'),
-                      label: 'Simpan ke Riwayat',
-                      variant: AppButtonVariant.secondary,
-                      onPressed: () =>
-                          _showUiOnlyMessage(context, 'Simpan ke Riwayat'),
                     ),
                     const SizedBox(height: 12),
                     const Text(
-                      'Hasil di atas hanya contoh tampilan, bukan hasil analisis foto.',
+                      'Hasil contoh ditambahkan ke riwayat sementara sesi ini; '
+                      'belum tersimpan permanen.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: _secondaryText,

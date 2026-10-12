@@ -30,10 +30,10 @@ void main() {
       MaterialApp(home: HistoryDiseaseDetailPage(record: record)),
     );
 
-    await tester.scrollUntilVisible(find.text('Cari Produk Penanganan'), 300.0);
+    await tester.scrollUntilVisible(find.text('Lihat di Marketplace'), 300.0);
 
     expect(find.text('Pencegahan'), findsOneWidget);
     expect(find.text('Gunakan benih bebas penyakit'), findsOneWidget);
-    expect(find.text('Cari Produk Penanganan'), findsOneWidget);
+    expect(find.text('Lihat di Marketplace'), findsOneWidget);
   });
 }

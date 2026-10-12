@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mobile_app/features/history/data/history_data.dart';
+import 'package:mobile_app/features/history/views/treatment_recommendation_page.dart';
 import 'package:mobile_app/features/detection/presentation/pages/data_inspection_page.dart';
 import 'package:mobile_app/features/detection/presentation/pages/detection_result_page.dart';
 import 'package:mobile_app/features/detection/presentation/pages/photo_preview_page.dart';
@@ -12,9 +14,9 @@ void main() {
   ) async {
     final draft = InspectionDraft(
       plant: const InspectionPlant(
-        name: 'Tomat Uji',
-        id: 'TMT-123',
-        location: 'Kebun',
+        name: 'Tomat Kebun Belakang',
+        id: 'TMT-002',
+        location: 'Kebun belakang',
       ),
       inspectionDate: DateTime(2026, 10, 10),
       note: 'Ada bercak pada daun.',
@@ -38,6 +40,13 @@ void main() {
           name: 'detection-result',
           builder: (context, state) => DetectionResultPage(
             selection: state.extra! as InspectionPhotoSelection,
+          ),
+        ),
+        GoRoute(
+          path: '/treatment',
+          name: 'treatment-recommendation',
+          builder: (context, state) => TreatmentRecommendationPage(
+            record: state.extra! as HistoryRecord,
           ),
         ),
       ],
@@ -66,14 +75,44 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Hasil Deteksi'), findsOneWidget);
-    expect(find.text('Tomat Uji'), findsOneWidget);
-    expect(find.text('TMT-123  •  Kebun'), findsOneWidget);
+    expect(find.text('Tomat Kebun Belakang'), findsOneWidget);
+    expect(find.text('TMT-002  •  Kebun belakang'), findsOneWidget);
     expect(find.text('Contoh klasifikasi'), findsOneWidget);
     expect(find.text('Bacterial Spot'), findsOneWidget);
     expect(
       find.text(
-        'Hasil di atas hanya contoh tampilan, bukan hasil analisis foto.',
+        'Hasil contoh ditambahkan ke riwayat sementara sesi ini; '
+        'belum tersimpan permanen.',
       ),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('saveToHistoryButton')), findsNothing);
+
+    final detectionRecord = HistoryData.records.last;
+    expect(detectionRecord.plantId, 'TMT-002');
+    expect(detectionRecord.plantName, 'Tomat Kebun Belakang');
+    expect(detectionRecord.diseaseName, 'Bacterial Spot');
+    expect(detectionRecord.accuracy, 94);
+    expect(detectionRecord.date, DateTime(2026, 10, 10));
+    expect(detectionRecord.note, 'Ada bercak pada daun.');
+    expect(
+      detectionRecord.photoAssetPath,
+      InspectionPhotoSelection.sampleImageAsset,
+    );
+    expect(detectionRecord.photoSource, 'Galeri');
+
+    await tester.ensureVisible(find.byKey(const Key('treatmentButton')));
+    await tester.tap(find.byKey(const Key('treatmentButton')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Rekomendasi Penanganan'), findsOneWidget);
+    expect(find.text('Bacterial Spot'), findsOneWidget);
+    expect(
+      find.text('Tomat Kebun Belakang  •  10 Oktober 2026'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Aplikasikan bakterisida berbahan tembaga'),
       findsOneWidget,
     );
   });

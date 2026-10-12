@@ -59,7 +59,8 @@ class TreatmentRecommendationPage extends StatelessWidget {
     final HistoryDisease? disease = HistoryData.byDisease(record.diseaseName);
     final List<String> treatments = disease?.treatments ?? const [];
     final List<String> preventions = disease?.preventions ?? const [];
-    final String plantLabel = plant?.name ?? record.plantId;
+    final String plantLabel =
+        record.plantName ?? plant?.name ?? record.plantId;
 
     return Scaffold(
       backgroundColor: _background,

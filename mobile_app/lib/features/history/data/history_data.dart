@@ -63,6 +63,10 @@ class HistoryRecord {
   final int accuracy;
   final bool isHealthy;
   final String note;
+  final String? plantName;
+  final String? plantLocation;
+  final String? photoAssetPath;
+  final String? photoSource;
 
   const HistoryRecord({
     required this.id,
@@ -73,6 +77,10 @@ class HistoryRecord {
     required this.accuracy,
     required this.isHealthy,
     required this.note,
+    this.plantName,
+    this.plantLocation,
+    this.photoAssetPath,
+    this.photoSource,
   });
 }
 

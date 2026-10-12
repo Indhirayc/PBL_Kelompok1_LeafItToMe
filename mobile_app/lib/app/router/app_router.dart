@@ -22,6 +22,7 @@ import '../../features/profile/presentation/pages/personal_information_page.dart
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
 import '../../features/history/data/history_data.dart' as history_data;
+import '../../features/history/views/treatment_recommendation_page.dart';
 import '../../features/history/views/history_page.dart';
 import '../../features/plants/views/history_detail_page.dart';
 import '../../features/sync/views/sync_process_page.dart';
@@ -185,6 +186,49 @@ abstract final class AppRouter {
               accuracy: '96%',
               note: 'Daun tampak hijau segar dan tidak ditemukan gejala penyakit.',
             ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/treatment-recommendation',
+        name: 'treatment-recommendation',
+        builder: (context, state) {
+          final record = state.extra;
+
+          if (record is history_data.HistoryRecord) {
+            return TreatmentRecommendationPage(record: record);
+          }
+
+          if (record is HistoryRecord) {
+            final matchingRecord = history_data.HistoryData.records.where(
+              (historyRecord) =>
+                  historyRecord.plantId == record.plantId &&
+                  historyRecord.diseaseName == record.disease,
+            );
+            final DateTime inspectionDate = matchingRecord.isNotEmpty
+                ? matchingRecord.first.date
+                : DateTime.now();
+            final accuracy = int.tryParse(record.accuracy.replaceAll('%', ''));
+
+            return TreatmentRecommendationPage(
+              record: history_data.HistoryRecord(
+                id: 'LEGACY-${record.plantId}-${inspectionDate.microsecondsSinceEpoch}',
+                plantId: record.plantId,
+                diseaseName: record.disease,
+                latinName: record.diseaseScientificName,
+                date: inspectionDate,
+                accuracy: accuracy ?? 0,
+                isHealthy:
+                    record.disease.toLowerCase() == 'healthy' ||
+                    record.disease.toLowerCase() == 'sehat',
+                note: record.note,
+                plantName: record.plantName,
+              ),
+            );
+          }
+
+          return TreatmentRecommendationPage(
+            record: history_data.HistoryData.records.first,
           );
         },
       ),
