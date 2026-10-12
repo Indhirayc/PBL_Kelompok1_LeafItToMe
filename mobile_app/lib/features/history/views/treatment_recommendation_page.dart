@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/widgets/app_button.dart';
-import '../../../../core/widgets/marketplace_button.dart';
+import '../../guide/data/guide_data.dart';
 import '../data/history_data.dart';
 import '../widgets/history_page_header.dart';
 
@@ -51,6 +51,55 @@ class TreatmentRecommendationPage extends StatelessWidget {
         backgroundColor: _primaryGreen,
       ),
     );
+  }
+
+  DiseaseModel? _guideDiseaseFor(HistoryDisease? disease) {
+    if (disease == null) {
+      return null;
+    }
+
+    for (final guideDisease in GuideData.diseases) {
+      if (guideDisease.name.toLowerCase() == disease.name.toLowerCase()) {
+        return guideDisease;
+      }
+    }
+
+    if (disease.name.toLowerCase() != 'bacterial spot') {
+      return null;
+    }
+
+    return DiseaseModel(
+      id: 'bacterial-spot',
+      name: disease.name,
+      latinName: disease.latinName,
+      category: disease.category,
+      severity: disease.severity,
+      severityColor: disease.severityColor,
+      shortDescription: disease.symptoms.isEmpty
+          ? disease.name
+          : disease.symptoms.first,
+      symptoms: disease.symptoms,
+      preventions: disease.preventions,
+      imageAssetPath: '',
+      searchKeyword: disease.searchKeyword,
+    );
+  }
+
+  void _openDiseaseDetails(BuildContext context, HistoryDisease? disease) {
+    final guideDisease = _guideDiseaseFor(disease);
+    if (guideDisease == null) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('Detail penyakit ini belum tersedia.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      return;
+    }
+
+    context.pushNamed('disease-detail', extra: guideDisease);
   }
 
   @override
@@ -105,22 +154,21 @@ class TreatmentRecommendationPage extends StatelessWidget {
                   _buildBulletCard(preventions),
                   const SizedBox(height: 22),
                   AppButton(
-                    key: const Key('diseaseDetailButton'),
-                    icon: Icons.arrow_forward_rounded,
-                    label: 'Lihat Detail Penyakit',
-                    variant: AppButtonVariant.secondary,
-                    onPressed: () => context.pushNamed(
-                      'history-disease-detail',
-                      extra: record,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  MarketplaceButton(
                     key: const Key('marketplaceButton'),
+                    icon: Icons.open_in_new_rounded,
+                    label: 'Lihat di Marketplace',
                     onPressed: () => _openMarketplace(
                       context,
                       disease?.searchKeyword ?? 'perawatan tanaman tomat',
                     ),
+                  ),
+                  const SizedBox(height: 12),
+                  AppButton(
+                    key: const Key('diseaseDetailButton'),
+                    icon: Icons.arrow_forward_rounded,
+                    label: 'Lihat Detail Penyakit',
+                    variant: AppButtonVariant.secondary,
+                    onPressed: () => _openDiseaseDetails(context, disease),
                   ),
                 ],
               ),
@@ -251,18 +299,18 @@ class TreatmentRecommendationPage extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Padding(
-                  padding: EdgeInsets.only(top: 7),
-                  child: Text(
-                    '•',
-                    style: TextStyle(
+                const SizedBox(
+                  width: 14,
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 7),
+                    child: Icon(
+                      Icons.circle,
+                      size: 5,
                       color: _primaryGreen,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     items[i],
