@@ -3,70 +3,89 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 class MainBottomNavigation extends StatelessWidget {
-  const MainBottomNavigation({super.key, required this.currentIndex})
-    : assert(
-        currentIndex >= 0 && currentIndex <= 3,
-        'currentIndex harus bernilai antara 0 sampai 3',
-      );
+  const MainBottomNavigation({
+    super.key,
+    required this.currentIndex,
+  });
 
   final int currentIndex;
 
   static const Color _backgroundColor = Color(0xFFFFFFFF);
-  static const Color _borderColor = Color(0xFFE3EAE4);
-
-  static const List<_NavigationData> _items = [
-    _NavigationData(
-      label: 'Beranda',
-      iconPath: 'assets/icons/navigation/home.svg',
-      routeName: 'home',
-    ),
-    _NavigationData(
-      label: 'Panduan',
-      iconPath: 'assets/icons/navigation/guide.svg',
-      routeName: 'guides',
-    ),
-    _NavigationData(
-      label: 'Tanamanku',
-      iconPath: 'assets/icons/navigation/plant.svg',
-      routeName: 'plants',
-    ),
-    _NavigationData(
-      label: 'Profil',
-      iconPath: 'assets/icons/navigation/profile.svg',
-      routeName: 'profile',
-    ),
-  ];
+  static const Color _borderColor = Color(0xFFE4EBE5);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
         color: _backgroundColor,
-        border: Border(top: BorderSide(color: _borderColor, width: 1)),
+        border: Border(
+          top: BorderSide(
+            color: _borderColor,
+            width: 1,
+          ),
+        ),
       ),
       child: SafeArea(
         top: false,
         child: SizedBox(
           height: 72,
           child: Row(
-            children: List.generate(_items.length, (index) {
-              final item = _items[index];
-
-              return Expanded(
+            children: [
+              Expanded(
                 child: _NavigationItem(
-                  label: item.label,
-                  iconPath: item.iconPath,
-                  isActive: currentIndex == index,
-                  onTap: () {
-                    _handleNavigation(
-                      context,
-                      selectedIndex: index,
-                      routeName: item.routeName,
-                    );
-                  },
+                  label: 'Beranda',
+                  iconPath: 'assets/icons/navigation/home.svg',
+                  isActive: currentIndex == 0,
+                  activeColor: const Color(0xFF07852F),
+                  onTap: () => _handleNavigation(
+                    context,
+                    selectedIndex: 0,
+                    routeName: 'home',
+                  ),
                 ),
-              );
-            }),
+              ),
+              Expanded(
+                child: _NavigationItem(
+                  label: 'Panduan',
+                  iconPath: 'assets/icons/navigation/guide.svg',
+                  isActive: currentIndex == 1,
+                  activeColor: const Color(0xFF07852F),
+                  onTap: () => _handleNavigation(
+                    context,
+                    selectedIndex: 1,
+                    routeName: 'guides',
+                  ),
+                ),
+              ),
+              Expanded(
+                child: _NavigationItem(
+                  label: 'Tanamanku',
+                  iconPath: 'assets/icons/navigation/plant.svg',
+                  isActive: currentIndex == 2,
+
+                  // Tanamanku menggunakan warna merah saat aktif.
+                  activeColor: const Color(0xFFE53935),
+                  onTap: () => _handleNavigation(
+                    context,
+                    selectedIndex: 2,
+                    routeName: 'plants',
+                  ),
+                ),
+              ),
+              Expanded(
+                child: _NavigationItem(
+                  label: 'Profil',
+                  iconPath: 'assets/icons/navigation/profile.svg',
+                  isActive: currentIndex == 3,
+                  activeColor: const Color(0xFF07852F),
+                  onTap: () => _handleNavigation(
+                    context,
+                    selectedIndex: 3,
+                    routeName: 'profile',
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -78,7 +97,7 @@ class MainBottomNavigation extends StatelessWidget {
     required int selectedIndex,
     required String routeName,
   }) {
-    // Mencegah halaman aktif dibuka kembali.
+    // Tidak membuka ulang halaman yang sedang aktif.
     if (selectedIndex == currentIndex) {
       return;
     }
@@ -87,77 +106,67 @@ class MainBottomNavigation extends StatelessWidget {
   }
 }
 
-class _NavigationData {
-  const _NavigationData({
-    required this.label,
-    required this.iconPath,
-    required this.routeName,
-  });
-
-  final String label;
-  final String iconPath;
-  final String routeName;
-}
-
 class _NavigationItem extends StatelessWidget {
   const _NavigationItem({
     required this.label,
     required this.iconPath,
     required this.isActive,
+    required this.activeColor,
     required this.onTap,
   });
 
   final String label;
   final String iconPath;
   final bool isActive;
+  final Color activeColor;
   final VoidCallback onTap;
 
-  static const Color _activeColor = Color(0xFF2F7D4A);
-  static const Color _inactiveColor = Color(0xFF75857B);
+  static const Color _inactiveColor = Color(0xFF7B9186);
 
   @override
   Widget build(BuildContext context) {
-    final itemColor = isActive ? _activeColor : _inactiveColor;
+    final Color itemColor = isActive ? activeColor : _inactiveColor;
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        splashColor: _activeColor.withValues(alpha: 0.08),
-        highlightColor: _activeColor.withValues(alpha: 0.04),
+        splashColor: activeColor.withValues(alpha: 0.08),
+        highlightColor: activeColor.withValues(alpha: 0.04),
         child: Semantics(
           button: true,
           selected: isActive,
           label: label,
           child: Padding(
-            padding: const EdgeInsets.only(top: 8, bottom: 5),
+            padding: const EdgeInsets.only(
+              top: 8,
+              bottom: 5,
+            ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SvgPicture.asset(
                   iconPath,
-                  width: 25,
-                  height: 25,
+                  width: 24,
+                  height: 24,
                   fit: BoxFit.contain,
-                  colorFilter: ColorFilter.mode(itemColor, BlendMode.srcIn),
-                  placeholderBuilder: (context) {
-                    return Icon(
-                      _fallbackIcon(label),
-                      size: 25,
-                      color: itemColor,
-                    );
-                  },
+                  colorFilter: ColorFilter.mode(
+                    itemColor,
+                    BlendMode.srcIn,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   label,
                   maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  overflow: TextOverflow.visible,
                   style: TextStyle(
                     color: itemColor,
-                    fontSize: 11,
+                    fontSize: 12,
                     height: 1,
-                    fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                    fontWeight: isActive
+                        ? FontWeight.w600
+                        : FontWeight.w400,
                   ),
                 ),
               ],
@@ -166,20 +175,5 @@ class _NavigationItem extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  IconData _fallbackIcon(String label) {
-    switch (label) {
-      case 'Beranda':
-        return Icons.home_outlined;
-      case 'Panduan':
-        return Icons.menu_book_outlined;
-      case 'Tanamanku':
-        return Icons.eco_outlined;
-      case 'Profil':
-        return Icons.person_outline_rounded;
-      default:
-        return Icons.circle_outlined;
-    }
   }
 }
