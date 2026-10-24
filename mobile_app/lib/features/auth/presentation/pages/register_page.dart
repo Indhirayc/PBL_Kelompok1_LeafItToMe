@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
@@ -114,23 +115,82 @@ class _RegisterPageState extends State<RegisterPage> {
       _isLoading = true;
     });
 
-    // Simulasi pendaftaran untuk tahap UI.
-    await Future<void>.delayed(const Duration(seconds: 1));
+    try {
+      // 2. Hubungkan ke Firebase Auth untuk verifikasi email & password
+      final credential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+            email: _emailController.text.trim(),
+            password: _passwordController.text,
+          );
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    setState(() {
-      _isLoading = false;
-    });
+      // 3. Hanya pindah ke halaman home jika user terautentikasi
+      if (credential.user != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Pendaftaran berhasil'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        context.goNamed('home');
+      }
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Pendaftaran berhasil'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+      // 4. Tangani pesan error spesifik dari Firebase
+      String errorMessage = 'Gagal mendaftar. Silakan coba lagi.';
 
-    context.goNamed('login');
+      switch (e.code) {
+        case 'weak-password':
+          errorMessage =
+              'Kata sandi terlalu lemah. Gunakan minimal 6 karakter.';
+          break;
+        case 'email-already-in-use':
+          errorMessage = 'Email sudah terdaftar. Gunakan email lain.';
+          break;
+        case 'invalid-email':
+          errorMessage = 'Format email tidak valid.';
+          break;
+        case 'network-request-failed':
+          errorMessage = 'Tidak ada koneksi internet.';
+          break;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Terjadi kesalahan: ${e.toString()}'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Pendaftaran berhasil'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+
+        context.goNamed('login');
+      }
+    }
   }
 
   void _openLoginPage() {

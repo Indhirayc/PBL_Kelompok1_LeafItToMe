@@ -1,17 +1,26 @@
-# mobile_app
+# 📱 LeafItToMe Mobile App (Flutter)
 
-A new Flutter project.
+Modul aplikasi mobile untuk **LeafItToMe** — Aplikasi pendeteksi penyakit daun tomat berbasis Flutter, Machine Learning, dan arsitektur Offline-First.
 
-## Getting Started
+Untuk dokumentasi lengkap arsitektur backend, instalasi dependensi, dan panduan pengujian, silakan lihat file dokumentasi utama:
+👉 **[Root README.md](../README.md)**
 
-This project is a starting point for a Flutter application.
+---
 
-A few resources to get you started if this is your first Flutter project:
+## ⚡ Panduan Cepat Menjalankan Backend & Modul Mobile
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+### 1. Install Dependensi
+```bash
+flutter pub get
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### 2. Jalankan Static Analysis & Testing
+```bash
+flutter analyze
+flutter test
+```
+
+### 3. Jalankan Aplikasi
+```bash
+flutter run
+```
