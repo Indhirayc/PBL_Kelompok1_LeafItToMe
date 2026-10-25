@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
@@ -26,11 +28,45 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
   void initState() {
     super.initState();
 
-    _nameController = TextEditingController(text: 'Indhira Yuantika Christy');
+    final user = FirebaseAuth.instance.currentUser;
+    final initialName = (user?.displayName != null && user!.displayName!.trim().isNotEmpty)
+        ? user.displayName!.trim()
+        : '';
+    final initialEmail = user?.email ?? '';
 
-    _emailController = TextEditingController(text: 'indhira@example.com');
+    _nameController = TextEditingController(text: initialName);
+    _emailController = TextEditingController(text: initialEmail);
+    _phoneController = TextEditingController();
 
-    _phoneController = TextEditingController(text: '081234567890');
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      if (doc.exists && mounted) {
+        final data = doc.data();
+        if (data != null) {
+          final phone = data['phoneNumber'] as String?;
+          if (phone != null && phone.isNotEmpty) {
+            _phoneController.text = phone;
+          }
+          final name = data['displayName'] as String?;
+          if (_nameController.text.isEmpty && name != null && name.isNotEmpty) {
+            _nameController.text = name;
+          }
+        }
+      }
+    } catch (_) {
+      // Abaikan jika offline atau dokumen belum dibuat
+    }
   }
 
   @override
@@ -52,24 +88,60 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
       _isSaving = true;
     });
 
-    await Future<void>.delayed(const Duration(milliseconds: 700));
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await user.updateDisplayName(_nameController.text.trim());
+        await user.reload();
 
-    if (!mounted) {
-      return;
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .set({
+          'displayName': _nameController.text.trim(),
+          'email': user.email,
+          'phoneNumber': _phoneController.text.trim(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+      }
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isSaving = false;
+      });
+
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('Perubahan profil berhasil disimpan.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+
+      context.pop();
+    } catch (e) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isSaving = false;
+      });
+
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text('Gagal menyimpan profil: $e'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.red,
+          ),
+        );
     }
-
-    setState(() {
-      _isSaving = false;
-    });
-
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(
-          content: Text('Perubahan profil berhasil disimpan.'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
   }
 
   void _editProfilePhoto() {
