@@ -49,8 +49,9 @@ dependencies:
   uuid: ^4.6.0
 
   # --- Dependensi Baru untuk Machine Learning ---
-  tflite_flutter: ^0.10.4
+  tflite_flutter: ^0.12.1
   image: ^4.1.3
+  image_picker: ^1.0.7
 
 dev_dependencies:
   flutter_test:
