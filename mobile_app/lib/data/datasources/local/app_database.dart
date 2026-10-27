@@ -1,5 +1,6 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import '../../../core/database/database_schema.dart';
 import '../../models/scan_record_model.dart';
 
 class AppDatabase {
@@ -18,27 +19,26 @@ class AppDatabase {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-    return await openDatabase(
+    return openDatabase(
       path,
-      version: 1,
+      version: kLeafItToMeDatabaseVersion,
+      onConfigure: (db) => db.execute('PRAGMA foreign_keys = ON;'),
       onCreate: _createDB,
+      onUpgrade: _upgradeDB,
     );
   }
 
   Future<void> _createDB(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE scan_history (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL,
-        disease_name TEXT NOT NULL,
-        confidence REAL NOT NULL,
-        local_image_path TEXT NOT NULL,
-        cloud_image_url TEXT,
-        notes TEXT,
-        scanned_at TEXT NOT NULL,
-        is_synced INTEGER NOT NULL DEFAULT 0
-      )
-    ''');
+    for (final statement in kLeafItToMeSchema) {
+      await db.execute(statement);
+    }
+  }
+
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    // v1 -> v2: tambah kolom synced_at pada scan_history (tanpa hapus data).
+    if (oldVersion < 2) {
+      await db.execute('ALTER TABLE scan_history ADD COLUMN synced_at TEXT');
+    }
   }
 
   Future<int> insertScan(ScanRecordModel scan) async {
@@ -78,6 +78,7 @@ class AppDatabase {
       {
         'is_synced': 1,
         'cloud_image_url': cloudImageUrl,
+        'synced_at': DateTime.now().toIso8601String(),
       },
       where: 'id = ?',
       whereArgs: [id],
