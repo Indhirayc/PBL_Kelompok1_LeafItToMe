@@ -1,10 +1,15 @@
 
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_page_header.dart';
+import '../../../../data/models/scan_record_model.dart';
+import '../../../../data/repositories/scan_repository.dart';
 import 'photo_preview_page.dart';
 import '../../../history/data/history_data.dart';
 import '../widgets/confidence_indicator.dart';
@@ -73,6 +78,43 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
 
     // Hindari menambahkan record ketika prediksi tidak tersedia.
     HistoryData.records.add(_detectionRecord!);
+    unawaited(_persistDetection());
+  }
+
+  Future<void> _persistDetection() async {
+    final prediction = widget.selection.predictionResult;
+    final record = _detectionRecord;
+    if (prediction == null || record == null) {
+      return;
+    }
+
+    try {
+      String userId = 'user-local';
+      try {
+        userId = FirebaseAuth.instance.currentUser?.uid ?? 'user-local';
+      } catch (_) {
+        // Firebase belum siap (mis. widget test): pakai id lokal.
+      }
+
+      final draft = widget.selection.draft;
+      await ScanRepository().saveScanResult(
+        ScanRecordModel(
+          id: record.id,
+          userId: userId,
+          diseaseName: prediction.label,
+          confidence: prediction.confidence,
+          localImagePath: widget.selection.imageFile?.path ?? '',
+          notes: draft.note.isEmpty ? null : draft.note,
+          scannedAt: draft.inspectionDate,
+          isSynced: false,
+          plantId: draft.plant.id,
+          plantName: draft.plant.name,
+          plantLocation: draft.plant.location,
+        ),
+      );
+    } catch (_) {
+      // Offline atau penyimpanan belum siap: riwayat sesi tetap tersedia.
+    }
   }
 
   @override
