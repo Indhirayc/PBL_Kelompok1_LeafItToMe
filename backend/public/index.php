@@ -108,13 +108,13 @@ function slugify(string $value): string
     return $slug === '' ? 'penyakit_tidak_diketahui' : $slug;
 }
 
-function ensure_pengguna(
+function ensure_user(
     PDO $pdo,
     string $id,
-    ?string $namaLengkap,
+    ?string $fullName,
     ?string $email
 ): void {
-    $namaLengkap = $namaLengkap ?? $id;
+    $fullName = $fullName ?? $id;
     $email = $email ?? ($id . '@local.invalid');
 
     $stmt = $pdo->prepare(
@@ -124,20 +124,20 @@ function ensure_pengguna(
     );
     $stmt->execute([
         ':id' => $id,
-        ':nama' => $namaLengkap,
+        ':nama' => $fullName,
         ':email' => $email,
     ]);
 }
 
-function ensure_tanaman(
+function ensure_plant(
     PDO $pdo,
     string $id,
-    string $idPengguna,
-    ?string $nama,
-    ?string $lokasi,
-    ?string $tanggalTanam
+    string $userId,
+    ?string $name,
+    ?string $location,
+    ?string $plantingDate
 ): void {
-    $nama = $nama ?? 'Tanaman Saya';
+    $name = $name ?? 'Tanaman Saya';
 
     $stmt = $pdo->prepare(
         'INSERT INTO tanaman
@@ -150,23 +150,23 @@ function ensure_tanaman(
     );
     $stmt->execute([
         ':id' => $id,
-        ':pengguna' => $idPengguna,
-        ':nama' => $nama,
-        ':lokasi' => $lokasi,
-        ':tanggal' => optional_date($tanggalTanam),
+        ':pengguna' => $userId,
+        ':nama' => $name,
+        ':lokasi' => $location,
+        ':tanggal' => optional_date($plantingDate),
     ]);
 }
 
-function resolve_penyakit(
+function resolve_disease(
     PDO $pdo,
     ?string $labelCode,
-    ?string $namaPenyakit
+    ?string $diseaseName
 ): string {
-    if ($labelCode === null && $namaPenyakit === null) {
+    if ($labelCode === null && $diseaseName === null) {
         fail(422, "Field 'nama_penyakit' atau 'label_code' wajib diisi.");
     }
 
-    $inputSlug = slugify($labelCode ?? (string) $namaPenyakit);
+    $inputSlug = slugify($labelCode ?? (string) $diseaseName);
     $aliases = [
         'bacterial_spot' => 'Bacterial_Spot',
         'late_blight' => 'Late_Blight',
@@ -177,7 +177,7 @@ function resolve_penyakit(
         'healthy' => 'Healthy',
     ];
     $label = $aliases[$inputSlug] ?? ($labelCode ?? $inputSlug);
-    $nama = $namaPenyakit ?? $label;
+    $name = $diseaseName ?? $label;
 
     $stmt = $pdo->prepare(
         'SELECT id_penyakit FROM penyakit
@@ -188,7 +188,7 @@ function resolve_penyakit(
     );
     $stmt->execute([
         ':label' => $label,
-        ':nama' => $nama,
+        ':nama' => $name,
         ':slug' => slugify($label),
     ]);
 
@@ -209,7 +209,7 @@ function resolve_penyakit(
     $stmt->execute([
         ':id' => $id,
         ':label' => $label,
-        ':nama' => $nama,
+        ':nama' => $name,
     ]);
 
     $stmt = $pdo->prepare(
@@ -251,9 +251,9 @@ function fetch_scan(PDO $pdo, string $id): array
 
 function upsert_scan(PDO $pdo, array $payload): array
 {
-    $idRiwayat = require_string($payload, 'id_riwayat');
-    $idPengguna = require_string($payload, 'id_pengguna');
-    $namaPenyakit = optional_string($payload, 'nama_penyakit');
+    $scanId = require_string($payload, 'id_riwayat');
+    $userId = require_string($payload, 'id_pengguna');
+    $diseaseName = optional_string($payload, 'nama_penyakit');
     $labelCode = optional_string($payload, 'label_code');
 
     $confidence = $payload['confidence_score'] ?? null;
@@ -261,36 +261,36 @@ function upsert_scan(PDO $pdo, array $payload): array
         fail(422, "Field 'confidence_score' harus angka 0 sampai 1.");
     }
 
-    $tanggalPemeriksaan = to_mysql_datetime(
+    $examinedAt = to_mysql_datetime(
         require_string($payload, 'tanggal_pemeriksaan')
     );
 
-    $idTanaman = optional_string($payload, 'id_tanaman')
-        ?? ('TMT-DEFAULT-' . safe_id($idPengguna));
-    $namaTanaman = optional_string($payload, 'nama_tanaman');
-    $lokasi = optional_string($payload, 'lokasi');
-    $tanggalTanam = optional_string($payload, 'tanggal_tanam');
-    $catatan = optional_string($payload, 'catatan');
-    $fotoDaun = optional_string($payload, 'foto_daun');
+    $plantId = optional_string($payload, 'id_tanaman')
+        ?? ('TMT-DEFAULT-' . safe_id($userId));
+    $plantName = optional_string($payload, 'nama_tanaman');
+    $location = optional_string($payload, 'lokasi');
+    $plantingDate = optional_string($payload, 'tanggal_tanam');
+    $notes = optional_string($payload, 'catatan');
+    $leafPhoto = optional_string($payload, 'foto_daun');
 
     $pdo->beginTransaction();
 
     try {
-        ensure_pengguna(
+        ensure_user(
             $pdo,
-            $idPengguna,
+            $userId,
             optional_string($payload, 'nama_lengkap'),
             optional_string($payload, 'email')
         );
-        ensure_tanaman(
+        ensure_plant(
             $pdo,
-            $idTanaman,
-            $idPengguna,
-            $namaTanaman,
-            $lokasi,
-            $tanggalTanam
+            $plantId,
+            $userId,
+            $plantName,
+            $location,
+            $plantingDate
         );
-        $idPenyakit = resolve_penyakit($pdo, $labelCode, $namaPenyakit);
+        $diseaseId = resolve_disease($pdo, $labelCode, $diseaseName);
 
         $stmt = $pdo->prepare(
             'INSERT INTO riwayat_pemindaian
@@ -311,13 +311,13 @@ function upsert_scan(PDO $pdo, array $payload): array
                 synced_at = COALESCE(synced_at, NOW())'
         );
         $stmt->execute([
-            ':id' => $idRiwayat,
-            ':tanaman' => $idTanaman,
-            ':penyakit' => $idPenyakit,
-            ':foto' => $fotoDaun,
+            ':id' => $scanId,
+            ':tanaman' => $plantId,
+            ':penyakit' => $diseaseId,
+            ':foto' => $leafPhoto,
             ':confidence' => (float) $confidence,
-            ':tanggal' => $tanggalPemeriksaan,
-            ':catatan' => $catatan,
+            ':tanggal' => $examinedAt,
+            ':catatan' => $notes,
         ]);
 
         $pdo->commit();
@@ -328,10 +328,10 @@ function upsert_scan(PDO $pdo, array $payload): array
         throw $error;
     }
 
-    return fetch_scan($pdo, $idRiwayat);
+    return fetch_scan($pdo, $scanId);
 }
 
-function list_scans(PDO $pdo, string $idPengguna): array
+function list_scans(PDO $pdo, string $userId): array
 {
     $limit = (int) ($_GET['limit'] ?? 100);
     $limit = max(1, min($limit, 500));
@@ -350,7 +350,7 @@ function list_scans(PDO $pdo, string $idPengguna): array
          ORDER BY r.tanggal_pemeriksaan DESC
          LIMIT :limit'
     );
-    $stmt->bindValue(':pengguna', $idPengguna);
+    $stmt->bindValue(':pengguna', $userId);
     $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
     $stmt->execute();
 
@@ -383,11 +383,11 @@ try {
     }
 
     if ($method === 'GET' && $path === '/api/scans') {
-        $idPengguna = trim((string) ($_GET['id_pengguna'] ?? ''));
-        if ($idPengguna === '') {
+        $userId = trim((string) ($_GET['id_pengguna'] ?? ''));
+        if ($userId === '') {
             fail(422, "Query parameter 'id_pengguna' wajib diisi.");
         }
-        respond(200, list_scans(db(), $idPengguna));
+        respond(200, list_scans(db(), $userId));
     }
 
     if ($method === 'POST' && $path === '/api/scans') {
@@ -399,13 +399,13 @@ try {
         $method === 'POST'
         && preg_match('#^/api/scans/([^/]+)/image$#', $path, $matches) === 1
     ) {
-        $idRiwayat = urldecode($matches[1]);
+        $scanId = urldecode($matches[1]);
         $pdo = db();
 
         $stmt = $pdo->prepare(
             'SELECT id_riwayat FROM riwayat_pemindaian WHERE id_riwayat = :id'
         );
-        $stmt->execute([':id' => $idRiwayat]);
+        $stmt->execute([':id' => $scanId]);
         if ($stmt->fetch() === false) {
             fail(404, 'Riwayat tidak ditemukan.');
         }
@@ -433,7 +433,7 @@ try {
             fail(422, 'Format gambar harus JPG, PNG, atau WEBP.');
         }
 
-        $filename = safe_id($idRiwayat) . '.' . $extensions[$mime];
+        $filename = safe_id($scanId) . '.' . $extensions[$mime];
         $directory = __DIR__ . '/uploads/scans';
         if (!is_dir($directory) && !mkdir($directory, 0775, true)) {
             fail(500, 'Folder upload tidak dapat dibuat.');
@@ -458,10 +458,10 @@ try {
                  synced_at = COALESCE(synced_at, NOW())
              WHERE id_riwayat = :id'
         );
-        $stmt->execute([':url' => $url, ':id' => $idRiwayat]);
+        $stmt->execute([':url' => $url, ':id' => $scanId]);
 
         respond(200, [
-            'id_riwayat' => $idRiwayat,
+            'id_riwayat' => $scanId,
             'cloud_image_url' => $url,
         ]);
     }
@@ -470,11 +470,11 @@ try {
         $method === 'DELETE'
         && preg_match('#^/api/scans/([^/]+)$#', $path, $matches) === 1
     ) {
-        $idRiwayat = urldecode($matches[1]);
+        $scanId = urldecode($matches[1]);
         $stmt = db()->prepare(
             'DELETE FROM riwayat_pemindaian WHERE id_riwayat = :id'
         );
-        $stmt->execute([':id' => $idRiwayat]);
+        $stmt->execute([':id' => $scanId]);
 
         if ($stmt->rowCount() === 0) {
             fail(404, 'Riwayat tidak ditemukan.');

@@ -1,8 +1,11 @@
-/// Cetak biru (DDL) database SQLite LeafItToMe — versi 3.
+/// Cetak biru (DDL) database SQLite LeafItToMe — versi 4.
 ///
 /// Versi 3 menyelaraskan database aplikasi (`sqflite`) dengan **ERD proposal**:
 /// tujuh tabel ternormalisasi (`pengguna`, `tanaman`, `penyakit`,
 /// `riwayat_pemindaian`, `penanganan`, `panduan_menanam`, `rekomendasi_produk`).
+///
+/// Versi 4 menambahkan `panduan_menanam.video_url` agar video panduan
+/// tersimpan di database (bukan hardcoded di UI).
 ///
 /// Perbedaan penting dari v2:
 /// - `scan_history` (denormalized) diganti `riwayat_pemindaian` + foreign key.
@@ -12,7 +15,7 @@
 /// - `cloud_image_url` tetap disimpan di riwayat sebagai kolom pendukung sync.
 library;
 
-const int kLeafItToMeDatabaseVersion = 3;
+const int kLeafItToMeDatabaseVersion = 4;
 
 /// Urutan pembuatan tabel. Dipakai `AppDatabase` saat membuat database baru.
 const List<String> kLeafItToMeSchema = <String>[
@@ -88,6 +91,7 @@ CREATE TABLE panduan_menanam (
   deskripsi       TEXT,
   langkah_langkah TEXT,
   gambar          TEXT,
+  video_url       TEXT,
   created_at      TEXT NOT NULL
 )''',
   '''
@@ -123,7 +127,7 @@ CREATE TABLE rekomendasi_produk (
 /// scan (yang menyimpan `id_penyakit`) selalu punya pasangan nama/label yang
 /// konsisten, termasuk saat aplikasi baru pertama kali dibuka.
 const List<Map<String, Object?>>
-kLeafItToMeSeedPenyakit = <Map<String, Object?>>[
+kLeafItToMeSeedDiseases = <Map<String, Object?>>[
   {
     'id_penyakit': 'P001',
     'label_code': 'Bacterial_Spot',
@@ -169,6 +173,69 @@ kLeafItToMeSeedPenyakit = <Map<String, Object?>>[
         'Daun sehat tanpa gejala penyakit yang terlihat pada permukaan daun.',
     'kategori': 'Sehat',
     'tingkat_risiko': 'sehat',
+  },
+];
+
+/// Materi panduan bawaan beserta URL video berbahasa Indonesia.
+///
+/// Video disimpan di database (`panduan_menanam.video_url`), bukan di UI.
+const List<Map<String, Object?>> kLeafItToMeSeedGuides = <Map<String, Object?>>[
+  {
+    'id_panduan': 'GD-001',
+    'kategori': 'Persiapan',
+    'judul': 'Persiapan Alat dan Bahan',
+    'deskripsi': 'Siapkan wadah tanam, media, benih, dan alat perawatan sebelum mulai menanam tomat.',
+    'langkah_langkah':
+        '1. Pilih pot atau polybag berdiameter minimal 30-40 cm dengan lubang drainase.\n'
+        '2. Siapkan media tanam dari campuran tanah, kompos, dan sekam.\n'
+        '3. Pilih benih tomat unggul bersertifikat.\n'
+        '4. Siapkan sprayer, ajir, dan pupuk organik atau NPK.',
+    'gambar': 'assets/images/pot_tanam.jpg',
+    'video_url': 'https://www.youtube.com/watch?v=6fr7OFcITBk',
+    'created_at': '2026-07-01T08:00:00',
+  },
+  {
+    'id_panduan': 'GD-002',
+    'kategori': 'Penanaman',
+    'judul': 'Cara Menanam Tomat',
+    'deskripsi':
+        'Langkah dasar menyemai benih dan memindahkan bibit ke media tanam.',
+    'langkah_langkah':
+        '1. Rendam benih selama beberapa jam lalu semai di wadah kecil.\n'
+        '2. Jaga media semai tetap lembap dan tempatkan di area terang.\n'
+        '3. Pindahkan bibit ke pot utama setelah memiliki 4-5 helai daun.\n'
+        '4. Pasang ajir sebagai penyangga batang tanaman.',
+    'gambar': 'assets/images/tomato_plant.png',
+    'video_url': 'https://www.youtube.com/watch?v=LgZysH3ggp8',
+    'created_at': '2026-07-02T08:00:00',
+  },
+  {
+    'id_panduan': 'GD-003',
+    'kategori': 'Perawatan',
+    'judul': 'Perawatan Harian',
+    'deskripsi': 'Rutinitas penyiraman, pemupukan, dan pemangkasan agar tanaman tumbuh sehat.',
+    'langkah_langkah':
+        '1. Siram tanaman pada pagi atau sore hari sesuai kondisi media.\n'
+        '2. Beri pupuk organik atau NPK secara berkala sesuai dosis.\n'
+        '3. Pangkas tunas air dan daun tua yang tidak produktif.\n'
+        '4. Periksa daun secara rutin untuk mendeteksi gejala penyakit.',
+    'gambar': 'assets/images/tomato_plant.png',
+    'video_url': 'https://www.youtube.com/watch?v=cLBXqZ0VtOA',
+    'created_at': '2026-07-03T08:00:00',
+  },
+  {
+    'id_panduan': 'GD-004',
+    'kategori': 'Pencegahan',
+    'judul': 'Mencegah Penyakit',
+    'deskripsi': 'Langkah dasar menjaga sanitasi dan sirkulasi udara untuk mencegah penyakit daun.',
+    'langkah_langkah':
+        '1. Hindari menyiram daun dan arahkan air ke media tanam.\n'
+        '2. Jaga jarak antar tanaman agar sirkulasi udara lancar.\n'
+        '3. Bersihkan gulma dan daun gugur di sekitar pot.\n'
+        '4. Gunakan benih sehat dan bersihkan alat sebelum digunakan.',
+    'gambar': 'assets/images/late_blight.jpg',
+    'video_url': 'https://www.youtube.com/watch?v=0kRmIf_I3lc',
+    'created_at': '2026-07-04T08:00:00',
   },
 ];
 

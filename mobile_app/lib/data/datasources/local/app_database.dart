@@ -2,6 +2,7 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../../../core/database/database_schema.dart';
+import '../../models/guide_content_model.dart';
 import '../../models/scan_record_model.dart';
 
 class AppDatabase {
@@ -45,16 +46,54 @@ class AppDatabase {
     if (oldVersion < 3) {
       await _migrateV2ToV3(db);
     }
+    // v3 -> v4: tambah video_url pada panduan_menanam + seed panduan.
+    if (oldVersion < 4) {
+      await _migrateV3ToV4(db);
+    }
   }
 
   Future<void> _seedReferenceData(Database db) async {
-    for (final penyakit in kLeafItToMeSeedPenyakit) {
+    for (final disease in kLeafItToMeSeedDiseases) {
       await db.insert(
         'penyakit',
-        penyakit,
+        disease,
         conflictAlgorithm: ConflictAlgorithm.ignore,
       );
     }
+    await _seedGuides(db);
+  }
+
+  Future<void> _seedGuides(Database db) async {
+    for (final guide in kLeafItToMeSeedGuides) {
+      await db.insert(
+        'panduan_menanam',
+        guide,
+        conflictAlgorithm: ConflictAlgorithm.ignore,
+      );
+
+      final guideId = guide['id_panduan'] as String;
+      final videoUrl = guide['video_url'] as String?;
+      if (videoUrl != null) {
+        await db.update(
+          'panduan_menanam',
+          {'video_url': videoUrl},
+          where: 'id_panduan = ? AND (video_url IS NULL OR video_url = ?)',
+          whereArgs: [guideId, ''],
+        );
+      }
+    }
+  }
+
+  Future<void> _migrateV3ToV4(Database db) async {
+    if (!await _columnExists(db, 'panduan_menanam', 'video_url')) {
+      await db.execute('ALTER TABLE panduan_menanam ADD COLUMN video_url TEXT');
+    }
+    await _seedGuides(db);
+  }
+
+  Future<bool> _columnExists(Database db, String table, String column) async {
+    final rows = await db.rawQuery('PRAGMA table_info($table)');
+    return rows.any((row) => row['name'] == column);
   }
 
   Future<void> _migrateV2ToV3(Database db) async {
@@ -78,7 +117,7 @@ class AppDatabase {
           row['disease_name'] as String? ?? 'Penyakit Tidak Diketahui';
       final isSynced = (row['is_synced'] as int? ?? 0) == 1;
 
-      await _ensurePenggunaById(db, userId, userId, scannedAt);
+      await _ensureUserById(db, userId, userId, scannedAt);
 
       final plantId = 'TMT-DEFAULT-$userId';
       await db.insert('tanaman', {
@@ -91,7 +130,7 @@ class AppDatabase {
         'created_at': scannedAt,
       }, conflictAlgorithm: ConflictAlgorithm.ignore);
 
-      final diseaseId = await _resolvePenyakitId(db, diseaseName);
+      final diseaseId = await _resolveDiseaseId(db, diseaseName);
       await db.insert('riwayat_pemindaian', {
         'id_riwayat': row['id'],
         'id_tanaman': plantId,
@@ -122,9 +161,9 @@ class AppDatabase {
 
   Future<int> insertScan(ScanRecordModel scan) async {
     final db = await database;
-    await _ensurePengguna(db, scan);
-    final plantId = await _ensureTanaman(db, scan);
-    final diseaseId = await _resolvePenyakitId(db, scan.diseaseName);
+    await _ensureUser(db, scan);
+    final plantId = await _ensurePlant(db, scan);
+    final diseaseId = await _resolveDiseaseId(db, scan.diseaseName);
     final now = DateTime.now().toIso8601String();
 
     return await db.insert('riwayat_pemindaian', {
@@ -163,6 +202,12 @@ class AppDatabase {
     return result.map(_mapRowToScan).toList();
   }
 
+  Future<List<GuideContentModel>> getGuideContents() async {
+    final db = await database;
+    final result = await db.query('panduan_menanam', orderBy: 'id_panduan ASC');
+    return result.map(GuideContentModel.fromMap).toList();
+  }
+
   Future<int> markAsSynced(String id, String? cloudImageUrl) async {
     final db = await database;
     return await db.update(
@@ -191,8 +236,8 @@ class AppDatabase {
     db.close();
   }
 
-  Future<void> _ensurePengguna(Database db, ScanRecordModel scan) async {
-    await _ensurePenggunaById(
+  Future<void> _ensureUser(Database db, ScanRecordModel scan) async {
+    await _ensureUserById(
       db,
       scan.userId,
       scan.userId,
@@ -200,22 +245,22 @@ class AppDatabase {
     );
   }
 
-  Future<void> _ensurePenggunaById(
+  Future<void> _ensureUserById(
     Database db,
     String id,
-    String namaLengkap,
+    String fullName,
     String createdAt,
   ) async {
     await db.insert('pengguna', {
       'id_pengguna': id,
-      'nama_lengkap': namaLengkap,
+      'nama_lengkap': fullName,
       'email': '$id@local.invalid',
       'foto_profil': null,
       'created_at': createdAt,
     }, conflictAlgorithm: ConflictAlgorithm.ignore);
   }
 
-  Future<String> _ensureTanaman(Database db, ScanRecordModel scan) async {
+  Future<String> _ensurePlant(Database db, ScanRecordModel scan) async {
     final plantId = scan.plantId ?? 'TMT-DEFAULT-${scan.userId}';
     await db.insert('tanaman', {
       'id_tanaman': plantId,
@@ -229,7 +274,7 @@ class AppDatabase {
     return plantId;
   }
 
-  Future<String> _resolvePenyakitId(Database db, String diseaseName) async {
+  Future<String> _resolveDiseaseId(Database db, String diseaseName) async {
     final name = diseaseName.trim();
     final slug = _slugify(name);
     if (name.isNotEmpty) {

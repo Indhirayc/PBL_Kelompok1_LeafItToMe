@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
+import '../widgets/guide_video_section.dart';
 
 class GuideListPage extends StatelessWidget {
   const GuideListPage({super.key});
@@ -62,6 +63,10 @@ class GuideListPage extends StatelessWidget {
 
                 // 2x2 Clean Topic Grid
                 _buildTopicGrid(context),
+                const SizedBox(height: 24),
+
+                // Video panduan (diputar langsung di aplikasi)
+                const GuideVideoSection(),
                 const SizedBox(height: 24),
               ],
             ),
