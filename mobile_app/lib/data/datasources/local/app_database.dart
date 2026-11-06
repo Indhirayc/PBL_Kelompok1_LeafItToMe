@@ -1,5 +1,6 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+
 import '../../models/scan_record_model.dart';
 
 class AppDatabase {
@@ -18,11 +19,7 @@ class AppDatabase {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _createDB,
-    );
+    return await openDatabase(path, version: 1, onCreate: _createDB);
   }
 
   Future<void> _createDB(Database db, int version) async {
@@ -75,10 +72,7 @@ class AppDatabase {
     final db = await instance.database;
     return await db.update(
       'scan_history',
-      {
-        'is_synced': 1,
-        'cloud_image_url': cloudImageUrl,
-      },
+      {'is_synced': 1, 'cloud_image_url': cloudImageUrl},
       where: 'id = ?',
       whereArgs: [id],
     );

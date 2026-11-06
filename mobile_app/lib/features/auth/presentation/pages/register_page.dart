@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
@@ -117,49 +116,39 @@ class _RegisterPageState extends State<RegisterPage> {
     });
 
     try {
-      // 2. Hubungkan ke Firebase Auth untuk verifikasi email & password
+      // 1. Eksekusi registrasi ke Firebase Auth
       final credential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
             email: _emailController.text.trim(),
             password: _passwordController.text,
           );
 
-      // Simpan nama lengkap langsung dari field nama register ke profil Firebase Auth
+      // Simpan nama lengkap petani ke profil Firebase Auth
       await credential.user?.updateDisplayName(_nameController.text.trim());
       await credential.user?.reload();
 
-      // Simpan dokumen profil awal ke Cloud Firestore
-      if (credential.user != null) {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(credential.user!.uid)
-            .set({
-          'displayName': _nameController.text.trim(),
-          'email': _emailController.text.trim(),
-          'createdAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
-      }
-
       if (!mounted) return;
 
-      // 3. Hanya pindah ke halaman home jika user terautentikasi
-      if (credential.user != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Pendaftaran berhasil'),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-        context.goNamed('home');
-      }
+      // 2. Berpindah halaman HANYA jika registrasi berhasil
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Pendaftaran berhasil! Silakan masuk.'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+
+      context.goNamed('login');
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
 
-      // 4. Tangani pesan error spesifik dari Firebase
       String errorMessage = 'Gagal mendaftar. Silakan coba lagi.';
 
       switch (e.code) {
+        case 'operation-not-allowed':
+          errorMessage =
+              'Metode Email/Password belum diaktifkan di Firebase Console.';
+          break;
         case 'weak-password':
           errorMessage =
               'Kata sandi terlalu lemah. Gunakan minimal 6 karakter.';
@@ -173,6 +162,8 @@ class _RegisterPageState extends State<RegisterPage> {
         case 'network-request-failed':
           errorMessage = 'Tidak ada koneksi internet.';
           break;
+        default:
+          errorMessage = e.message ?? errorMessage;
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -193,19 +184,11 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
       );
     } finally {
+      // 3. Blok finally HANYA untuk mengubah state loading
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Pendaftaran berhasil'),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-
-        context.goNamed('login');
       }
     }
   }
