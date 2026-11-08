@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/widgets/app_content_layout.dart';
+import '../../data/guide_content_repository.dart';
 import '../../data/guide_data.dart';
 
 class GuideDetailPage extends StatefulWidget {
@@ -24,6 +28,9 @@ class _GuideDetailPageState extends State<GuideDetailPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
+  final GuideContentRepository _guideRepository = GuideContentRepository();
+  String? _plantingVideoUrl;
+
   @override
   void initState() {
     super.initState();
@@ -33,6 +40,53 @@ class _GuideDetailPageState extends State<GuideDetailPage>
       vsync: this,
       initialIndex: initialIndex,
     );
+    unawaited(_loadPlantingVideo());
+  }
+
+  Future<void> _loadPlantingVideo() async {
+    try {
+      final items = await _guideRepository.getGuideContents();
+      if (!mounted) return;
+
+      for (final item in items) {
+        final url = item.videoUrl;
+        if (item.id == 'GD-002' && url != null && url.isNotEmpty) {
+          setState(() {
+            _plantingVideoUrl = url;
+          });
+          return;
+        }
+      }
+    } catch (_) {
+      if (!mounted) return;
+    }
+  }
+
+  Future<void> _openPlantingVideo() async {
+    final url = _plantingVideoUrl;
+    if (url == null) return;
+
+    final uri = Uri.tryParse(url);
+    if (uri == null) return;
+
+    try {
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && mounted) {
+        _showVideoError();
+      }
+    } catch (_) {
+      if (!mounted) return;
+      _showVideoError();
+    }
+  }
+
+  void _showVideoError() {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Video tidak dapat dibuka.')));
   }
 
   @override
@@ -243,6 +297,82 @@ class _GuideDetailPageState extends State<GuideDetailPage>
   }
 
   // --- TAB 2: CARA MENANAM ---
+  Widget _buildPlantingVideoLink() {
+    if (_plantingVideoUrl == null) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          onTap: _openPlantingVideo,
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: GuideDetailPage.borderColor),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: GuideDetailPage.accentGreen,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.play_circle_outline_rounded,
+                    color: GuideDetailPage.primaryGreen,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Tonton Video Cara Menanam',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: GuideDetailPage.darkGreen,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        'Buka video panduan menanam tomat',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: GuideDetailPage.secondaryText,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.open_in_new_rounded,
+                  color: GuideDetailPage.secondaryText,
+                  size: 18,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildPlantingStepsTab() {
     final steps = [
       {
@@ -275,6 +405,7 @@ class _GuideDetailPageState extends State<GuideDetailPage>
           'Ikuti urutan langkah ini untuk menumbuhkan tanaman tomat yang kokoh.',
         ),
         const SizedBox(height: 16),
+        _buildPlantingVideoLink(),
         ...steps.map(
           (step) => Padding(
             padding: const EdgeInsets.only(bottom: 12.0),
