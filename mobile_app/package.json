@@ -1,0 +1,23 @@
+{
+  "name": "mobile_app",
+  "version": "1.0.0",
+  "description": "A new Flutter project.",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "seed": "node scripts/seed-firestore.js",
+    "seed:dry": "node scripts/seed-firestore.js --dry-run",
+    "list": "node scripts/list-firestore.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "firebase-admin": "^14.5.0"
+  }
+}
