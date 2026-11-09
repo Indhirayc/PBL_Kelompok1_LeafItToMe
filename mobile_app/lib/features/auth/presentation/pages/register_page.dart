@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mobile_app/data/repositories/user_repository.dart';
 
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
@@ -93,13 +94,12 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Future<void> _register() async {
     FocusScope.of(context).unfocus();
-
+    // 1. Validasi form
     final isValid = _formKey.currentState?.validate() ?? false;
-
     if (!isValid) {
       return;
     }
-
+    // 2. Cek persetujuan syarat & ketentuan
     if (!_agreeToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -109,28 +109,40 @@ class _RegisterPageState extends State<RegisterPage> {
       );
       return;
     }
-
     setState(() {
       _isLoading = true;
     });
-
-    // Simulasi pendaftaran untuk tahap UI.
-    await Future<void>.delayed(const Duration(seconds: 1));
-
-    if (!mounted) return;
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Pendaftaran berhasil'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-
-    context.goNamed('login');
+    try {
+      // 3. Panggil Firebase Auth & Firestore
+      await UserRepository().register(
+        _emailController.text.trim(),
+        _passwordController.text,
+        _nameController.text.trim(),
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Pendaftaran berhasil! Silakan masuk.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      context.goNamed('login');
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Pendaftaran gagal: ${e.toString()}'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   void _openLoginPage() {
