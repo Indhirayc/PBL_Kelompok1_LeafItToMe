@@ -1,44 +1,38 @@
 import '../../data/datasources/local/app_database.dart';
-import '../../data/datasources/remote/firebase_storage_source.dart';
-import '../../data/datasources/remote/firestore_scan_source.dart';
+import '../../data/datasources/remote/scan_api_source.dart';
 import '../../data/models/scan_record_model.dart';
+import '../network/api_client.dart';
 
 class SyncManager {
-  final AppDatabase _localDb;
-  final FirebaseStorageSource _storageSource;
-  final FirestoreScanSource _firestoreSource;
+  SyncManager({AppDatabase? localDb, ScanApiSource? apiSource})
+    : _localDb = localDb ?? AppDatabase.instance,
+      _apiSource = apiSource ?? ScanApiSourceImpl(createApiClient());
 
-  SyncManager({
-    AppDatabase? localDb,
-    FirebaseStorageSource? storageSource,
-    FirestoreScanSource? firestoreSource,
-  })  : _localDb = localDb ?? AppDatabase.instance,
-        _storageSource = storageSource ?? FirebaseStorageSource(),
-        _firestoreSource = firestoreSource ?? FirestoreScanSource();
+  final AppDatabase _localDb;
+  final ScanApiSource _apiSource;
 
   Future<void> syncPendingRecords(String userId) async {
-    final List<ScanRecordModel> pendingScans =
-        await _localDb.getUnsyncedScans(userId);
+    final List<ScanRecordModel> pendingScans = await _localDb.getUnsyncedScans(
+      userId,
+    );
 
     if (pendingScans.isEmpty) return;
 
     for (final scan in pendingScans) {
       try {
-        final String downloadUrl = await _storageSource.uploadLeafImage(
-          userId: scan.userId,
-          scanId: scan.id,
-          localPath: scan.localImagePath,
-        );
+        await _apiSource.saveScan(scan);
 
-        final updatedRecord = scan.copyWith(
-          cloudImageUrl: downloadUrl,
-          isSynced: true,
-        );
+        String? cloudImageUrl;
+        if (scan.localImagePath.isNotEmpty) {
+          cloudImageUrl = await _apiSource.uploadScanImage(
+            scan.id,
+            scan.localImagePath,
+          );
+        }
 
-        await _firestoreSource.saveScanRecord(updatedRecord);
-        await _localDb.markAsSynced(scan.id, downloadUrl);
-      } catch (e) {
-        // Lewati record yang gagal agar tidak menghambat batch lainnya
+        await _localDb.markAsSynced(scan.id, cloudImageUrl);
+      } catch (_) {
+        // Lewati record yang gagal agar tidak menghambat batch lainnya.
         continue;
       }
     }

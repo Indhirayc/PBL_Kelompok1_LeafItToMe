@@ -6,11 +6,9 @@ class ScanRepository {
   final AppDatabase _localDb;
   final SyncManager _syncManager;
 
-  ScanRepository({
-    AppDatabase? localDb,
-    SyncManager? syncManager,
-  })  : _localDb = localDb ?? AppDatabase.instance,
-        _syncManager = syncManager ?? SyncManager();
+  ScanRepository({AppDatabase? localDb, SyncManager? syncManager})
+    : _localDb = localDb ?? AppDatabase.instance,
+      _syncManager = syncManager ?? SyncManager();
 
   Future<void> saveScanResult(ScanRecordModel record) async {
     await _localDb.insertScan(record);
@@ -23,5 +21,9 @@ class ScanRepository {
 
   Future<void> triggerSync(String userId) async {
     await _syncManager.syncPendingRecords(userId);
+  }
+
+  Future<void> deleteScan(String id) async {
+    await _localDb.deleteScan(id);
   }
 }

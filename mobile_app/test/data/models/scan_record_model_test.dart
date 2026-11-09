@@ -15,31 +15,30 @@ void main() {
       notes: 'Bercak kecokelatan pada daun bagian bawah',
       scannedAt: testDate,
       isSynced: true,
+      plantId: 'TMT-001',
+      plantName: 'Tomat Pot Depan',
+      plantLocation: 'Teras depan',
     );
 
-    test('toSqliteMap dan fromSqliteMap serializes & deserializes dengan benar', () {
-      final map = model.toSqliteMap();
+    test('atribut tanaman tersimpan pada model', () {
+      expect(model.plantId, 'TMT-001');
+      expect(model.plantName, 'Tomat Pot Depan');
+      expect(model.plantLocation, 'Teras depan');
+    });
 
-      expect(map['id'], 'scan-123');
-      expect(map['user_id'], 'user-001');
-      expect(map['disease_name'], 'Tomato Early Blight');
-      expect(map['confidence'], 0.95);
-      expect(map['local_image_path'], '/data/user/0/cache/scan_123.jpg');
-      expect(map['cloud_image_url'], 'https://storage.googleapis.com/leafittome/scan_123.jpg');
-      expect(map['notes'], 'Bercak kecokelatan pada daun bagian bawah');
-      expect(map['scanned_at'], testDate.toIso8601String());
-      expect(map['is_synced'], 1);
+    test('toApiJson mengirim field yang dibutuhkan backend', () {
+      final apiMap = model.toApiJson();
 
-      final fromMap = ScanRecordModel.fromSqliteMap(map);
-      expect(fromMap.id, model.id);
-      expect(fromMap.userId, model.userId);
-      expect(fromMap.diseaseName, model.diseaseName);
-      expect(fromMap.confidence, model.confidence);
-      expect(fromMap.localImagePath, model.localImagePath);
-      expect(fromMap.cloudImageUrl, model.cloudImageUrl);
-      expect(fromMap.notes, model.notes);
-      expect(fromMap.scannedAt, model.scannedAt);
-      expect(fromMap.isSynced, isTrue);
+      expect(apiMap['id_riwayat'], 'scan-123');
+      expect(apiMap['id_pengguna'], 'user-001');
+      expect(apiMap['id_tanaman'], 'TMT-001');
+      expect(apiMap['nama_tanaman'], 'Tomat Pot Depan');
+      expect(apiMap['lokasi'], 'Teras depan');
+      expect(apiMap['nama_penyakit'], 'Tomato Early Blight');
+      expect(apiMap['confidence_score'], 0.95);
+      expect(apiMap['tanggal_pemeriksaan'], testDate.toIso8601String());
+      expect(apiMap['catatan'], 'Bercak kecokelatan pada daun bagian bawah');
+      expect(apiMap['foto_daun'], '/data/user/0/cache/scan_123.jpg');
     });
 
     test('toFirestore serializes dengan Timestamp Firestore', () {
@@ -49,8 +48,14 @@ void main() {
       expect(firestoreMap['user_id'], 'user-001');
       expect(firestoreMap['disease_name'], 'Tomato Early Blight');
       expect(firestoreMap['confidence'], 0.95);
-      expect(firestoreMap['cloud_image_url'], 'https://storage.googleapis.com/leafittome/scan_123.jpg');
-      expect(firestoreMap['notes'], 'Bercak kecokelatan pada daun bagian bawah');
+      expect(
+        firestoreMap['cloud_image_url'],
+        'https://storage.googleapis.com/leafittome/scan_123.jpg',
+      );
+      expect(
+        firestoreMap['notes'],
+        'Bercak kecokelatan pada daun bagian bawah',
+      );
       expect(firestoreMap['scanned_at'], isA<Timestamp>());
     });
 
@@ -64,6 +69,9 @@ void main() {
       expect(updated.isSynced, isFalse);
       expect(updated.id, model.id);
       expect(updated.diseaseName, model.diseaseName);
+      expect(updated.plantId, model.plantId);
+      expect(updated.plantName, model.plantName);
+      expect(updated.plantLocation, model.plantLocation);
     });
   });
 }
