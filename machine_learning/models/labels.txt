@@ -1,0 +1,5 @@
+Bacterial_spot
+Late_blight
+Leaf_Mold
+Tomato_Yellow_Leaf_Curl_Virus
+healthy
