@@ -87,6 +87,8 @@ flutter:
     - assets/icons/navigation/profile.svg
     - assets/models/leafittome_mobilenetv2.tflite
     - assets/models/labels.txt
+    - assets/models/leafittome_validator_mobilenetv2.tflite
+    - assets/models/leafittome_validator_labels.txt
 
   # To add assets to your application, add an assets section, like this:
   # assets:

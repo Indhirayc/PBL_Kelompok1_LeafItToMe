@@ -1,5 +1,5 @@
-
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -11,11 +11,13 @@ class PredictionResult {
   final String label;
   final double confidence;
   final Map<String, double> allScores;
+  final double? leafConfidence;
 
   const PredictionResult({
     required this.label,
     required this.confidence,
     required this.allScores,
+    this.leafConfidence,
   });
 
   double get confidencePercentage => confidence * 100;
@@ -43,8 +45,7 @@ enum NormalizationMode {
   rawZeroTo255,
 }
 
-/// Error untuk gambar yang tidak lolos pemeriksaan confidence.
-/// Confidence rendah bukan detektor objek non-daun yang pasti.
+/// Error untuk gambar yang tidak lolos validasi Stage 1 atau pemeriksaan confidence.
 class InvalidPlantImageException implements Exception {
   final String message;
 
@@ -59,19 +60,34 @@ class TfliteService {
 
   static final TfliteService instance = TfliteService._internal();
 
+  // Model Stage 2 (Penyakit - 5 Kelas Asli)
   static const String _modelPath =
       'assets/models/leafittome_mobilenetv2.tflite';
-
   static const String _labelsPath = 'assets/models/labels.txt';
+
+  // Model Stage 1 (Validator - Biner: Non-Leaf vs Tomato Leaf)
+  static const String _validatorModelPath =
+      'assets/models/leafittome_validator_mobilenetv2.tflite';
+  static const String _validatorLabelsPath =
+      'assets/models/leafittome_validator_labels.txt';
+
   static const int _inputSize = 224;
 
-  /// Ambang awal untuk pengujian.
-  /// Nilai lebih rendah dapat meningkatkan penerimaan prediksi
-  /// yang kurang yakin, tetapi tidak menjamin gambar adalah daun tomat.
+  /// Sakelar pengaman rollback: jika diatur false, sistem langsung
+  /// menggunakan model penyakit tanpa melewati validator Stage 1.
+  static const bool enableValidationStage = true;
+
+  /// Ambang batas terkalibrasi untuk penerimaan daun tomat pada Stage 1.
+  /// Berdasarkan optimasi cost-sensitive (w_FA = 3.5, w_FR = 1.0).
+  static const double leafValidationThreshold = 0.70;
+
+  /// Ambang batas keyakinan minimal untuk klasifikasi penyakit Stage 2.
   static const double confidenceThreshold = 0.60;
 
   Interpreter? _interpreter;
+  Interpreter? _validatorInterpreter;
   List<String> _labels = [];
+  List<String> _validatorLabels = [];
   bool _isInitialized = false;
 
   /// Model memiliki preprocess_input di dalam arsitekturnya.
@@ -82,17 +98,19 @@ class TfliteService {
   bool get isInitialized => _isInitialized;
 
   List<String> get labels => List.unmodifiable(_labels);
+  List<String> get validatorLabels => List.unmodifiable(_validatorLabels);
 
   Future<void> initModel() async {
     if (_isInitialized && _interpreter != null) return;
 
     Interpreter? loadedInterpreter;
+    Interpreter? loadedValidatorInterpreter;
 
     try {
+      // 1. Muat Model Penyakit (Stage 2)
       loadedInterpreter = await Interpreter.fromAsset(_modelPath);
 
       final rawLabels = await rootBundle.loadString(_labelsPath);
-
       final labels = rawLabels
           .split(RegExp(r'\r?\n'))
           .map((line) => line.trim())
@@ -149,26 +167,59 @@ class TfliteService {
         );
       }
 
+      // 2. Muat Model Validator (Stage 1) jika diaktifkan
+      List<String> validatorLabels = [];
+      if (enableValidationStage) {
+        try {
+          loadedValidatorInterpreter =
+              await Interpreter.fromAsset(_validatorModelPath);
+
+          final rawValidatorLabels =
+              await rootBundle.loadString(_validatorLabelsPath);
+          validatorLabels = rawValidatorLabels
+              .split(RegExp(r'\r?\n'))
+              .map((line) => line.trim())
+              .where((line) => line.isNotEmpty)
+              .toList();
+
+          if (kDebugMode) {
+            debugPrint('=== Validator Stage 1 berhasil dimuat ===');
+            debugPrint('Validator labels: $validatorLabels');
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            debugPrint('Peringatan: Gagal memuat model validator Stage 1: $e');
+            debugPrint('Sistem akan berjalan dengan mode fallback (Stage 2 saja).');
+          }
+        }
+      }
+
       _interpreter = loadedInterpreter;
+      _validatorInterpreter = loadedValidatorInterpreter;
       _labels = labels;
+      _validatorLabels = validatorLabels;
       _isInitialized = true;
 
       if (kDebugMode) {
-        debugPrint('=== Model LeafItToMe berhasil dimuat ===');
+        debugPrint('=== Model LeafItToMe Two-Stage berhasil dimuat ===');
         debugPrint('Input shape: $inputShape');
         debugPrint('Input type: ${inputTensor.type}');
-        debugPrint('Output shape: $outputShape');
-        debugPrint('Output type: ${outputTensor.type}');
+        debugPrint('Disease Output shape: $outputShape');
         debugPrint('Normalisasi input: $normalizationMode');
-        debugPrint('Confidence threshold: $confidenceThreshold');
+        debugPrint('Leaf Validation threshold: $leafValidationThreshold');
+        debugPrint('Disease Confidence threshold: $confidenceThreshold');
         debugPrint('Labels: $_labels');
       }
     } catch (e, stackTrace) {
       loadedInterpreter?.close();
+      loadedValidatorInterpreter?.close();
       _interpreter?.close();
+      _validatorInterpreter?.close();
 
       _interpreter = null;
+      _validatorInterpreter = null;
       _labels = [];
+      _validatorLabels = [];
       _isInitialized = false;
 
       if (kDebugMode) {
@@ -200,8 +251,6 @@ class TfliteService {
       await initModel();
     }
 
-    final interpreter = _interpreter!;
-
     final decodedImage = img.decodeImage(imageBytes);
 
     if (decodedImage == null) {
@@ -212,15 +261,51 @@ class TfliteService {
 
     final orientedImage = img.bakeOrientation(decodedImage);
 
-    final resizedImage = img.copyResize(
-      orientedImage,
-      width: _inputSize,
-      height: _inputSize,
-      interpolation: img.Interpolation.linear,
-    );
+    // Preprocessing dengan Letterbox Padding untuk menjaga aspect ratio
+    final letterboxedImage = _letterboxResize(orientedImage);
+    final inputTensor = _buildInputTensor(letterboxedImage);
 
-    final inputTensor = _buildInputTensor(resizedImage);
+    double leafScore = 1.0;
 
+    // --- STAGE 1: TOMATO LEAF VALIDATOR ---
+    if (enableValidationStage && _validatorInterpreter != null) {
+      final validatorOutputShape =
+          _validatorInterpreter!.getOutputTensor(0).shape;
+      final numValidatorClasses = validatorOutputShape[1];
+
+      final validatorOutput = <List<double>>[
+        List<double>.filled(numValidatorClasses, 0.0),
+      ];
+
+      _validatorInterpreter!.run(inputTensor, validatorOutput);
+
+      final valScores = validatorOutput[0];
+      if (kDebugMode) {
+        debugPrint('=== Stage 1: Leaf Validator Output ===');
+        debugPrint('Skor validasi: $valScores');
+      }
+
+      // Output index 1 adalah tomato_leaf, index 0 adalah invalid_non_leaf
+      if (numValidatorClasses >= 2) {
+        leafScore = valScores[1];
+        final nonLeafScore = valScores[0];
+
+        if (leafScore < leafValidationThreshold || nonLeafScore >= 0.50) {
+          if (kDebugMode) {
+            debugPrint(
+              'Stage 1 REJECTED: leafScore=$leafScore < $leafValidationThreshold (nonLeafScore=$nonLeafScore)',
+            );
+          }
+          throw const InvalidPlantImageException(
+            'Gambar tidak terdeteksi sebagai daun tomat. '
+            'Silakan ambil atau pilih foto daun tomat yang jelas.',
+          );
+        }
+      }
+    }
+
+    // --- STAGE 2: DISEASE CLASSIFIER ---
+    final interpreter = _interpreter!;
     final outputShape = interpreter.getOutputTensor(0).shape;
     final numClasses = outputShape[1];
 
@@ -251,7 +336,6 @@ class TfliteService {
       );
     }
 
-    // Output softmax digunakan langsung tanpa softmax kedua.
     final totalProbability = scores.fold<double>(
       0.0,
       (sum, score) => sum + score,
@@ -279,7 +363,8 @@ class TfliteService {
     }
 
     if (kDebugMode) {
-      debugPrint('=== Prediksi LeafItToMe ===');
+      debugPrint('=== Prediksi LeafItToMe (Stage 2) ===');
+      debugPrint('Leaf Confidence (Stage 1): ${(leafScore * 100).toStringAsFixed(2)}%');
       debugPrint('Skor mentah output: $scores');
       debugPrint('Semua skor: $allScores');
       debugPrint('Label asli: ${_labels[bestIndex]}');
@@ -307,7 +392,46 @@ class TfliteService {
       label: _labels[bestIndex],
       confidence: maxScore,
       allScores: allScores,
+      leafConfidence: leafScore,
     );
+  }
+
+  /// Letterbox resize: menjaga aspect ratio asli dan memberi padding abu-abu netral (128, 128, 128)
+  img.Image _letterboxResize(img.Image source) {
+    final srcW = source.width;
+    final srcH = source.height;
+
+    final scale = math.min(_inputSize / srcW, _inputSize / srcH);
+    final targetW = (srcW * scale).round();
+    final targetH = (srcH * scale).round();
+
+    final resized = img.copyResize(
+      source,
+      width: targetW,
+      height: targetH,
+      interpolation: img.Interpolation.linear,
+    );
+
+    final canvas = img.Image(
+      width: _inputSize,
+      height: _inputSize,
+      numChannels: 3,
+    );
+
+    // Isi background dengan warna abu-abu netral (128, 128, 128)
+    img.fill(canvas, color: img.ColorRgb8(128, 128, 128));
+
+    final offsetX = (_inputSize - targetW) ~/ 2;
+    final offsetY = (_inputSize - targetH) ~/ 2;
+
+    img.compositeImage(
+      canvas,
+      resized,
+      dstX: offsetX,
+      dstY: offsetY,
+    );
+
+    return canvas;
   }
 
   /// Membentuk tensor RGB float32 dengan bentuk [1, 224, 224, 3].
@@ -342,8 +466,11 @@ class TfliteService {
 
   void dispose() {
     _interpreter?.close();
+    _validatorInterpreter?.close();
     _interpreter = null;
+    _validatorInterpreter = null;
     _labels = [];
+    _validatorLabels = [];
     _isInitialized = false;
   }
 }
