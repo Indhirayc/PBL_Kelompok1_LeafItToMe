@@ -1,0 +1,299 @@
+﻿<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LeafItToMe â€” Mockup Aplikasi</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --green: #2f7d4a;
+      --deep: #183e2d;
+      --text: #20392a;
+      --muted: #75857b;
+      --paper: #f8faf5;
+      --line: #e3eae4;
+      --mint: #e8f5e9;
+      --orange: #ed6c02;
+      --shadow: 0 24px 70px #183e2d20;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at 8% 6%, #e8f5e9 0, transparent 34%),
+        radial-gradient(ellipse at 100% 85%, #e6eee4 0, transparent 32%),
+        #f4f7f1;
+      color: var(--text);
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+    }
+    .layout { max-width: 1200px; margin: 0 auto; padding: 42px 28px 56px; }
+    .intro { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 26px; }
+    .eyebrow { color: var(--green); font-weight: 800; letter-spacing: .15em; font-size: 11px; text-transform: uppercase; }
+    h1 { margin: 9px 0 7px; color: var(--deep); font-size: clamp(28px, 4vw, 42px); letter-spacing: -.045em; }
+    .intro p { max-width: 600px; margin: 0; color: var(--muted); line-height: 1.55; font-size: 14px; }
+    .brand { display: flex; align-items: center; gap: 10px; color: var(--deep); font-size: 14px; font-weight: 800; white-space: nowrap; }
+    .brand-mark { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 14px; color: white; background: var(--green); font-size: 21px; }
+    .prototype { display: grid; grid-template-columns: minmax(270px, 1fr) minmax(350px, 410px) minmax(220px, 1fr); align-items: center; gap: 34px; }
+    .side-note { align-self: center; }
+    .side-note h2 { color: var(--deep); margin: 0 0 12px; font-size: 16px; }
+    .side-note p { color: var(--muted); font-size: 13px; line-height: 1.65; margin: 0 0 14px; }
+    .point { display: flex; gap: 9px; color: #53665a; font-size: 12px; line-height: 1.55; margin: 10px 0; }
+    .point b { color: var(--green); }
+    .device-wrap { width: 100%; max-width: 410px; justify-self: center; }
+    .screen-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; margin-bottom: 14px; }
+    .screen-tabs button {
+      border: 1px solid #dce6dc; background: #ffffffa8; color: #596b5f;
+      border-radius: 999px; padding: 8px 12px; font: 700 11px inherit; cursor: pointer;
+      transition: .18s ease;
+    }
+    .screen-tabs button:hover { border-color: #9cbea2; }
+    .screen-tabs button.active { background: var(--deep); border-color: var(--deep); color: white; }
+    .device {
+      height: min(790px, calc(100vh - 205px)); min-height: 650px; padding: 9px;
+      border: 1px solid #d5ddd5; border-radius: 42px; background: #18241d;
+      box-shadow: var(--shadow); position: relative;
+    }
+    .screen {
+      position: relative; overflow: hidden; height: 100%; border-radius: 34px;
+      background: var(--paper); display: flex; flex-direction: column;
+    }
+    .statusbar { height: 32px; padding: 11px 22px 0; display: flex; justify-content: space-between; font-size: 10px; font-weight: 800; color: #26372c; flex: none; }
+    .screen-content { overflow: auto; flex: 1; padding: 7px 17px 20px; scrollbar-width: none; }
+    .screen-content::-webkit-scrollbar { display: none; }
+    .topline { display: flex; justify-content: space-between; align-items: center; margin: 5px 2px 16px; }
+    .title { font-size: 20px; font-weight: 800; letter-spacing: -.035em; color: var(--deep); }
+    .subtitle { color: var(--muted); font-size: 11px; margin-top: 3px; }
+    .icon-button { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid var(--line); background: white; border-radius: 12px; color: var(--green); font-size: 16px; }
+    .greeting { color: white; position: relative; overflow: hidden; border-radius: 18px; padding: 18px 17px; background: linear-gradient(135deg, var(--deep), var(--green)); }
+    .greeting:after { content: "âœ¿"; position: absolute; right: 11px; bottom: -34px; font-size: 110px; color: #ffffff1b; transform: rotate(-20deg); }
+    .greeting .small { position: relative; z-index: 1; font-size: 10px; opacity: .8; }
+    .greeting h2 { position: relative; z-index: 1; max-width: 250px; margin: 7px 0 5px; font-size: 18px; line-height: 1.2; }
+    .greeting p { position: relative; z-index: 1; max-width: 245px; margin: 0; color: #ffffffd9; font-size: 10px; line-height: 1.5; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 14px 0 20px; }
+    .stat { background: white; border: 1px solid var(--line); border-radius: 14px; text-align: center; padding: 10px 5px 9px; }
+    .stat strong { display: block; font-size: 18px; color: var(--green); }
+    .stat span { display: block; margin-top: 3px; font-size: 9px; font-weight: 700; color: var(--deep); }
+    .section-head { display: flex; align-items: center; justify-content: space-between; margin: 17px 1px 10px; }
+    .section-head h3 { color: var(--deep); font-size: 14px; margin: 0; }
+    .text-link { color: var(--green); font-size: 10px; font-weight: 800; }
+    .plant-card, .white-card { background: white; border: 1px solid var(--line); border-radius: 16px; padding: 12px; margin-bottom: 10px; }
+    .plant-top { display: flex; gap: 10px; align-items: center; }
+    .plant-icon { flex: none; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 14px; background: var(--mint); font-size: 21px; }
+    .plant-name { font-size: 12px; font-weight: 800; color: var(--deep); }
+    .plant-meta { margin-top: 4px; color: var(--muted); font-size: 9px; }
+    .pill { display: inline-flex; gap: 4px; align-items: center; border-radius: 999px; padding: 5px 8px; font-size: 9px; font-weight: 800; white-space: nowrap; }
+    .pill.good { color: #26753e; background: #e8f5e9; }
+    .pill.warn { color: #ad5c00; background: #fff1dc; }
+    .plant-bottom { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eef2ee; margin-top: 11px; padding-top: 9px; color: var(--muted); font-size: 9px; }
+    .button { border: 0; border-radius: 12px; padding: 12px 14px; background: var(--green); color: white; text-align: center; font: 800 11px inherit; width: 100%; }
+    .button.light { color: var(--green); background: #eaf4eb; }
+    .bottom-nav { flex: none; height: 63px; display: flex; justify-content: space-around; align-items: center; background: white; border-top: 1px solid var(--line); padding: 3px 8px 5px; }
+    .nav-item { border: 0; background: none; color: #87948a; display: flex; flex-direction: column; align-items: center; gap: 3px; font: 600 9px inherit; cursor: pointer; min-width: 52px; }
+    .nav-item .nav-icon { font-size: 18px; line-height: 1; }
+    .nav-item.active { color: var(--green); font-weight: 800; }
+    .nav-item.active .nav-icon { transform: translateY(-1px); }
+    .feature { position: relative; min-height: 145px; display: flex; overflow: hidden; align-items: center; background: #e9f4ec; border: 1px solid #d8e9da; border-radius: 18px; padding: 17px; }
+    .feature-copy { width: 67%; position: relative; z-index: 1; }
+    .tag { color: var(--green); font-size: 8px; font-weight: 900; letter-spacing: .1em; }
+    .feature h2 { color: var(--deep); font-size: 16px; line-height: 1.25; margin: 8px 0 6px; }
+    .feature p { color: var(--muted); font-size: 9px; line-height: 1.45; margin: 0; }
+    .feature img { position: absolute; width: 112px; height: 130px; object-fit: contain; right: 0; bottom: 0; }
+    .topic-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .topic { padding: 13px 12px; min-height: 91px; border-radius: 15px; border: 1px solid var(--line); background: white; }
+    .topic .emoji { font-size: 19px; }
+    .topic strong { display: block; color: var(--deep); font-size: 10px; margin-top: 7px; }
+    .topic span { display: block; color: var(--muted); font-size: 8px; margin-top: 3px; }
+    .search { display: flex; gap: 8px; align-items: center; background: white; border: 1px solid var(--line); border-radius: 12px; padding: 11px 12px; color: #9aa59d; font-size: 10px; margin: 13px 0; }
+    .filter { display: flex; gap: 7px; margin: 11px 0 13px; }
+    .filter span { border: 1px solid var(--line); background: white; padding: 7px 10px; border-radius: 99px; color: var(--muted); font-size: 9px; }
+    .filter span.selected { border-color: var(--green); background: var(--green); color: white; }
+    .plant-list-card { display: flex; gap: 10px; align-items: center; background: white; border: 1px solid var(--line); border-radius: 15px; padding: 12px; margin-bottom: 9px; }
+    .plant-list-card .plant-icon { width: 46px; height: 46px; }
+    .plant-list-card .details { flex: 1; min-width: 0; }
+    .plant-list-card .plant-name { font-size: 11px; }
+    .plant-list-card .plant-meta { font-size: 9px; }
+    .arrow { color: #9aa99d; font-size: 17px; }
+    .profile-card { display: flex; align-items: center; gap: 12px; background: white; border: 1px solid var(--line); border-radius: 17px; padding: 15px; }
+    .avatar { display: grid; place-items: center; width: 51px; height: 51px; border-radius: 50%; background: #e5f1e5; color: var(--green); font-size: 22px; }
+    .profile-card strong { display: block; color: var(--deep); font-size: 13px; }
+    .profile-card span { display: block; color: var(--muted); font-size: 9px; margin-top: 4px; }
+    .menu { background: white; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+    .menu-row { padding: 13px 12px; border-bottom: 1px solid #eef2ee; display: flex; align-items: center; gap: 10px; color: var(--deep); font-size: 10px; font-weight: 700; }
+    .menu-row:last-child { border-bottom: 0; }
+    .menu-row .mi { color: var(--green); font-size: 15px; }
+    .menu-row .arrow { margin-left: auto; }
+    .result-photo { position: relative; overflow: hidden; border-radius: 17px; height: 195px; background: #dcebd9; }
+    .result-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .confidence { position: absolute; bottom: 9px; left: 10px; padding: 7px 10px; border-radius: 999px; background: white; color: var(--green); font-size: 10px; font-weight: 900; box-shadow: 0 3px 14px #0002; }
+    .disease-head { display: flex; justify-content: space-between; gap: 8px; align-items: start; }
+    .disease-head h3 { color: var(--deep); font-size: 15px; margin: 8px 0 3px; }
+    .latin { color: var(--muted); font-size: 9px; font-style: italic; }
+    .disease-copy { color: #68796e; font-size: 10px; line-height: 1.55; margin: 10px 0 0; }
+    .mini-title { color: var(--deep); font-size: 10px; font-weight: 800; margin: 12px 0 5px; }
+    .recommendation { display: flex; gap: 8px; align-items: center; border-radius: 12px; background: #f2f7ef; color: #4c6252; padding: 9px; font-size: 9px; line-height: 1.4; }
+    .rec-number { display: grid; place-items: center; flex: none; width: 20px; height: 20px; border-radius: 50%; background: white; color: var(--green); font-weight: 900; }
+    .label-row { display: flex; justify-content: space-between; align-items: center; margin: 15px 0 10px; }
+    .label-row h3 { margin: 0; color: var(--deep); font-size: 13px; }
+    .spacer { height: 8px; }
+    .footer-note { text-align: center; margin: 22px 0 0; color: #8b9a90; font-size: 10px; }
+    @media (max-width: 920px) {
+      .prototype { grid-template-columns: 1fr; gap: 20px; }
+      .device-wrap { grid-row: 1; }
+      .side-note { max-width: 600px; width: 100%; margin: 0 auto; }
+      .side-note.right { display: none; }
+      .intro { align-items: start; }
+      .brand { display: none; }
+      .device { height: 760px; }
+    }
+    @media (max-width: 480px) {
+      .layout { padding: 25px 12px 36px; }
+      .intro { margin: 0 5px 18px; }
+      .device { min-height: 680px; height: calc(100vh - 165px); border-radius: 34px; }
+      .screen { border-radius: 27px; }
+      .screen-tabs button { padding: 7px 9px; font-size: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="layout">
+    <header class="intro">
+      <div>
+        <div class="eyebrow">Product concept Â· Mobile app</div>
+        <h1>Merawat tanaman, lebih terarah.</h1>
+        <p>Mockup interaktif LeafItToMe berdasarkan alur dan komponen project: pantau tanaman, pelajari panduan, cek hasil deteksi, dan kelola akun.</p>
+      </div>
+      <div class="brand"><span class="brand-mark">âœ¿</span> LeafItToMe</div>
+    </header>
+
+    <section class="prototype" aria-label="Mockup layar aplikasi">
+      <aside class="side-note">
+        <h2 id="note-title">Beranda yang langsung memberi gambaran</h2>
+        <p id="note-copy">Ringkasan kondisi tanaman dan akses cepat ke pemeriksaan membantu pengguna tahu apa yang perlu dilakukan berikutnya.</p>
+        <div class="point"><b>01</b><span>Palet hijau dan latar lembut mengikuti identitas visual aplikasi.</span></div>
+        <div class="point"><b>02</b><span>Konten memakai data contoh tanaman tomat dan status dari project.</span></div>
+        <div class="point"><b>03</b><span>Pilih tab atau navigasi bawah untuk berpindah layar mockup.</span></div>
+      </aside>
+
+      <div class="device-wrap">
+        <div class="screen-tabs" role="tablist" aria-label="Pilih layar mockup">
+          <button class="active" data-screen="home" role="tab">Beranda</button>
+          <button data-screen="guide" role="tab">Panduan</button>
+          <button data-screen="plants" role="tab">Tanamanku</button>
+          <button data-screen="result" role="tab">Hasil deteksi</button>
+          <button data-screen="profile" role="tab">Profil</button>
+        </div>
+        <div class="device">
+          <div class="screen">
+            <div class="statusbar"><span>9:41</span><span>â—â—â—ã€€â—–ã€€â–°</span></div>
+            <div class="screen-content" id="screen-content"></div>
+            <nav class="bottom-nav" aria-label="Navigasi utama">
+              <button class="nav-item active" data-screen="home"><span class="nav-icon">âŒ‚</span>Beranda</button>
+              <button class="nav-item" data-screen="guide"><span class="nav-icon">â–¤</span>Panduan</button>
+              <button class="nav-item" data-screen="plants"><span class="nav-icon">â™§</span>Tanamanku</button>
+              <button class="nav-item" data-screen="profile"><span class="nav-icon">â™™</span>Profil</button>
+            </nav>
+          </div>
+        </div>
+      </div>
+
+      <aside class="side-note right">
+        <h2>Alur utama</h2>
+        <p>Gunakan mockup ini sebagai bahan diskusi awal untuk presentasi, review fitur, atau penyelarasan UI sebelum implementasi.</p>
+        <div class="point"><b>â†’</b><span>Beranda â†’ pemeriksaan â†’ hasil deteksi â†’ penanganan.</span></div>
+        <div class="point"><b>â†’</b><span>Tanamanku â†’ detail tanaman â†’ riwayat pemeriksaan.</span></div>
+        <p class="footer-note">Konsep visual Â· LeafItToMe</p>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const image = "mobile_app/assets/images/";
+    const screens = {
+      home: {
+        title: "Beranda yang langsung memberi gambaran",
+        copy: "Ringkasan kondisi tanaman dan akses cepat ke pemeriksaan membantu pengguna tahu apa yang perlu dilakukan berikutnya.",
+        html: `
+          <div class="topline"><div><div class="title">LeafItToMe</div><div class="subtitle">Beranda</div></div><button class="icon-button">â˜¼</button></div>
+          <section class="greeting"><div class="small">KEBUN HARI INI</div><h2>Selamat Datang, Petani Muda! ðŸ‘‹</h2><p>Pantau kesehatan tanamanmu & ikuti panduan perawatan harian.</p></section>
+          <div class="stats"><div class="stat"><strong>2</strong><span>Total Tanaman</span></div><div class="stat"><strong>1</strong><span>Kondisi Sehat</span></div><div class="stat"><strong style="color:#ed6c02">1</strong><span>Perlu Perhatian</span></div></div>
+          <div class="section-head"><h3>Tanamanku</h3><span class="text-link">Lihat semua â†’</span></div>
+          <article class="plant-card"><div class="plant-top"><div class="plant-icon">ðŸƒ</div><div style="flex:1"><div class="plant-name">Tomat Pot Depan</div><div class="plant-meta">TMT-001 Â· Teras depan</div></div><span class="pill good">â— Sehat</span></div><div class="plant-bottom"><span>Pemeriksaan terakhir</span><b>28 Sep 2026</b></div></article>
+          <article class="plant-card"><div class="plant-top"><div class="plant-icon" style="background:#fff3e0">ðŸŒ¿</div><div style="flex:1"><div class="plant-name">Tomat Kebun Belakang</div><div class="plant-meta">TMT-002 Â· Kebun belakang</div></div></div><div class="plant-bottom"><span class="pill warn">â— Perlu perhatian</span><button class="text-link" data-screen="result" style="border:0;background:none">Periksa â€º</button></div></article>
+          <button class="button" data-screen="result">âŒ•ã€€Mulai Pemeriksaan</button>
+          <div class="spacer"></div>`
+      },
+      guide: {
+        title: "Panduan budidaya yang mudah dijelajahi",
+        copy: "Topik disusun dalam kartu ringkas agar pengguna cepat menemukan informasi perawatan dan penanganan tanaman.",
+        html: `
+          <div class="topline"><div><div class="title">Panduan Budidaya</div><div class="subtitle">Belajar merawat tanaman dengan tepat</div></div><button class="icon-button">âŒ•</button></div>
+          <section class="feature"><div class="feature-copy"><div class="tag">PANDUAN LENGKAP</div><h2>Mulai dari benih hingga panen</h2><p>Kenali langkah budidaya tomat yang sehat dan produktif.</p><div class="text-link" style="margin-top:10px">Baca panduan â†’</div></div><img src="${image}tomato_plant.png" alt="Ilustrasi tanaman tomat"></section>
+          <div class="section-head"><h3>Topik Panduan</h3><span class="text-link">Jelajahi</span></div>
+          <div class="topic-grid"><article class="topic"><div class="emoji">ðŸŒ±</div><strong>Persiapan Tanam</strong><span>Media, benih & lokasi</span></article><article class="topic"><div class="emoji">ðŸ’§</div><strong>Perawatan</strong><span>Penyiraman & nutrisi</span></article><article class="topic"><div class="emoji">ðŸª´</div><strong>Alat Berkebun</strong><span>Kenali alat yang tepat</span></article><article class="topic"><div class="emoji">ðŸ©º</div><strong>Penyakit Tanaman</strong><span>Gejala & penanganan</span></article></div>
+          <div class="section-head"><h3>Tips untuk hari ini</h3><span class="text-link">Lihat semua â†’</span></div>
+          <article class="white-card" style="display:flex;gap:11px;align-items:center"><div class="plant-icon">â˜€ï¸</div><div><div class="plant-name">Cek kelembapan tanah</div><div class="plant-meta">Pastikan media tanam tidak terlalu kering.</div></div></article>`
+      },
+      plants: {
+        title: "Pantau semua tanaman dari satu tempat",
+        copy: "Daftar tanaman memperlihatkan ID, lokasi, dan kondisi, selaras dengan fitur Tanamanku dan detail tanaman.",
+        html: `
+          <div class="topline"><div><div class="title">Tanamanku</div><div class="subtitle">Pantau setiap tanaman berdasarkan ID.</div></div><button class="icon-button">ï¼‹</button></div>
+          <div class="stats"><div class="stat"><strong>2</strong><span>Total Tanaman</span></div><div class="stat"><strong>1</strong><span>Sehat</span></div><div class="stat"><strong style="color:#ed6c02">1</strong><span>Perhatian</span></div></div>
+          <div class="search"><span>âŒ•</span><span>Cari nama atau ID tanaman</span></div>
+          <div class="filter"><span class="selected">Semua</span><span>Sehat</span><span>Perhatian</span></div>
+          <article class="plant-list-card"><div class="plant-icon">ðŸƒ</div><div class="details"><div class="plant-name">Tomat Pot Depan</div><div class="plant-meta">TMT-001 Â· Teras depan</div><div style="margin-top:7px"><span class="pill good">â— Sehat</span></div></div><span class="arrow">â€º</span></article>
+          <article class="plant-list-card"><div class="plant-icon" style="background:#fff3e0">ðŸŒ¿</div><div class="details"><div class="plant-name">Tomat Kebun Belakang</div><div class="plant-meta">TMT-002 Â· Kebun belakang</div><div style="margin-top:7px"><span class="pill warn">â— Perlu perhatian</span></div></div><span class="arrow">â€º</span></article>
+          <div class="section-head"><h3>Perlu diperiksa</h3></div>
+          <article class="white-card"><div class="plant-name">Tomat Kebun Belakang</div><div class="plant-meta" style="line-height:1.5">Pemeriksaan terakhir menunjukkan kondisi yang perlu dipantau lebih lanjut.</div><button class="button" data-screen="result" style="margin-top:12px">Mulai Pemeriksaan</button></article>`
+      },
+      result: {
+        title: "Hasil deteksi yang jelas dan dapat ditindaklanjuti",
+        copy: "Alur pemeriksaan menampilkan konteks tanaman, tingkat keyakinan, hasil diagnosis, dan akses ke rekomendasi penanganan.",
+        html: `
+          <div class="topline"><button class="icon-button">â€¹</button><div class="title" style="font-size:17px">Hasil Deteksi</div><button class="icon-button">â‹¯</button></div>
+          <div class="result-photo"><img src="${image}bacterial_spot.jpg" alt="Contoh daun dengan bacterial spot"><div class="confidence">âœ“ Akurasi 94%</div></div>
+          <article class="white-card" style="display:flex;gap:10px;align-items:center;margin-top:15px"><div class="plant-icon">ðŸ…</div><div><div class="plant-name">Tomat Kebun Belakang</div><div class="plant-meta">TMT-002 Â· Kebun belakang</div></div></article>
+          <article class="white-card"><div class="disease-head"><div><span class="pill warn">PERLU PERHATIAN</span><h3>Bacterial Spot</h3><div class="latin">Xanthomonas spp.</div></div><span style="font-size:20px">ðŸ©º</span></div><p class="disease-copy">Terdapat bercak cokelat pada daun yang dapat menyebar jika kondisi terlalu lembap.</p><div class="mini-title">Rekomendasi awal</div><div class="recommendation"><span class="rec-number">1</span><span>Pangkas daun terinfeksi dan hindari membasahi daun saat menyiram.</span></div><div class="recommendation" style="margin-top:6px"><span class="rec-number">2</span><span>Pastikan sirkulasi udara di sekitar tanaman tetap baik.</span></div></article>
+          <button class="button">Lihat Penangananã€€â€º</button>
+          <p style="text-align:center;color:var(--muted);font-size:8px;line-height:1.4">Hasil deteksi merupakan panduan awal. Periksa tanaman secara berkala.</p>`
+      },
+      profile: {
+        title: "Profil dan aktivitas tetap mudah diakses",
+        copy: "Ruang akun merangkum identitas, aktivitas tanaman, dan pintasan ke pengaturan serta bantuan.",
+        html: `
+          <div class="topline"><div><div class="title">Profil</div><div class="subtitle">Kelola akun dan preferensimu</div></div><button class="icon-button">âš™</button></div>
+          <section class="profile-card"><div class="avatar">â™™</div><div><strong>Pengguna LeafItToMe</strong><span>petani.muda@email.com</span></div><span class="arrow" style="margin-left:auto">â€º</span></section>
+          <div class="section-head"><h3>Aktivitas Tanaman</h3><span class="text-link">Detail â†’</span></div>
+          <div class="stats"><div class="stat"><strong>2</strong><span>Tanaman</span></div><div class="stat"><strong>5</strong><span>Pemeriksaan</span></div><div class="stat"><strong>1</strong><span>Perlu cek</span></div></div>
+          <div class="section-head"><h3>Pengaturan Akun</h3></div>
+          <div class="menu"><div class="menu-row"><span class="mi">â™™</span>Informasi Pribadi<span class="arrow">â€º</span></div><div class="menu-row"><span class="mi">â™§</span>Sinkronisasi Data<span class="arrow">â€º</span></div><div class="menu-row"><span class="mi">?</span>Bantuan & FAQ<span class="arrow">â€º</span></div><div class="menu-row"><span class="mi">â“˜</span>Tentang LeafItToMe<span class="arrow">â€º</span></div></div>
+          <button class="button light" style="margin-top:16px">Keluar dari akun</button>`
+      }
+    };
+
+    const content = document.getElementById("screen-content");
+    const noteTitle = document.getElementById("note-title");
+    const noteCopy = document.getElementById("note-copy");
+    function showScreen(name) {
+      const screen = screens[name] || screens.home;
+      content.innerHTML = screen.html;
+      noteTitle.textContent = screen.title;
+      noteCopy.textContent = screen.copy;
+      document.querySelectorAll("[data-screen]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.screen === name);
+        if (button.classList.contains("nav-item")) {
+          button.setAttribute("aria-current", button.dataset.screen === name ? "page" : "false");
+        }
+      });
+      content.scrollTop = 0;
+    }
+    document.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-screen]");
+      if (button) showScreen(button.dataset.screen);
+    });
+    showScreen("home");
+  </script>
+</body>
+</html>

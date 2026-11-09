@@ -6,14 +6,12 @@ class ScanRepository {
   final AppDatabase _localDb;
   final SyncManager _syncManager;
 
-  ScanRepository({
-    AppDatabase? localDb,
-    SyncManager? syncManager,
-  })  : _localDb = localDb ?? AppDatabase.instance,
-        _syncManager = syncManager ?? SyncManager();
+  ScanRepository({AppDatabase? localDb, SyncManager? syncManager})
+    : _localDb = localDb ?? AppDatabase.instance,
+      _syncManager = syncManager ?? SyncManager();
 
   Future<void> saveScanResult(ScanRecordModel record) async {
-    await _localDb.insertScan(record);
+    await _localDb.saveScanResult(record);
     _syncManager.syncPendingRecords(record.userId).catchError((_) {});
   }
 

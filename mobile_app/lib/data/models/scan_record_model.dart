@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class ScanRecordModel {
   final String id;
   final String userId;
+  final String? plantId;
   final String diseaseName;
   final double confidence;
   final String localImagePath;
@@ -14,6 +15,7 @@ class ScanRecordModel {
   ScanRecordModel({
     required this.id,
     required this.userId,
+    this.plantId,
     required this.diseaseName,
     required this.confidence,
     required this.localImagePath,
@@ -27,13 +29,14 @@ class ScanRecordModel {
     return {
       'id': id,
       'user_id': userId,
-      'disease_name': diseaseName,
+      'plant_id': plantId,
+      'disease_label': diseaseName,
       'confidence': confidence,
       'local_image_path': localImagePath,
       'cloud_image_url': cloudImageUrl,
       'notes': notes,
-      'scanned_at': scannedAt.toIso8601String(),
-      'is_synced': isSynced ? 1 : 0,
+      'scanned_at': scannedAt.toUtc().toIso8601String(),
+      'sync_status': isSynced ? 'synced' : 'pending',
     };
   }
 
@@ -41,13 +44,16 @@ class ScanRecordModel {
     return ScanRecordModel(
       id: map['id'] as String,
       userId: map['user_id'] as String,
-      diseaseName: map['disease_name'] as String,
+      plantId: map['plant_id'] as String?,
+      diseaseName: (map['disease_label'] ?? map['disease_name']) as String,
       confidence: (map['confidence'] as num).toDouble(),
       localImagePath: map['local_image_path'] as String,
       cloudImageUrl: map['cloud_image_url'] as String?,
       notes: map['notes'] as String?,
       scannedAt: DateTime.parse(map['scanned_at'] as String),
-      isSynced: (map['is_synced'] as int) == 1,
+      isSynced: map['sync_status'] == null
+          ? (map['is_synced'] as int? ?? 0) == 1
+          : map['sync_status'] == 'synced',
     );
   }
 
@@ -71,6 +77,7 @@ class ScanRecordModel {
     return ScanRecordModel(
       id: id,
       userId: userId,
+      plantId: plantId,
       diseaseName: diseaseName,
       confidence: confidence,
       localImagePath: localImagePath,
