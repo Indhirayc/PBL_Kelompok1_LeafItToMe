@@ -7,7 +7,6 @@ import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_page_header.dart';
 import 'photo_preview_page.dart';
 import '../../../history/data/history_data.dart';
-import '../widgets/confidence_indicator.dart';
 import '../widgets/plant_context_card.dart';
 
 class DetectionResultPage extends StatefulWidget {
@@ -83,8 +82,6 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
 
     final prediction = widget.selection.predictionResult!;
     final diseaseLabel = prediction.label;
-    final confidenceScore =
-        prediction.confidencePercentage.round().clamp(0, 100);
 
     final isHealthyClass =
         diseaseLabel.trim().toLowerCase() == 'healthy';
@@ -101,7 +98,7 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                   child: Column(
                     children: [
-                      _buildResultPhoto(confidenceScore),
+                      _buildResultPhoto(),
                       const SizedBox(height: 20),
                       InspectionPlantContextCard(
                         name: widget.selection.draft.plant.name,
@@ -111,7 +108,6 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
                       const SizedBox(height: 18),
                       _buildDiseaseCard(
                         diseaseLabel,
-                        confidenceScore,
                         isHealthyClass,
                       ),
                       const SizedBox(height: 12),
@@ -215,43 +211,30 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
     );
   }
 
-  Widget _buildResultPhoto(int confidence) {
+  Widget _buildResultPhoto() {
     final imageFile = widget.selection.imageFile;
 
-    return Stack(
-      clipBehavior: Clip.none,
-      alignment: Alignment.bottomCenter,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: imageFile != null
-              ? Image.file(
-                  imageFile,
-                  height: 280,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return _buildImageError();
-                  },
-                )
-              : Image.asset(
-                  InspectionPhotoSelection.sampleImageAsset,
-                  height: 280,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return _buildImageError();
-                  },
-                ),
-        ),
-        Positioned(
-          bottom: -12,
-          child: ConfidenceIndicator(
-            percentage: confidence,
-            isExample: imageFile == null,
-          ),
-        ),
-      ],
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: imageFile != null
+          ? Image.file(
+              imageFile,
+              height: 280,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return _buildImageError();
+              },
+            )
+          : Image.asset(
+              InspectionPhotoSelection.sampleImageAsset,
+              height: 280,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return _buildImageError();
+              },
+            ),
     );
   }
 
@@ -271,7 +254,6 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
 
   Widget _buildDiseaseCard(
     String diseaseName,
-    int confidence,
     bool isHealthy,
   ) {
     final displayName = _getDisplayName(diseaseName);
@@ -333,14 +315,6 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
               color: _darkGreen,
               fontSize: 20,
               fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 3),
-          Text(
-            'Tingkat Kepercayaan: $confidence%',
-            style: const TextStyle(
-              color: _secondaryText,
-              fontSize: 11,
             ),
           ),
           const SizedBox(height: 12),
