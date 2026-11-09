@@ -2,18 +2,86 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
 
-    // This rule allows anyone with your Firestore database reference to view, edit,
-    // and delete all data in your Firestore database. It is useful for getting
-    // started, but it is configured to expire after 30 days because it
-    // leaves your app open to attackers. At that time, all client
-    // requests to your Firestore database will be denied.
-    //
-    // Make sure to write security rules for your app before that time, or else
-    // all client requests to your Firestore database will be denied until you Update
-    // your rules
-    match /{document=**} {
-      allow read, write: if request.time < timestamp.date(2026, 11, 23);
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return signedIn() && request.auth.token.admin == true;
+    }
+
+    function validPlant(d) {
+      return d.nama_tanaman is string
+        && d.nama_tanaman.size() > 0
+        && d.nama_tanaman.size() <= 100
+        && d.lokasi is string
+        && d.status_kesehatan in ['sehat', 'perlu_perhatian', 'kritis']
+        && d.tanggal_tanam is string;
+    }
+
+    function validScan(d) {
+      return d.id_tanaman is string
+        && d.label_code is string
+        && d.disease_name is string
+        && d.confidence_score is number
+        && d.confidence_score >= 0
+        && d.confidence_score <= 1
+        && d.tanggal_pemeriksaan is timestamp;
+    }
+
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid);
+      allow update: if isOwner(uid)
+        && request.resource.data.created_at == resource.data.created_at;
+      allow delete: if false;
+
+      match /plants/{plantId} {
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid) && validPlant(request.resource.data);
+        allow update: if isOwner(uid)
+          && validPlant(request.resource.data)
+          && request.resource.data.created_at == resource.data.created_at;
+        allow delete: if isOwner(uid);
+      }
+
+      match /scans/{scanId} {
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid) && validScan(request.resource.data);
+        allow update: if isOwner(uid)
+          && validScan(request.resource.data)
+          && request.resource.data.created_at == resource.data.created_at;
+        allow delete: if isOwner(uid);
+      }
+    }
+
+    match /diseases/{id} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    match /guides/{id} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    match /tools/{id} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    match /products/{id} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    match /meta/{id} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
     }
   }
 }

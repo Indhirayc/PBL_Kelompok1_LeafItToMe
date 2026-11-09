@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mobile_app/data/repositories/user_repository.dart';
 
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
@@ -93,7 +94,11 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Future<void> _register() async {
     FocusScope.of(context).unfocus();
-
+    await UserRepository().register(
+      emailController.text,
+      passwordController.text,
+      nameController.text,
+    );
     final isValid = _formKey.currentState?.validate() ?? false;
 
     if (!isValid) {
