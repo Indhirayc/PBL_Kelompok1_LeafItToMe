@@ -261,14 +261,14 @@ class TfliteService {
 
     final orientedImage = img.bakeOrientation(decodedImage);
 
-    // Preprocessing dengan Letterbox Padding untuk menjaga aspect ratio
-    final letterboxedImage = _letterboxResize(orientedImage);
-    final inputTensor = _buildInputTensor(letterboxedImage);
-
     double leafScore = 1.0;
 
     // --- STAGE 1: TOMATO LEAF VALIDATOR ---
+    // Preprocessing Stage 1: Letterbox Padding to Square (menjaga aspect ratio untuk validasi morfologi daun)
     if (enableValidationStage && _validatorInterpreter != null) {
+      final letterboxedImage = _letterboxResize(orientedImage);
+      final validatorInputTensor = _buildInputTensor(letterboxedImage);
+
       final validatorOutputShape =
           _validatorInterpreter!.getOutputTensor(0).shape;
       final numValidatorClasses = validatorOutputShape[1];
@@ -277,7 +277,7 @@ class TfliteService {
         List<double>.filled(numValidatorClasses, 0.0),
       ];
 
-      _validatorInterpreter!.run(inputTensor, validatorOutput);
+      _validatorInterpreter!.run(validatorInputTensor, validatorOutput);
 
       final valScores = validatorOutput[0];
       if (kDebugMode) {
@@ -305,6 +305,15 @@ class TfliteService {
     }
 
     // --- STAGE 2: DISEASE CLASSIFIER ---
+    // Preprocessing Stage 2: Direct Bilinear Resize (sesuai format pelatihan model penyakit asli di PlantVillage)
+    final directResizedImage = img.copyResize(
+      orientedImage,
+      width: _inputSize,
+      height: _inputSize,
+      interpolation: img.Interpolation.linear,
+    );
+    final diseaseInputTensor = _buildInputTensor(directResizedImage);
+
     final interpreter = _interpreter!;
     final outputShape = interpreter.getOutputTensor(0).shape;
     final numClasses = outputShape[1];
@@ -313,7 +322,7 @@ class TfliteService {
       List<double>.filled(numClasses, 0.0),
     ];
 
-    interpreter.run(inputTensor, outputTensor);
+    interpreter.run(diseaseInputTensor, outputTensor);
 
     final scores = outputTensor[0];
 
