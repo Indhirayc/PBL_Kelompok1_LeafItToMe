@@ -61,33 +61,44 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _login() async {
-    await UserRepository().login(emailController.text, passwordController.text);
     FocusScope.of(context).unfocus();
-
+    // 1. Validasi form terlebih dahulu
     if (!(_formKey.currentState?.validate() ?? false)) {
       return;
     }
-
     setState(() {
       _isLoading = true;
     });
-
-    // Simulasi proses login untuk tahap UI.
-    await Future<void>.delayed(const Duration(seconds: 1));
-
-    if (!mounted) return;
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Form login berhasil divalidasi'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-    context.goNamed('home');
+    try {
+      // 2. Panggil Firebase Auth
+      await UserRepository().login(
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Login berhasil!'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      context.goNamed('home');
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Login gagal: ${e.toString()}'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   void _forgotPassword() {
