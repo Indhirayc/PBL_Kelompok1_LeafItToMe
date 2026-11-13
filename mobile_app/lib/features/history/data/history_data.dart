@@ -1,4 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+
+import '../../../../data/models/scan_record_model.dart';
+import '../../../../data/repositories/scan_repository.dart';
 
 const List<String> _historyMonthNames = [
   'Januari',
@@ -290,5 +295,47 @@ abstract final class HistoryData {
     recordsForPlant.sort((first, second) => second.date.compareTo(first.date));
 
     return recordsForPlant;
+  }
+
+  /// Memuat riwayat yang tersimpan di SQLite (milik user yang sedang login)
+  /// lalu menggabungkannya ke [records] berdasarkan ID.
+  /// Data contoh di atas tetap dipakai bila database kosong/gagal dimuat.
+  static bool _persistedLoaded = false;
+
+  static Future<void> loadPersistedRecords() async {
+    if (_persistedLoaded) return;
+    _persistedLoaded = true;
+    try {
+      if (Firebase.apps.isEmpty) return;
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      final scans = await ScanRepository().getUserHistory(user.uid);
+      final existingIds = records.map((record) => record.id).toSet();
+      for (final scan in scans) {
+        if (existingIds.contains(scan.id)) continue;
+        records.add(_recordFromScan(scan));
+      }
+    } catch (e) {
+      debugPrint('Gagal memuat riwayat tersimpan: $e');
+    }
+  }
+
+  static HistoryRecord _recordFromScan(ScanRecordModel scan) {
+    final disease = byDisease(scan.diseaseName);
+    return HistoryRecord(
+      id: scan.id,
+      plantId: scan.plantId.isEmpty ? plants.first.id : scan.plantId,
+      diseaseName: scan.diseaseName,
+      latinName: scan.latinName ?? disease?.latinName ?? '',
+      date: scan.scannedAt,
+      accuracy: scan.confidence.round(),
+      isHealthy: scan.isHealthy,
+      note: scan.notes ?? '',
+      isSynced: scan.isSynced,
+      plantName: scan.plantName,
+      plantLocation: scan.plantLocation,
+      photoAssetPath: scan.localImagePath,
+    );
   }
 }
