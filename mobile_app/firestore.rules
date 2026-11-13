@@ -23,14 +23,30 @@ service cloud.firestore {
         && d.tanggal_tanam is string;
     }
 
+    // Field harus cocok dengan ScanRecordModel.toFirestore()
+    // (lib/data/models/scan_record_model.dart)
     function validScan(d) {
-      return d.id_tanaman is string
-        && d.label_code is string
+      return d.id is string
+        && d.user_id is string
+        && d.plant_id is string
         && d.disease_name is string
-        && d.confidence_score is number
-        && d.confidence_score >= 0
-        && d.confidence_score <= 1
-        && d.tanggal_pemeriksaan is timestamp;
+        && d.disease_name.size() > 0
+        && d.confidence is number
+        && d.confidence >= 0
+        && d.confidence <= 100
+        && d.is_healthy is bool
+        && d.scanned_at is timestamp
+        && isOptionalString(d, 'plant_name')
+        && isOptionalString(d, 'plant_location')
+        && isOptionalString(d, 'latin_name')
+        && isOptionalString(d, 'cloud_image_url')
+        && isOptionalString(d, 'notes');
+    }
+
+    function isOptionalString(d, field) {
+      return !(field in d)
+        || d[field] is string
+        || d[field] == null;
     }
 
     match /users/{uid} {
@@ -52,9 +68,7 @@ service cloud.firestore {
       match /scans/{scanId} {
         allow read: if isOwner(uid);
         allow create: if isOwner(uid) && validScan(request.resource.data);
-        allow update: if isOwner(uid)
-          && validScan(request.resource.data)
-          && request.resource.data.created_at == resource.data.created_at;
+        allow update: if isOwner(uid) && validScan(request.resource.data);
         allow delete: if isOwner(uid);
       }
     }
