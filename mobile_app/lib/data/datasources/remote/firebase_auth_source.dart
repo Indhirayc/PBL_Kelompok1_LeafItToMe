@@ -39,6 +39,9 @@ class FirebaseAuthSource {
     final uid = credential.user!.uid;
     final now = DateTime.now();
 
+    // Simpan nama ke profil Auth agar tampil konsisten di seluruh app
+    await credential.user!.updateDisplayName(namaLengkap);
+
     final userModel = UserModel(
       uid: uid,
       namaLengkap: namaLengkap,
@@ -63,5 +66,25 @@ class FirebaseAuthSource {
     final doc = await _firestore.collection('users').doc(uid).get();
     if (!doc.exists) return null;
     return UserModel.fromFirestore(doc);
+  }
+
+  // Perbarui profil user di Firestore (nama lengkap & nomor telepon)
+  Future<void> updateUserProfile({
+    required String uid,
+    String? namaLengkap,
+    String? noTelepon,
+  }) async {
+    final updates = <String, dynamic>{
+      'updated_at': Timestamp.fromDate(DateTime.now()),
+    };
+    if (namaLengkap != null) updates['nama_lengkap'] = namaLengkap;
+    if (noTelepon != null) updates['no_telepon'] = noTelepon;
+
+    await _firestore.collection('users').doc(uid).update(updates);
+  }
+
+  // Kirim email reset password
+  Future<void> sendPasswordResetEmail(String email) async {
+    await _auth.sendPasswordResetEmail(email: email);
   }
 }

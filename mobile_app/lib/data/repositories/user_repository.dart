@@ -36,4 +36,23 @@ class UserRepository {
     if (uid == null) return null;
     return await _authSource.getUserProfile(uid);
   }
+
+  Future<void> updateUserProfile({
+    String? namaLengkap,
+    String? noTelepon,
+  }) async {
+    final uid = currentUserId;
+    if (uid == null) {
+      throw StateError('Tidak dapat memperbarui profil: user belum login.');
+    }
+    await _authSource.updateUserProfile(
+      uid: uid,
+      namaLengkap: namaLengkap,
+      noTelepon: noTelepon,
+    );
+  }
+
+  Future<void> sendPasswordResetEmail(String email) async {
+    await _authSource.sendPasswordResetEmail(email);
+  }
 }

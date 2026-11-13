@@ -1,7 +1,9 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../../../../data/repositories/user_repository.dart';
 
 import 'package:go_router/go_router.dart';
 
@@ -31,6 +33,28 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
     _emailController = TextEditingController(text: 'indhira@example.com');
 
     _phoneController = TextEditingController(text: '081234567890');
+
+    _loadProfile();
+  }
+
+  /// Isi form dari profil user yang sedang login bila tersedia.
+  /// Gagal memuat (belum login/test) → nilai contoh di atas tetap dipakai.
+  Future<void> _loadProfile() async {
+    try {
+      if (Firebase.apps.isEmpty) return;
+      final profile = await UserRepository().getCurrentUserProfile();
+      if (profile == null || !mounted) return;
+
+      setState(() {
+        _nameController.text = profile.namaLengkap;
+        _emailController.text = profile.email;
+        if (profile.noTelepon.isNotEmpty) {
+          _phoneController.text = profile.noTelepon;
+        }
+      });
+    } catch (e) {
+      debugPrint('Gagal memuat profil: $e');
+    }
   }
 
   @override
@@ -52,7 +76,19 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
       _isSaving = true;
     });
 
-    await Future<void>.delayed(const Duration(milliseconds: 700));
+    String? errorMessage;
+    try {
+      if (Firebase.apps.isNotEmpty) {
+        // Email Auth tidak diubah lewat sini (butuh verifikasi ulang),
+        // yang disimpan hanya nama lengkap & nomor telepon.
+        await UserRepository().updateUserProfile(
+          namaLengkap: _nameController.text.trim(),
+          noTelepon: _phoneController.text.trim(),
+        );
+      }
+    } catch (e) {
+      errorMessage = 'Gagal menyimpan perubahan: $e';
+    }
 
     if (!mounted) {
       return;
@@ -65,9 +101,13 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        const SnackBar(
-          content: Text('Perubahan profil berhasil disimpan.'),
+        SnackBar(
+          content: Text(
+            errorMessage ?? 'Perubahan profil berhasil disimpan.',
+          ),
           behavior: SnackBarBehavior.floating,
+          backgroundColor:
+              errorMessage == null ? null : const Color(0xFFD32F2F),
         ),
       );
   }

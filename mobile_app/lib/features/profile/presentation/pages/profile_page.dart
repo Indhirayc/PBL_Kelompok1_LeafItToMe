@@ -1,9 +1,11 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/theme/app_breakpoints.dart';
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../../../../data/repositories/user_repository.dart';
 import '../widgets/profile_menu_tile.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
 
@@ -60,8 +62,17 @@ class ProfilePage extends StatelessWidget {
       },
     );
 
-    if (shouldLogout == true && context.mounted) {
-      context.goNamed('login');
+    if (shouldLogout == true) {
+      try {
+        if (Firebase.apps.isNotEmpty) {
+          await UserRepository().logout();
+        }
+      } catch (e) {
+        debugPrint('Gagal logout: $e');
+      }
+      if (context.mounted) {
+        context.goNamed('login');
+      }
     }
   }
 
@@ -133,100 +144,7 @@ class ProfilePage extends StatelessWidget {
   }
 
   Widget _buildProfileCard(BuildContext context) {
-    return Container(
-      key: const Key('profileOverviewCard'),
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: borderColor),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 18,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 74,
-            height: 74,
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF0F7EE),
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFDCE9DC)),
-            ),
-            child: ClipOval(
-              child: Image.asset(
-                'assets/images/splash/leafittome_logo.png',
-                fit: BoxFit.contain,
-                filterQuality: FilterQuality.high,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(
-                    Icons.person_rounded,
-                    color: primaryGreen,
-                    size: 42,
-                  );
-                },
-              ),
-            ),
-          ),
-          const SizedBox(width: 15),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Indhira Yuantika Christy',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: darkGreen,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    height: 1.25,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                const Text(
-                  'indhira@example.com',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: secondaryText, fontSize: 12),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  height: 34,
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      context.pushNamed('personal-information');
-                    },
-                    icon: const Icon(Icons.edit_outlined, size: 16),
-                    label: const Text('Edit Profil'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: primaryGreen,
-                      side: const BorderSide(color: Color(0xFFBFD7C4)),
-                      padding: const EdgeInsets.symmetric(horizontal: 13),
-                      textStyle: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+    return const _ProfileHeaderCard();
   }
 
   Widget _buildAccountMenu(BuildContext context) {
@@ -336,6 +254,144 @@ class ProfilePage extends StatelessWidget {
             borderRadius: BorderRadius.circular(14),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Kartu header profil: menampilkan data user yang sedang login
+/// (Firestore users/{uid}); nilai contoh dipakai bila belum login/gagal muat.
+class _ProfileHeaderCard extends StatefulWidget {
+  const _ProfileHeaderCard();
+
+  @override
+  State<_ProfileHeaderCard> createState() => _ProfileHeaderCardState();
+}
+
+class _ProfileHeaderCardState extends State<_ProfileHeaderCard> {
+  static const Color primaryGreen = Color(0xFF2F7D4A);
+  static const Color darkGreen = Color(0xFF183E2D);
+  static const Color secondaryText = Color(0xFF75857B);
+  static const Color borderColor = Color(0xFFE3EAE4);
+
+  String _name = 'Indhira Yuantika Christy';
+  String _email = 'indhira@example.com';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      if (Firebase.apps.isEmpty) return;
+      final profile = await UserRepository().getCurrentUserProfile();
+      if (profile == null || !mounted) return;
+
+      setState(() {
+        if (profile.namaLengkap.isNotEmpty) _name = profile.namaLengkap;
+        if (profile.email.isNotEmpty) _email = profile.email;
+      });
+    } catch (e) {
+      debugPrint('Gagal memuat profil: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const Key('profileOverviewCard'),
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 74,
+            height: 74,
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF0F7EE),
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFFDCE9DC)),
+            ),
+            child: ClipOval(
+              child: Image.asset(
+                'assets/images/splash/leafittome_logo.png',
+                fit: BoxFit.contain,
+                filterQuality: FilterQuality.high,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Icon(
+                    Icons.person_rounded,
+                    color: primaryGreen,
+                    size: 42,
+                  );
+                },
+              ),
+            ),
+          ),
+          const SizedBox(width: 15),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: darkGreen,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    height: 1.25,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  _email,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: secondaryText, fontSize: 12),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 34,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      context.pushNamed('personal-information');
+                    },
+                    icon: const Icon(Icons.edit_outlined, size: 16),
+                    label: const Text('Edit Profil'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: primaryGreen,
+                      side: const BorderSide(color: Color(0xFFBFD7C4)),
+                      padding: const EdgeInsets.symmetric(horizontal: 13),
+                      textStyle: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
