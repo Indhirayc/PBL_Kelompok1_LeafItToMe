@@ -3,16 +3,31 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
+import '../../data/guide_data.dart';
 
-class GuideListPage extends StatelessWidget {
+class GuideListPage extends StatefulWidget {
   const GuideListPage({super.key});
 
+  @override
+  State<GuideListPage> createState() => _GuideListPageState();
+}
+
+class _GuideListPageState extends State<GuideListPage> {
   static const Color primaryGreen = Color(0xFF2F7D4A);
   static const Color darkGreen = Color(0xFF183E2D);
   static const Color backgroundColor = Color(0xFFF8FAF5);
   static const Color secondaryText = Color(0xFF75857B);
   static const Color borderColor = Color(0xFFE3EAE4);
   static const Color cardGreenBg = Color(0xFFE9F4EC);
+
+  @override
+  void initState() {
+    super.initState();
+    // Muat master data (Firestore → cache → data bawaan) lalu segarkan UI
+    GuideData.loadFromFirestore().then((_) {
+      if (mounted) setState(() {});
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

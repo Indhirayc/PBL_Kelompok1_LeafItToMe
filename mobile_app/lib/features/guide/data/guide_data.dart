@@ -1,4 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+
+import '../../../../data/datasources/local/app_database.dart';
+import '../../../../data/datasources/remote/master_data_source.dart';
 
 class ToolModel {
   final String id;
@@ -55,7 +60,8 @@ class DiseaseModel {
 }
 
 abstract final class GuideData {
-  static const List<ToolModel> tools = [
+  // Data bawaan yang selalu tersedia (fallback offline & pemetaan ikon/warna)
+  static const List<ToolModel> _bundledTools = [
     ToolModel(
       id: 'pot-tanam',
       name: 'Pot Tanam / Polybag',
@@ -149,7 +155,11 @@ abstract final class GuideData {
     ),
   ];
 
-  static const List<DiseaseModel> diseases = [
+  /// Master data aktif yang dipakai UI; diisi ulang dari Firestore/cache
+  /// oleh [loadFromFirestore] tanpa mengubah pemakaian di UI.
+  static final List<ToolModel> tools = List.of(_bundledTools);
+
+  static const List<DiseaseModel> _bundledDiseases = [
     DiseaseModel(
       id: 'bacterial-spot',
       name: 'Bacterial Spot',
@@ -241,4 +251,151 @@ abstract final class GuideData {
       searchKeyword: 'insektisida minyak mimba neem oil kutu kebul',
     ),
   ];
+
+  static final List<DiseaseModel> diseases = List.of(_bundledDiseases);
+
+  static bool _masterLoaded = false;
+
+  /// Muat master data (diseases & tools) dengan urutan:
+  /// Firestore (online) → cache SQLite → data bawaan di atas.
+  /// Data bawaan tetap dipakai bila Firestore/cache kosong atau gagal.
+  static Future<void> loadFromFirestore() async {
+    if (_masterLoaded) return;
+    _masterLoaded = true;
+    try {
+      if (Firebase.apps.isEmpty) return;
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      final remoteDiseases = await _fetchOrCache('diseases');
+      final remoteTools = await _fetchOrCache('tools');
+
+      final parsedDiseases = remoteDiseases
+          .map(_diseaseFromMap)
+          .whereType<DiseaseModel>()
+          .toList();
+      if (parsedDiseases.isNotEmpty) {
+        diseases
+          ..clear()
+          ..addAll(parsedDiseases);
+      }
+
+      final parsedTools = remoteTools
+          .map(_toolFromMap)
+          .whereType<ToolModel>()
+          .toList();
+      if (parsedTools.isNotEmpty) {
+        tools
+          ..clear()
+          ..addAll(parsedTools);
+      }
+    } catch (e) {
+      debugPrint('Gagal memuat master data: $e');
+    }
+  }
+
+  /// Ambil dari Firestore bila berhasil, selain itu jatuh ke cache lokal.
+  static Future<List<Map<String, dynamic>>> _fetchOrCache(String key) async {
+    try {
+      final remote = await MasterDataSource().fetchCollection(key);
+      if (remote.isNotEmpty) {
+        await AppDatabase.instance.saveMasterCache(key, remote);
+        return remote;
+      }
+    } catch (e) {
+      debugPrint('Master data "$key" tidak tersedia dari Firestore: $e');
+    }
+    return await AppDatabase.instance.getMasterCache(key) ?? const [];
+  }
+
+  static ToolModel? _toolById(String? id) {
+    if (id == null) return null;
+    for (final tool in _bundledTools) {
+      if (tool.id == id) return tool;
+    }
+    return null;
+  }
+
+  static DiseaseModel? _diseaseById(String? id) {
+    if (id == null) return null;
+    for (final disease in _bundledDiseases) {
+      if (disease.id == id) return disease;
+    }
+    return null;
+  }
+
+  static ToolModel? _toolFromMap(Map<String, dynamic> map) {
+    final name = map['name'];
+    if (name is! String || name.isEmpty) return null;
+    final bundled = _toolById(map['id']?.toString());
+    final specifications = map['specifications'];
+
+    return ToolModel(
+      id: map['id']?.toString() ?? name.toLowerCase().replaceAll(' ', '-'),
+      name: name,
+      tag: map['tag']?.toString() ?? bundled?.tag ?? 'Opsional',
+      shortDescription:
+          map['short_description']?.toString() ??
+          bundled?.shortDescription ??
+          '',
+      fullDescription:
+          map['full_description']?.toString() ??
+          bundled?.fullDescription ??
+          '',
+      specifications:
+          specifications is Map
+          ? specifications.map((key, value) => MapEntry(
+              key.toString(),
+              value?.toString() ?? '',
+            ))
+          : (bundled?.specifications ?? const {}),
+      tip: map['tip']?.toString() ?? bundled?.tip ?? '',
+      icon: bundled?.icon ?? Icons.agriculture_rounded,
+      imageAssetPath:
+          map['image_asset_path']?.toString() ??
+          bundled?.imageAssetPath,
+      searchKeyword:
+          map['search_keyword']?.toString() ??
+          bundled?.searchKeyword ??
+          '',
+    );
+  }
+
+  static DiseaseModel? _diseaseFromMap(Map<String, dynamic> map) {
+    final name = map['name'];
+    if (name is! String || name.isEmpty) return null;
+    final bundled = _diseaseById(map['id']?.toString());
+
+    return DiseaseModel(
+      id: map['id']?.toString() ?? name.toLowerCase().replaceAll(' ', '-'),
+      name: name,
+      latinName: map['latin_name']?.toString() ?? bundled?.latinName ?? '',
+      category: map['category']?.toString() ?? bundled?.category ?? '',
+      severity: map['severity']?.toString() ?? bundled?.severity ?? '',
+      severityColor:
+          map['severity_color'] is int
+          ? Color(map['severity_color'] as int)
+          : (bundled?.severityColor ?? const Color(0xFFE65100)),
+      shortDescription:
+          map['short_description']?.toString() ??
+          bundled?.shortDescription ??
+          '',
+      symptoms: _stringList(map['symptoms']) ?? bundled?.symptoms ?? const [],
+      preventions:
+          _stringList(map['preventions']) ?? bundled?.preventions ?? const [],
+      imageAssetPath:
+          map['image_asset_path']?.toString() ??
+          bundled?.imageAssetPath ??
+          '',
+      searchKeyword:
+          map['search_keyword']?.toString() ??
+          bundled?.searchKeyword ??
+          '',
+    );
+  }
+
+  static List<String>? _stringList(Object? value) {
+    if (value is! List) return null;
+    return value.whereType<String>().toList();
+  }
 }
