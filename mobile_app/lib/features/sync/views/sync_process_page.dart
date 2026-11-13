@@ -1,6 +1,11 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../data/repositories/scan_repository.dart';
 import '../../history/widgets/history_page_header.dart';
 import '../../history/data/history_data.dart';
 import '../data/sync_data.dart';
@@ -39,6 +44,23 @@ class _SyncProcessPageState extends State<SyncProcessPage>
     );
     _controller.addStatusListener(_onStatusChanged);
     _controller.forward();
+    _triggerBackendSync();
+  }
+
+  /// Jalankan sync antrean offline (SQLite → Cloudinary → Firestore) saat
+  /// halaman proses dibuka. Kegagalan tidak mengubah alur UI (tetap lanjut
+  /// ke halaman hasil).
+  void _triggerBackendSync() {
+    unawaited(() async {
+      try {
+        if (Firebase.apps.isEmpty) return;
+        final user = FirebaseAuth.instance.currentUser;
+        if (user == null) return;
+        await ScanRepository().triggerSync(user.uid);
+      } catch (e) {
+        debugPrint('Sync manual dilewati: $e');
+      }
+    }());
   }
 
   void _onStatusChanged(AnimationStatus status) {

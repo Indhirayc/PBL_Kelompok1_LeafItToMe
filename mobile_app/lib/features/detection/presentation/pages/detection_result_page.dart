@@ -1,9 +1,15 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_page_header.dart';
+import '../../../../data/models/scan_record_model.dart';
+import '../../../../data/repositories/scan_repository.dart';
 import 'photo_preview_page.dart';
 import '../../../history/data/history_data.dart';
 import '../widgets/confidence_indicator.dart';
@@ -48,6 +54,43 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
       photoSource: widget.selection.source,
     );
     HistoryData.records.add(_detectionRecord);
+    _persistDetectionRecord();
+  }
+
+  /// Simpan hasil deteksi ke SQLite + antrekan sync (Cloudinary & Firestore)
+  /// hanya saat Firebase siap dan user sudah login.
+  /// Tamu/widget test tetap mendapat riwayat sesi dari [HistoryData.records].
+  void _persistDetectionRecord() {
+    try {
+      if (Firebase.apps.isEmpty) return;
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      final record = ScanRecordModel(
+        id: 'SCAN-${DateTime.now().microsecondsSinceEpoch}',
+        userId: user.uid,
+        plantId: _detectionRecord.plantId,
+        plantName: _detectionRecord.plantName,
+        plantLocation: _detectionRecord.plantLocation,
+        diseaseName: _detectionRecord.diseaseName,
+        latinName: _detectionRecord.latinName,
+        confidence: _detectionRecord.accuracy.toDouble(),
+        isHealthy: _detectionRecord.isHealthy,
+        localImagePath: _detectionRecord.photoAssetPath ?? '',
+        notes: _detectionRecord.note,
+        scannedAt: _detectionRecord.date,
+      );
+
+      unawaited(
+        ScanRepository()
+            .saveScanResult(record)
+            .catchError((Object e) {
+              debugPrint('Gagal menyimpan hasil deteksi: $e');
+            }),
+      );
+    } catch (e) {
+      debugPrint('Persist hasil deteksi dilewati: $e');
+    }
   }
 
   @override
