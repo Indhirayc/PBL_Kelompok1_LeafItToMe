@@ -28,8 +28,13 @@ class FirestoreScanSource {
       return ScanRecordModel(
         id: doc.id,
         userId: data['user_id'] ?? userId,
+        plantId: data['plant_id'] ?? '',
+        plantName: data['plant_name'],
+        plantLocation: data['plant_location'],
         diseaseName: data['disease_name'] ?? '',
+        latinName: data['latin_name'],
         confidence: (data['confidence'] as num?)?.toDouble() ?? 0.0,
+        isHealthy: data['is_healthy'] ?? false,
         localImagePath: '',
         cloudImageUrl: data['cloud_image_url'],
         notes: data['notes'],

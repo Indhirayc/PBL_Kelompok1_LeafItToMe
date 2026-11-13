@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -23,7 +25,12 @@ class AppDatabase {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-    return await openDatabase(path, version: 1, onCreate: _createDB);
+    return await openDatabase(
+      path,
+      version: 3,
+      onCreate: _createDB,
+      onUpgrade: _upgradeDB,
+    );
   }
 
   /// Membuat skema tabel SQLite saat database pertama kali dibuat
@@ -32,8 +39,13 @@ class AppDatabase {
       CREATE TABLE scans (
         id TEXT PRIMARY KEY,
         user_id TEXT NOT NULL,
+        plant_id TEXT NOT NULL DEFAULT '',
+        plant_name TEXT,
+        plant_location TEXT,
         disease_name TEXT NOT NULL,
+        latin_name TEXT,
         confidence REAL NOT NULL,
+        is_healthy INTEGER NOT NULL DEFAULT 0,
         local_image_path TEXT NOT NULL,
         cloud_image_url TEXT,
         notes TEXT,
@@ -41,6 +53,70 @@ class AppDatabase {
         is_synced INTEGER NOT NULL DEFAULT 0
       )
     ''');
+    await _createMasterCache(db);
+  }
+
+  Future<void> _createMasterCache(Database db) async {
+    await db.execute('''
+      CREATE TABLE master_cache (
+        key TEXT PRIMARY KEY,
+        json TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    ''');
+  }
+
+  /// Migrasi bertahap agar data lama tidak hilang saat aplikasi diupdate
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute(
+        "ALTER TABLE scans ADD COLUMN plant_id TEXT NOT NULL DEFAULT ''",
+      );
+      await db.execute('ALTER TABLE scans ADD COLUMN plant_name TEXT');
+      await db.execute('ALTER TABLE scans ADD COLUMN plant_location TEXT');
+      await db.execute('ALTER TABLE scans ADD COLUMN latin_name TEXT');
+      await db.execute(
+        'ALTER TABLE scans ADD COLUMN is_healthy INTEGER NOT NULL DEFAULT 0',
+      );
+    }
+    if (oldVersion < 3) {
+      await _createMasterCache(db);
+    }
+  }
+
+  /// Simpan item master data (diseases/guides/tools) sebagai JSON di cache
+  /// agar aplikasi tetap bisa menampilkan data saat offline.
+  Future<void> saveMasterCache(String key, List<Map<String, dynamic>> items) async {
+    final db = await database;
+    await db.insert(
+      'master_cache',
+      {
+        'key': key,
+        'json': jsonEncode(items),
+        'updated_at': DateTime.now().toIso8601String(),
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  /// Ambil item master data dari cache; null bila belum pernah tersimpan
+  Future<List<Map<String, dynamic>>?> getMasterCache(String key) async {
+    final db = await database;
+    final rows = await db.query(
+      'master_cache',
+      where: 'key = ?',
+      whereArgs: [key],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+
+    final decoded = jsonDecode(rows.first['json'] as String);
+    if (decoded is! List) return null;
+
+    return decoded
+        .whereType<Map>()
+        .map((item) => Map<String, dynamic>.from(item))
+        .toList();
   }
 
   /// Menyimpan hasil scan baru atau memperbarui data lama jika ID sama
@@ -83,7 +159,8 @@ class AppDatabase {
 
   /// Memperbarui status is_synced menjadi 1 (true) dan menyimpan cloudImageUrl
   /// setelah SyncManager berhasil mengunggah data ke Firebase / Cloudinary
-  Future<int> markAsSynced(String scanId, String cloudImageUrl) async {
+  /// [cloudImageUrl] bisa null bila upload gambar gagal/dilewati
+  Future<int> markAsSynced(String scanId, String? cloudImageUrl) async {
     final db = await database;
     return await db.update(
       'scans',
