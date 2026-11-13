@@ -101,7 +101,6 @@ abstract final class HistoryData {
   ];
 
   static final List<HistoryRecord> records = [
-    // TMT-001 mempunyai 5 riwayat pemeriksaan.
     HistoryRecord(
       id: 'H-001',
       plantId: 'TMT-001',
@@ -152,8 +151,6 @@ abstract final class HistoryData {
       isHealthy: false,
       note: 'Ditemukan bercak berwarna cokelat gelap pada bagian tepi daun.',
     ),
-
-    // TMT-002 mempunyai 3 riwayat pemeriksaan.
     HistoryRecord(
       id: 'H-006',
       plantId: 'TMT-002',
@@ -264,12 +261,61 @@ abstract final class HistoryData {
     'Late Blight': lateBlight,
   };
 
-  static HistoryDisease? byDisease(String? name) {
-    if (name == null) {
-      return null;
+  /// Menyamakan label model ML dengan nama di data riwayat.
+  static String normalizeDiseaseName(String value) {
+    return value
+        .toLowerCase()
+        .replaceAll('_', ' ')
+        .replaceAll('-', ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+  }
+
+  /// Nama penyakit yang digunakan untuk ditampilkan di UI.
+  static String displayDiseaseName(String? name) {
+    if (name == null || name.trim().isEmpty) {
+      return 'Penyakit tidak diketahui';
     }
 
-    return _diseasesByName[name];
+    switch (normalizeDiseaseName(name)) {
+      case 'bacterial spot':
+        return 'Bacterial Spot';
+      case 'late blight':
+        return 'Late Blight';
+      case 'leaf mold':
+        return 'Leaf Mold';
+      case 'tomato yellow leaf curl virus':
+        return 'Tomato Yellow Leaf Curl Virus';
+      case 'healthy':
+      case 'sehat':
+        return 'Sehat';
+      default:
+        return name
+            .replaceAll('_', ' ')
+            .replaceAll('-', ' ')
+            .trim();
+    }
+  }
+
+  static bool isHealthyName(String? name) {
+    if (name == null) return false;
+
+    final normalized = normalizeDiseaseName(name);
+    return normalized == 'healthy' || normalized == 'sehat';
+  }
+
+  static HistoryDisease? byDisease(String? name) {
+    if (name == null) return null;
+
+    final normalized = normalizeDiseaseName(name);
+
+    for (final entry in _diseasesByName.entries) {
+      if (normalizeDiseaseName(entry.key) == normalized) {
+        return entry.value;
+      }
+    }
+
+    return null;
   }
 
   static HistoryPlant? plantById(String id) {

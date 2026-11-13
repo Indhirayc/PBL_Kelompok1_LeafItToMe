@@ -22,4 +22,8 @@ class ScanRepository {
   Future<void> triggerSync(String userId) async {
     await _syncManager.syncPendingRecords(userId);
   }
+
+  Future<void> deleteScan(String id) async {
+    await _localDb.deleteScan(id);
+  }
 }

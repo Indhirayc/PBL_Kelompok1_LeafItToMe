@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mobile_app/data/repositories/user_repository.dart';
 
 import '../../../../core/widgets/app_content_layout.dart';
@@ -53,8 +54,8 @@ class _LoginPageState extends State<LoginPage> {
       return 'Kata sandi wajib diisi';
     }
 
-    if (value.length < 8) {
-      return 'Kata sandi minimal 8 karakter';
+    if (value.length < 6) {
+      return 'Kata sandi minimal 6 karakter';
     }
 
     return null;
@@ -69,27 +70,70 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       _isLoading = true;
     });
+
     try {
-      // 2. Panggil Firebase Auth
-      await UserRepository().login(
-        _emailController.text.trim(),
-        _passwordController.text,
+      // 2. Hubungkan ke Firebase Auth untuk verifikasi email & password
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
       );
+
       if (!mounted) return;
+
+      // 3. Hanya pindah ke halaman home jika user terautentikasi
+      if (credential.user != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Berhasil masuk!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        context.goNamed('home');
+      }
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+
+      // 4. Tangani pesan error spesifik dari Firebase
+      String errorMessage = 'Gagal masuk. Silakan coba lagi.';
+
+      switch (e.code) {
+        case 'user-not-found':
+          errorMessage = 'Akun dengan email ini tidak ditemukan.';
+          break;
+        case 'wrong-password':
+        case 'invalid-credential':
+          errorMessage = 'Kata sandi salah. Silakan periksa kembali.';
+          break;
+        case 'invalid-email':
+          errorMessage = 'Format email tidak valid.';
+          break;
+        case 'user-disabled':
+          errorMessage = 'Akun ini telah dinonaktifkan.';
+          break;
+        case 'too-many-requests':
+          errorMessage = 'Terlalu banyak percobaan gagal. Coba lagi nanti.';
+          break;
+        case 'network-request-failed':
+          errorMessage = 'Tidak ada koneksi internet.';
+          break;
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Login berhasil!'),
+        SnackBar(
+          content: Text(errorMessage),
+          backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
         ),
       );
-      context.goNamed('home');
     } catch (e) {
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Login gagal: ${e.toString()}'),
-          behavior: SnackBarBehavior.floating,
+          content: Text('Terjadi kesalahan: ${e.toString()}'),
           backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     } finally {
@@ -205,7 +249,7 @@ class _LoginPageState extends State<LoginPage> {
                     key: const Key('loginButton'),
                     label: 'Masuk',
                     isLoading: _isLoading,
-                    onPressed: _login,
+                    onPressed: _isLoading ? null : _login,
                   ),
                   const SizedBox(height: 20),
 

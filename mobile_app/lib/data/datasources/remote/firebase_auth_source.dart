@@ -1,40 +1,52 @@
-import 'package:firebase_auth/firebase_auth.dart' as fb;
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mobile_app/data/models/user_model.dart';
 
 class FirebaseAuthSource {
-  final fb.FirebaseAuth _auth = fb.FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth;
+  final FirebaseFirestore _firestore;
+
+  FirebaseAuthSource({
+    FirebaseAuth? firebaseAuth,
+    FirebaseFirestore? firestore,
+  })  : _auth = firebaseAuth ?? FirebaseAuth.instance,
+        _firestore = firestore ?? FirebaseFirestore.instance;
 
   // Stream status login user
-  Stream<fb.User?> get authStateChanges => _auth.authStateChanges();
+  Stream<User?> get authStateChanges => _auth.authStateChanges();
 
   // User saat ini
-  fb.User? get currentUser => _auth.currentUser;
+  User? get currentUser => _auth.currentUser;
 
-  // Login dengan Email & Password
-  Future<fb.UserCredential> login({
-    required String email,
-    required String password,
-  }) async {
+  // Sign in / Login dengan Email & Password
+  Future<UserCredential> signIn(String email, String password) async {
     return await _auth.signInWithEmailAndPassword(
       email: email,
       password: password,
     );
   }
 
-  // Register dengan Email & Password + Buat Dokumen users/{uid}
+  Future<UserCredential> login({
+    required String email,
+    required String password,
+  }) async {
+    return await signIn(email, password);
+  }
+
+  // Sign up / Register dengan Email & Password + Buat Dokumen users/{uid}
+  Future<UserCredential> signUp(String email, String password) async {
+    return await _auth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+  }
+
   Future<UserModel> register({
     required String email,
     required String password,
     required String namaLengkap,
   }) async {
-    final credential = await _auth.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
+    final credential = await signUp(email, password);
 
     final uid = credential.user!.uid;
     final now = DateTime.now();
@@ -53,9 +65,13 @@ class FirebaseAuthSource {
     return userModel;
   }
 
-  // Logout
-  Future<void> logout() async {
+  // Sign out / Logout
+  Future<void> signOut() async {
     await _auth.signOut();
+  }
+
+  Future<void> logout() async {
+    await signOut();
   }
 
   // Ambil profil user dari Firestore

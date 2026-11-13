@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "29481729533",
+    "project_id": "leafittome-e91ed",
+    "storage_bucket": "leafittome-e91ed.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:29481729533:android:f515097798fb3da671ad94",
+        "android_client_info": {
+          "package_name": "com.example.mobile_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAIh12BXj2GWUEa7CauG15mKx5_GZKP_pw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

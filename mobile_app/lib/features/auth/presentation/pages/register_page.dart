@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
 import 'package:mobile_app/data/repositories/user_repository.dart';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
@@ -141,6 +145,15 @@ class _RegisterPageState extends State<RegisterPage> {
         setState(() {
           _isLoading = false;
         });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Pendaftaran berhasil'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+
+        context.goNamed('login');
       }
     }
   }
@@ -206,20 +219,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   const SizedBox(height: 12),
 
-                  AppTextField(
-                    key: const Key('registerEmailField'),
-                    controller: _emailController,
-                    label: 'Email',
-                    hintText: 'nama@email.com',
-                    keyboardType: TextInputType.emailAddress,
-                    textInputAction: TextInputAction.next,
-                    validator: _validateEmail,
-                    prefixIcon: const Icon(
-                      Icons.mail_outline_rounded,
-                      color: Color(0xFF1F7338),
-                      size: 21,
-                    ),
-                  ),
+                  AppTextField(),
                   const SizedBox(height: 12),
 
                   AppTextField(

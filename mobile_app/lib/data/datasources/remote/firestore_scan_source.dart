@@ -2,7 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../models/scan_record_model.dart';
 
 class FirestoreScanSource {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore;
+
+  FirestoreScanSource({FirebaseFirestore? firestore})
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   /// Menyimpan hasil scan ke subkoleksi users/{uid}/scans/{scanId}
   Future<void> saveScanRecord(ScanRecordModel record) async {
@@ -14,7 +17,19 @@ class FirestoreScanSource {
         .set(record.toFirestore(), SetOptions(merge: true));
   }
 
-  /// Mengambil riwayat scan user dari Cloud Firestore
+  /// Mengambil riwayat scan user dalam bentuk raw Map
+  Future<List<Map<String, dynamic>>> fetchUserScans(String userId) async {
+    final snapshot = await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('scans')
+        .orderBy('scanned_at', descending: true)
+        .get();
+
+    return snapshot.docs.map((doc) => doc.data()).toList();
+  }
+
+  /// Mengambil riwayat scan user dalam bentuk List<ScanRecordModel>
   Future<List<ScanRecordModel>> getUserScans(String userId) async {
     final query = await _firestore
         .collection('users')
@@ -39,4 +54,3 @@ class FirestoreScanSource {
     }).toList();
   }
 }
-

@@ -1,5 +1,10 @@
+
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_page_header.dart';
@@ -23,15 +28,73 @@ class _PhotoSourcePageState extends State<PhotoSourcePage> {
   static const Color _lightGreen = Color(0xFFE8F6E7);
 
   String? _selectedSource;
+  final ImagePicker _picker = ImagePicker();
 
-  void _selectSource(String source) {
+  Future<void> _selectSource(String sourceName) async {
+    // Hindari membuka kamera atau galeri berulang kali.
+    if (_selectedSource != null) return;
+
     setState(() {
-      _selectedSource = source;
+      _selectedSource = sourceName;
     });
-    context.pushNamed(
-      'photo-preview',
-      extra: InspectionPhotoSelection(draft: widget.draft, source: source),
-    );
+
+    try {
+      final ImageSource imageSource = sourceName == 'Kamera'
+          ? ImageSource.camera
+          : ImageSource.gallery;
+
+      final XFile? pickedFile = await _picker.pickImage(
+        source: imageSource,
+        imageQuality: 85,
+      );
+
+      if (!mounted) return;
+
+      // Pengguna membatalkan pemilihan foto.
+      if (pickedFile == null) {
+        setState(() {
+          _selectedSource = null;
+        });
+        return;
+      }
+
+      final File imageFile = File(pickedFile.path);
+
+      // Pastikan file tersedia sebelum berpindah halaman.
+      if (!await imageFile.exists()) {
+        throw Exception('File foto tidak ditemukan.');
+      }
+
+      if (!mounted) return;
+
+      context.pushNamed(
+        'photo-preview',
+        extra: InspectionPhotoSelection(
+          draft: widget.draft,
+          source: sourceName,
+          imageFile: imageFile,
+        ),
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error mengambil gambar dari $sourceName: $e');
+      }
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal membuka $sourceName. Silakan coba lagi.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _selectedSource = null;
+        });
+      }
+    }
   }
 
   @override
@@ -100,7 +163,7 @@ class _PhotoSourcePageState extends State<PhotoSourcePage> {
                       if (_selectedSource != null) ...[
                         const SizedBox(height: 12),
                         Text(
-                          'Sumber dipilih: $_selectedSource',
+                          'Membuka $_selectedSource...',
                           key: const Key('selectedPhotoSourceLabel'),
                           style: const TextStyle(
                             color: _darkGreen,
@@ -156,7 +219,11 @@ class _PhotoSourcePageState extends State<PhotoSourcePage> {
         children: [
           Row(
             children: [
-              Icon(Icons.emoji_objects_outlined, color: _darkGreen, size: 18),
+              Icon(
+                Icons.emoji_objects_outlined,
+                color: _darkGreen,
+                size: 18,
+              ),
               SizedBox(width: 8),
               Text(
                 'Tips foto yang baik',
@@ -206,7 +273,7 @@ class _SourceOptionCard extends StatelessWidget {
       color: Colors.white,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
-        onTap: onTap,
+        onTap: isSelected ? null : onTap,
         borderRadius: BorderRadius.circular(16),
         child: Container(
           height: 136,
@@ -251,7 +318,10 @@ class _SourceOptionCard extends StatelessWidget {
 }
 
 class _PhotoTip extends StatelessWidget {
-  const _PhotoTip({required this.number, required this.text});
+  const _PhotoTip({
+    required this.number,
+    required this.text,
+  });
 
   final String number;
   final String text;
@@ -275,7 +345,10 @@ class _PhotoTip extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(color: Color(0xFF477254), fontSize: 11),
+            style: const TextStyle(
+              color: Color(0xFF477254),
+              fontSize: 11,
+            ),
           ),
         ),
       ],
