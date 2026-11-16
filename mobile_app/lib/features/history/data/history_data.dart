@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../data/models/scan_record_model.dart';
+import '../../../../data/repositories/plant_repository.dart';
 import '../../../../data/repositories/scan_repository.dart';
 
 const List<String> _historyMonthNames = [
@@ -92,7 +93,7 @@ class HistoryRecord {
 }
 
 abstract final class HistoryData {
-  static const List<HistoryPlant> plants = [
+  static final List<HistoryPlant> plants = [
     HistoryPlant(
       id: 'TMT-001',
       name: 'Tomat Pot Depan',
@@ -295,10 +296,7 @@ abstract final class HistoryData {
       case 'sehat':
         return 'Sehat';
       default:
-        return name
-            .replaceAll('_', ' ')
-            .replaceAll('-', ' ')
-            .trim();
+        return name.replaceAll('_', ' ').replaceAll('-', ' ').trim();
     }
   }
 
@@ -333,6 +331,23 @@ abstract final class HistoryData {
     return null;
   }
 
+  static Future<void> loadPersistedPlants({PlantRepository? repository}) async {
+    final persistedPlants = await (repository ?? PlantRepository()).getAll();
+    for (final plant in persistedPlants) {
+      final historyPlant = HistoryPlant(
+        id: plant.id,
+        name: plant.name,
+        location: plant.location,
+      );
+      final index = plants.indexWhere((item) => item.id == plant.id);
+      if (index == -1) {
+        plants.add(historyPlant);
+      } else {
+        plants[index] = historyPlant;
+      }
+    }
+  }
+
   static List<HistoryRecord> recordsByPlantId(String plantId) {
     final recordsForPlant = records
         .where((record) => record.plantId == plantId)
@@ -350,35 +365,41 @@ abstract final class HistoryData {
 
   static Future<void> loadPersistedRecords() async {
     if (_persistedLoaded) return;
-    _persistedLoaded = true;
     try {
-      if (Firebase.apps.isEmpty) return;
+      await loadPersistedPlants();
+      if (Firebase.apps.isEmpty) {
+        _persistedLoaded = true;
+        return;
+      }
       final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
+      if (user == null) {
+        _persistedLoaded = true;
+        return;
+      }
 
       final scans = await ScanRepository().getUserHistory(user.uid);
       final existingIds = records.map((record) => record.id).toSet();
       for (final scan in scans) {
         if (existingIds.contains(scan.id)) continue;
-        records.add(_recordFromScan(scan));
+        records.add(recordFromScan(scan));
       }
+      _persistedLoaded = true;
     } catch (e) {
       debugPrint('Gagal memuat riwayat tersimpan: $e');
     }
   }
 
-  static HistoryRecord _recordFromScan(ScanRecordModel scan) {
+  static HistoryRecord recordFromScan(ScanRecordModel scan) {
     final disease = byDisease(scan.diseaseName);
     return HistoryRecord(
       id: scan.id,
-      plantId:
-          (scan.plantId == null || scan.plantId!.isEmpty)
+      plantId: (scan.plantId == null || scan.plantId!.isEmpty)
           ? plants.first.id
           : scan.plantId!,
       diseaseName: scan.diseaseName,
       latinName: disease?.latinName ?? '',
       date: scan.scannedAt,
-      accuracy: scan.confidence.round(),
+      accuracy: (scan.confidence * 100).round().clamp(0, 100).toInt(),
       isHealthy: isHealthyName(scan.diseaseName),
       note: scan.notes ?? '',
       isSynced: scan.isSynced,

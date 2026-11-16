@@ -166,7 +166,8 @@ abstract final class AppRouter {
             return HistoryDetailPage(
               record: HistoryRecord(
                 plantId: record.plantId,
-                plantName: selectedPlant?.name ?? 'Tanaman Tomat',
+                plantName:
+                    selectedPlant?.name ?? record.plantName ?? 'Tanaman Tomat',
                 disease: record.diseaseName,
                 date: history_data.formatHistoryDate(record.date),
                 accuracy: '${record.accuracy}%',

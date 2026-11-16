@@ -2,8 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_app/features/history/data/history_data.dart';
 import 'package:mobile_app/features/history/views/history_page.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
+  setUpAll(() {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  });
+
   testWidgets('menampilkan riwayat untuk tanaman yang dipilih', (tester) async {
     await tester.pumpWidget(const MaterialApp(home: HistoryPage()));
 

@@ -8,7 +8,8 @@ import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
 import '../../../../features/detection/presentation/pages/data_inspection_page.dart'
     show InspectionPlant;
-import '../../../../features/history/data/history_data.dart' show HistoryData;
+import '../../../../features/history/data/history_data.dart'
+    show HistoryData, HistoryPlant;
 import '../../../../features/plants/models/plant.dart';
 import '../../../../features/plants/providers/plant_provider.dart';
 
@@ -47,14 +48,21 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     context.pushNamed('plant-detail', pathParameters: {'plantId': id});
   }
 
-  void _openPlantHistory(BuildContext context, String plantId) {
-    final plant = HistoryData.plantById(plantId);
+  void _openPlantHistory(BuildContext context, WidgetRef ref, String plantId) {
+    final plant = ref.read(plantByIdProvider(plantId));
     if (plant == null) {
       _showNavigationError(context);
       return;
     }
 
-    context.pushNamed('history', extra: plant);
+    context.pushNamed(
+      'history',
+      extra: HistoryPlant(
+        id: plant.id,
+        name: plant.name,
+        location: plant.location,
+      ),
+    );
   }
 
   void _openLatestHistoryDetail(BuildContext context, String plantId) {
@@ -480,7 +488,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                         plant.id,
                         plant.status,
                       ),
-                      onOpenHistory: () => _openPlantHistory(context, plant.id),
+                      onOpenHistory: () =>
+                          _openPlantHistory(context, ref, plant.id),
                       onOpenLatestHistory: () =>
                           _openLatestHistoryDetail(context, plant.id),
                       onInspect: () => _openInspection(context, plant),

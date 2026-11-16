@@ -24,7 +24,15 @@ class HistoryDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final HistoryPlant? plant = HistoryData.plantById(record.plantId);
+    final HistoryPlant? plant =
+        HistoryData.plantById(record.plantId) ??
+        (record.plantName != null || record.plantLocation != null
+            ? HistoryPlant(
+                id: record.plantId,
+                name: record.plantName ?? record.plantId,
+                location: record.plantLocation ?? '',
+              )
+            : null);
     final HistoryDisease? disease = HistoryData.byDisease(record.diseaseName);
 
     return Scaffold(
