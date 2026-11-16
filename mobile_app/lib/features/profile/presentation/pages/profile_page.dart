@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -5,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../app/theme/app_breakpoints.dart';
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../../../../data/repositories/user_repository.dart';
 import '../widgets/profile_menu_tile.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
 
@@ -61,8 +63,17 @@ class ProfilePage extends StatelessWidget {
       },
     );
 
-    if (shouldLogout == true && context.mounted) {
-      context.goNamed('login');
+    if (shouldLogout == true) {
+      try {
+        if (Firebase.apps.isNotEmpty) {
+          await UserRepository().logout();
+        }
+      } catch (e) {
+        debugPrint('Gagal logout: $e');
+      }
+      if (context.mounted) {
+        context.goNamed('login');
+      }
     }
   }
 

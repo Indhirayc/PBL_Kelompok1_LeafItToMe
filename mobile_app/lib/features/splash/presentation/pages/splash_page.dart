@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -39,7 +41,11 @@ class _SplashPageState extends State<SplashPage>
 
     _navigationTimer = Timer(const Duration(seconds: 3), () {
       if (mounted) {
-        context.goNamed('login');
+        // Sudah login → langsung home, belum → halaman login
+        final bool isLoggedIn =
+            Firebase.apps.isNotEmpty &&
+            FirebaseAuth.instance.currentUser != null;
+        context.goNamed(isLoggedIn ? 'home' : 'login');
       }
     });
   }

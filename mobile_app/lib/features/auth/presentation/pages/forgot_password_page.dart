@@ -1,9 +1,11 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
+import '../../../../data/repositories/user_repository.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
@@ -54,15 +56,42 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       _isLoading = true;
     });
 
-    // Simulasi pengiriman email untuk tahap UI.
-    await Future<void>.delayed(const Duration(seconds: 1));
+    // Kirim tautan reset lewat Firebase Auth; bila Firebase tidak tersedia
+    // (test/demo), alur UI tetap berjalan dengan simulasi.
+    String? errorMessage;
+    try {
+      if (Firebase.apps.isNotEmpty) {
+        await UserRepository().sendPasswordResetEmail(
+          _emailController.text.trim(),
+        );
+      } else {
+        await Future<void>.delayed(const Duration(seconds: 1));
+      }
+    } catch (e) {
+      errorMessage = 'Gagal mengirim tautan reset. Periksa email kamu lagi.';
+      debugPrint('Reset password gagal: $e');
+    }
 
     if (!mounted) return;
 
     setState(() {
       _isLoading = false;
-      _emailSent = true;
+      if (errorMessage == null) {
+        _emailSent = true;
+      }
     });
+
+    if (errorMessage != null) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: const Color(0xFFD32F2F),
+          ),
+        );
+    }
   }
 
   void _backToLogin() {

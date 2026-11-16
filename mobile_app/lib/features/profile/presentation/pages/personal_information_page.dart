@@ -1,9 +1,10 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../../../../data/repositories/user_repository.dart';
 
 import 'package:go_router/go_router.dart';
 
@@ -38,34 +39,29 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
     _emailController = TextEditingController(text: initialEmail);
     _phoneController = TextEditingController();
 
-    _loadUserData();
+    _loadProfile();
   }
 
-  Future<void> _loadUserData() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
+  /// Isi form dari profil user yang sedang login bila tersedia.
+  Future<void> _loadProfile() async {
     try {
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
+      if (Firebase.apps.isEmpty) return;
+      final profile = await UserRepository().getCurrentUserProfile();
+      if (profile == null || !mounted) return;
 
-      if (doc.exists && mounted) {
-        final data = doc.data();
-        if (data != null) {
-          final phone = data['phoneNumber'] as String?;
-          if (phone != null && phone.isNotEmpty) {
-            _phoneController.text = phone;
-          }
-          final name = data['displayName'] as String?;
-          if (_nameController.text.isEmpty && name != null && name.isNotEmpty) {
-            _nameController.text = name;
-          }
+      setState(() {
+        if (profile.namaLengkap.isNotEmpty) {
+          _nameController.text = profile.namaLengkap;
         }
-      }
-    } catch (_) {
-      // Abaikan jika offline atau dokumen belum dibuat
+        if (profile.email.isNotEmpty) {
+          _emailController.text = profile.email;
+        }
+        if (profile.noTelepon.isNotEmpty) {
+          _phoneController.text = profile.noTelepon;
+        }
+      });
+    } catch (e) {
+      debugPrint('Gagal memuat profil: $e');
     }
   }
 
@@ -88,60 +84,40 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
       _isSaving = true;
     });
 
+    String? errorMessage;
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        await user.updateDisplayName(_nameController.text.trim());
-        await user.reload();
-
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .set({
-          'displayName': _nameController.text.trim(),
-          'email': user.email,
-          'phoneNumber': _phoneController.text.trim(),
-          'updatedAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
-      }
-
-      if (!mounted) {
-        return;
-      }
-
-      setState(() {
-        _isSaving = false;
-      });
-
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(
-            content: Text('Perubahan profil berhasil disimpan.'),
-            behavior: SnackBarBehavior.floating,
-          ),
+      if (Firebase.apps.isNotEmpty) {
+        // Email Auth tidak diubah lewat sini (butuh verifikasi ulang),
+        // yang disimpan hanya nama lengkap & nomor telepon.
+        await UserRepository().updateUserProfile(
+          namaLengkap: _nameController.text.trim(),
+          noTelepon: _phoneController.text.trim(),
         );
-
-      context.pop();
+      }
     } catch (e) {
-      if (!mounted) {
-        return;
-      }
-
-      setState(() {
-        _isSaving = false;
-      });
-
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text('Gagal menyimpan profil: $e'),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: Colors.red,
-          ),
-        );
+      errorMessage = 'Gagal menyimpan perubahan: $e';
     }
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _isSaving = false;
+    });
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            errorMessage ?? 'Perubahan profil berhasil disimpan.',
+          ),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor:
+              errorMessage == null ? null : const Color(0xFFD32F2F),
+        ),
+      );
   }
 
   void _editProfilePhoto() {
