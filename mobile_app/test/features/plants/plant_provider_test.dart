@@ -1,19 +1,65 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile_app/core/providers/database_providers.dart';
+import 'package:mobile_app/data/repositories/plant_repository.dart';
 import 'package:mobile_app/features/plants/models/plant.dart';
 import 'package:mobile_app/features/plants/providers/plant_provider.dart';
 
-class _ImmediatePlantNotifier extends PlantNotifier {
+class _MemoryPlantRepository extends PlantRepository {
+  _MemoryPlantRepository(this.plants);
+
+  final List<Plant> plants;
+
   @override
-  Future<List<Plant>> build() async => initialPlants;
+  Future<List<Plant>> getAll() async => List.of(plants);
+
+  @override
+  Future<void> create(Plant plant) async {
+    plants.add(plant);
+  }
+
+  @override
+  Future<int> softDelete(String id) async {
+    plants.removeWhere((plant) => plant.id == id);
+    return 1;
+  }
+
+  @override
+  Future<int> update(Plant plant) async {
+    final index = plants.indexWhere((item) => item.id == plant.id);
+    if (index < 0) return 0;
+    plants[index] = plant;
+    return 1;
+  }
 }
 
 void main() {
   late ProviderContainer container;
+  late _MemoryPlantRepository repository;
+
+  const initialPlants = [
+    Plant(
+      id: 'TMT-001',
+      name: 'Tomat Pot Depan',
+      location: 'Teras depan',
+      plantedDate: '28 Sep 2026',
+      lastInspectionDate: '28 Sep 2026',
+      status: 'Sehat',
+    ),
+    Plant(
+      id: 'TMT-002',
+      name: 'Tomat Kebun Belakang',
+      location: 'Kebun belakang',
+      plantedDate: '25 Sep 2026',
+      lastInspectionDate: '25 Sep 2026',
+      status: 'Perlu perhatian',
+    ),
+  ];
 
   setUp(() {
+    repository = _MemoryPlantRepository(initialPlants.toList());
     container = ProviderContainer(
-      overrides: [plantProvider.overrideWith(_ImmediatePlantNotifier.new)],
+      overrides: [plantRepositoryProvider.overrideWithValue(repository)],
     );
   });
 
@@ -21,7 +67,7 @@ void main() {
     container.dispose();
   });
 
-  test('initial state berisi data mock tanaman', () async {
+  test('initial state dibaca dari repository', () async {
     final plants = await container.read(plantProvider.future);
 
     expect(plants, hasLength(2));
@@ -29,7 +75,7 @@ void main() {
     expect(plants.last.name, 'Tomat Kebun Belakang');
   });
 
-  test('addPlant menambahkan tanaman secara immutable', () async {
+  test('addPlant menyimpan ke repository sebelum memperbarui state', () async {
     final initial = await container.read(plantProvider.future);
     final newPlant = Plant(
       id: 'TMT-003',
@@ -46,9 +92,10 @@ void main() {
     expect(updated, hasLength(3));
     expect(updated.last, newPlant);
     expect(identical(updated, initial), isFalse);
+    expect(await repository.getAll(), contains(newPlant));
   });
 
-  test('deletePlant menghapus tanaman berdasarkan ID', () async {
+  test('deletePlant menghapus dari state dan repository', () async {
     await container.read(plantProvider.future);
 
     await container.read(plantProvider.notifier).deletePlant('TMT-001');
@@ -57,9 +104,10 @@ void main() {
       container.read(plantProvider).requireValue.map((plant) => plant.id),
       ['TMT-002'],
     );
+    expect((await repository.getAll()).map((plant) => plant.id), ['TMT-002']);
   });
 
-  test('updatePlant memperbarui tanaman berdasarkan ID', () async {
+  test('updatePlant memperbarui state dan repository', () async {
     await container.read(plantProvider.future);
     const updatedPlant = Plant(
       id: 'TMT-001',
@@ -73,5 +121,6 @@ void main() {
     await container.read(plantProvider.notifier).updatePlant(updatedPlant);
 
     expect(container.read(plantProvider).requireValue.first, updatedPlant);
+    expect((await repository.getAll()).first, updatedPlant);
   });
 }

@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mobile_app/core/providers/database_providers.dart';
+import 'package:mobile_app/data/repositories/plant_repository.dart';
 import 'package:mobile_app/features/plants/models/plant.dart';
 import 'package:mobile_app/features/plants/providers/plant_provider.dart';
 import 'package:mobile_app/features/plants/views/add_plant_page.dart';
@@ -17,11 +21,27 @@ class _ConfiguredPlantNotifier extends PlantNotifier {
   Future<List<Plant>> build() async => plants;
 }
 
+class _LoadingPlantNotifier extends PlantNotifier {
+  @override
+  Future<List<Plant>> build() => Completer<List<Plant>>().future;
+}
+
 class _FailingPlantNotifier extends PlantNotifier {
   @override
   Future<List<Plant>> build() async {
     throw StateError('Plant provider test error');
   }
+}
+
+class _MemoryPlantRepository extends PlantRepository {
+  @override
+  Future<List<Plant>> getAll() async => const [];
+
+  @override
+  Future<void> create(Plant plant) async {}
+
+  @override
+  Future<int> softDelete(String id) async => 1;
 }
 
 Plant _plant({String id = 'TMT-010', String name = 'Tomat Uji'}) {
@@ -70,7 +90,12 @@ Future<void> _pumpPlantsPage(
   addTearDown(router.dispose);
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [provider.overrideWith(notifier)],
+      overrides: [
+        provider.overrideWith(notifier),
+        plantRepositoryProvider.overrideWithValue(_MemoryPlantRepository()),
+        plantScanHistoryProvider('TMT-010')
+            .overrideWith((ref) async => const []),
+      ],
       child: MaterialApp.router(routerConfig: router),
     ),
   );
@@ -81,7 +106,7 @@ void main() {
     await _pumpPlantsPage(
       tester,
       provider: plantProvider,
-      notifier: PlantNotifier.new,
+      notifier: _LoadingPlantNotifier.new,
     );
     await tester.pump();
 

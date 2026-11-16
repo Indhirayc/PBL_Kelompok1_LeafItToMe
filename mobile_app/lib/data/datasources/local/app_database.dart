@@ -241,6 +241,24 @@ class AppDatabase {
     return result.map(ScanRecordModel.fromSqliteMap).toList();
   }
 
+  Future<List<ScanRecordModel>> getScansByPlantId(
+    String plantId,
+    String userId,
+  ) async {
+    final db = await database;
+    final result = await db.rawQuery(
+      '''
+      SELECT s.*, p.name AS plant_name, p.location AS plant_location
+      FROM scans s
+      LEFT JOIN plants p ON p.id = s.plant_id
+      WHERE s.plant_id = ? AND s.user_id = ?
+      ORDER BY s.scanned_at DESC
+      ''',
+      [plantId, userId],
+    );
+    return result.map(ScanRecordModel.fromSqliteMap).toList();
+  }
+
   Future<List<ScanRecordModel>> getUnsyncedScans(String userId) async {
     final db = await database;
     final result = await db.query(

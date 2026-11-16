@@ -101,7 +101,6 @@ class _AddPlantPageState extends ConsumerState<AddPlantPage> {
       note: _noteController.text,
     );
 
-    // Persistence will be added in a later local storage/backend module.
     try {
       await ref.read(plantProvider.notifier).addPlant(newPlant);
     } finally {

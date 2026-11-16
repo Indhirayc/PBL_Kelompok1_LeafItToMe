@@ -141,7 +141,7 @@ class PlantListPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final plantsAsync = ref.watch(plantProvider);
-    final plants = plantsAsync.value ?? initialPlants;
+    final plants = plantsAsync.value ?? const <Plant>[];
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9FBF9),

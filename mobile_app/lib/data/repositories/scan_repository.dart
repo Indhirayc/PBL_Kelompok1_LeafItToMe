@@ -19,6 +19,13 @@ class ScanRepository {
     return await _localDb.getScansByUser(userId);
   }
 
+  Future<List<ScanRecordModel>> getScansByPlantId(
+    String plantId,
+    String userId,
+  ) async {
+    return _localDb.getScansByPlantId(plantId, userId);
+  }
+
   Future<void> triggerSync(String userId) async {
     await _syncManager.syncPendingRecords(userId);
   }

@@ -254,7 +254,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                   else
                     _buildEmptyDashboard(
                       context,
-                      plantsAsync.value ?? initialPlants,
+                      plantsAsync.value ?? const [],
                     ),
                 ],
               ),

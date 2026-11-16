@@ -8,6 +8,7 @@ import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
 import '../../detection/presentation/pages/data_inspection_page.dart';
 import '../../history/data/history_data.dart' hide HistoryRecord;
+import '../../../../data/models/scan_record_model.dart';
 import '../models/plant.dart';
 import '../providers/plant_provider.dart';
 import 'history_detail_page.dart';
@@ -33,79 +34,18 @@ class PlantDetailPage extends ConsumerWidget {
 
   final String plantId;
 
-  List<_HistoryPreview> _historiesFor(Plant plant) {
-    // Tanaman pertama mempunyai lima riwayat pemeriksaan.
-    if (plant.id == 'TMT-001') {
-      return const [
-        _HistoryPreview(
-          disease: 'Healthy',
-          date: '28 Sep 2026',
-          accuracy: '96%',
-          note: 'Kondisi daun terlihat sehat dan tidak ditemukan gejala penyakit.',
-          isHealthy: true,
-        ),
-        _HistoryPreview(
-          disease: 'Bacterial Spot',
-          date: '18 Sep 2026',
-          accuracy: '89%',
-          note: 'Ditemukan bercak gelap berukuran kecil pada permukaan daun.',
-          isHealthy: false,
-        ),
-        _HistoryPreview(
-          disease: 'Healthy',
-          date: '02 Sep 2026',
-          accuracy: '94%',
-          note: 'Tanaman berada dalam kondisi sehat berdasarkan hasil pemeriksaan.',
-          isHealthy: true,
-        ),
-        _HistoryPreview(
-          disease: 'Leaf Mold',
-          date: '24 Agu 2026',
-          accuracy: '91%',
-          note:
-              'Terlihat bercak kekuningan dan lapisan seperti jamur pada daun.',
-          isHealthy: false,
-        ),
-        _HistoryPreview(
-          disease: 'Late Blight',
-          date: '12 Agu 2026',
-          accuracy: '87%',
-          note:
-              'Ditemukan bercak berwarna cokelat gelap pada bagian tepi daun.',
-          isHealthy: false,
-        ),
-      ];
-    }
-
-    // Tanaman kedua mempunyai tiga riwayat pemeriksaan.
-    if (plant.id == 'TMT-002') {
-      return const [
-        _HistoryPreview(
-          disease: 'Healthy',
-          date: '25 Sep 2026',
-          accuracy: '95%',
-          note: 'Kondisi tanaman sehat dan daun tidak menunjukkan gejala penyakit.',
-          isHealthy: true,
-        ),
-        _HistoryPreview(
-          disease: 'Tomato Yellow Leaf Curl Virus',
-          date: '10 Sep 2026',
-          accuracy: '90%',
-          note: 'Daun terlihat menguning, mengecil, dan melengkung ke bagian atas.',
-          isHealthy: false,
-        ),
-        _HistoryPreview(
-          disease: 'Leaf Mold',
-          date: '22 Agu 2026',
-          accuracy: '88%',
-          note: 'Ditemukan bercak kekuningan pada permukaan bagian atas daun.',
-          isHealthy: false,
-        ),
-      ];
-    }
-
-    // Tanaman yang baru ditambahkan belum memiliki riwayat.
-    return const [];
+  List<_HistoryPreview> _historiesFor(List<ScanRecordModel> scans) {
+    return scans
+        .map(
+          (scan) => _HistoryPreview(
+            disease: scan.diseaseName,
+            date: formatHistoryDate(scan.scannedAt),
+            accuracy: '${(scan.confidence * 100).round().clamp(0, 100)}%',
+            note: scan.notes ?? 'Tidak ada catatan tambahan.',
+            isHealthy: HistoryData.isHealthyName(scan.diseaseName),
+          ),
+        )
+        .toList();
   }
 
   void _showDeleteDialog(BuildContext context, WidgetRef ref, Plant plant) {
@@ -446,9 +386,9 @@ class PlantDetailPage extends ConsumerWidget {
 
   Widget _buildHistorySection(
     BuildContext context, {
+    required WidgetRef ref,
     required Plant plant,
-    required List<_HistoryPreview> recentHistories,
-    required bool showViewAllButton,
+    required AsyncValue<List<_HistoryPreview>> historiesAsync,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -465,7 +405,7 @@ class PlantDetailPage extends ConsumerWidget {
                 ),
               ),
             ),
-            if (showViewAllButton)
+            if (historiesAsync.value?.isNotEmpty ?? false)
               TextButton(
                 key: const Key('viewAllHistoryButton'),
                 onPressed: () => _openAllHistory(context, plant),
@@ -486,22 +426,48 @@ class PlantDetailPage extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 12),
-        if (recentHistories.isEmpty)
-          _buildEmptyHistory()
-        else
-          ...recentHistories.map((history) {
-            return _buildHistoryItem(
-              title: history.disease,
-              date: history.date,
-              accuracy: 'Akurasi ${history.accuracy}',
-              avatarColor: history.isHealthy
-                  ? const Color(0xFFE2F1E4)
-                  : const Color(0xFFFFE0D6),
-              isHealthy: history.isHealthy,
-              onTap: () =>
-                  _openHistoryDetail(context, plant: plant, history: history),
+        historiesAsync.when(
+          data: (histories) {
+            final recentHistories = histories.take(3);
+            if (histories.isEmpty) {
+              return _buildEmptyHistory();
+            }
+            return Column(
+              children: recentHistories.map((history) {
+                return _buildHistoryItem(
+                  title: history.disease,
+                  date: history.date,
+                  accuracy: 'Akurasi ${history.accuracy}',
+                  avatarColor: history.isHealthy
+                      ? const Color(0xFFE2F1E4)
+                      : const Color(0xFFFFE0D6),
+                  isHealthy: history.isHealthy,
+                  onTap: () => _openHistoryDetail(
+                    context,
+                    plant: plant,
+                    history: history,
+                  ),
+                );
+              }).toList(),
             );
-          }),
+          },
+          loading: () => const Center(
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: CircularProgressIndicator(),
+            ),
+          ),
+          error: (error, stackTrace) => Column(
+            children: [
+              const Text('Riwayat pemeriksaan belum dapat dimuat.'),
+              TextButton(
+                onPressed: () =>
+                    ref.invalidate(plantScanHistoryProvider(plant.id)),
+                child: const Text('Coba Lagi'),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -530,7 +496,10 @@ class PlantDetailPage extends ConsumerWidget {
           );
         }
 
-        return _buildPlantDetail(context, ref, plant);
+        final historiesAsync = ref
+            .watch(plantScanHistoryProvider(plant.id))
+            .whenData(_historiesFor);
+        return _buildPlantDetail(context, ref, plant, historiesAsync);
       },
     );
   }
@@ -621,11 +590,12 @@ class PlantDetailPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildPlantDetail(BuildContext context, WidgetRef ref, Plant plant) {
-    final histories = _historiesFor(plant);
-    final recentHistories = histories.take(3).toList();
-    final showViewAllButton = histories.isNotEmpty;
-
+  Widget _buildPlantDetail(
+    BuildContext context,
+    WidgetRef ref,
+    Plant plant,
+    AsyncValue<List<_HistoryPreview>> historiesAsync,
+  ) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -688,9 +658,9 @@ class PlantDetailPage extends ConsumerWidget {
               );
               final historySection = _buildHistorySection(
                 context,
+                ref: ref,
                 plant: plant,
-                recentHistories: recentHistories,
-                showViewAllButton: showViewAllButton,
+                historiesAsync: historiesAsync,
               );
 
               if (isTablet) {

@@ -203,6 +203,63 @@ void main() {
     },
   );
 
+  test('filters plant scan history by plant and user', () async {
+    const firstPlant = Plant(
+      id: 'plant-history-1',
+      name: 'Tomato One',
+      location: 'Garden',
+      plantedDate: '2026-10-01',
+      lastInspectionDate: 'Belum ada pemeriksaan',
+      status: 'Sehat',
+    );
+    const secondPlant = Plant(
+      id: 'plant-history-2',
+      name: 'Tomato Two',
+      location: 'Balcony',
+      plantedDate: '2026-10-01',
+      lastInspectionDate: 'Belum ada pemeriksaan',
+      status: 'Sehat',
+    );
+    await plantRepository.create(firstPlant);
+    await plantRepository.create(secondPlant);
+
+    Future<void> saveScan({
+      required String id,
+      required String userId,
+      required String plantId,
+    }) {
+      return appDatabase.saveScanResult(
+        ScanRecordModel(
+          id: id,
+          userId: userId,
+          plantId: plantId,
+          diseaseName: 'Healthy',
+          confidence: 0.95,
+          localImagePath: '/tmp/$id.jpg',
+          scannedAt: DateTime.utc(2026, 10, 23),
+        ),
+      );
+    }
+
+    await saveScan(id: 'scan-owner', userId: 'user-1', plantId: firstPlant.id);
+    await saveScan(
+      id: 'scan-other-user',
+      userId: 'user-2',
+      plantId: firstPlant.id,
+    );
+    await saveScan(
+      id: 'scan-other-plant',
+      userId: 'user-1',
+      plantId: secondPlant.id,
+    );
+
+    final scans = await appDatabase.getScansByPlantId(firstPlant.id, 'user-1');
+
+    expect(scans.map((scan) => scan.id), ['scan-owner']);
+    expect(scans.single.plantName, firstPlant.name);
+    expect(scans.single.plantLocation, firstPlant.location);
+  });
+
   test('migrates legacy v3 indonesian schema to v2 tables', () async {
     final databasePath = path.join(tempDirectory.path, 'legacy_v3.db');
     final oldDatabase = await databaseFactoryFfi.openDatabase(
