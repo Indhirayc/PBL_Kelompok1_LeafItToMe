@@ -1,14 +1,26 @@
+import 'dart:convert';
+
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
-import '../../../core/database/database_schema.dart';
 import '../../models/scan_record_model.dart';
+import 'sync_queue_dao.dart';
 
 class AppDatabase {
   static final AppDatabase instance = AppDatabase._init();
-  static Database? _database;
 
-  AppDatabase._init();
+  AppDatabase._init() : _databaseFactory = null, _databasePath = null;
+
+  AppDatabase.forTesting({
+    required this._databaseFactory,
+    required this._databasePath,
+  });
+
+  final DatabaseFactory? _databaseFactory;
+  final String? _databasePath;
+  Database? _database;
+
+  late final SyncQueueDao syncQueueDao = SyncQueueDao(() => database);
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -17,290 +29,312 @@ class AppDatabase {
   }
 
   Future<Database> _initDB(String filePath) async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, filePath);
+    final path = _databasePath ?? join(await getDatabasesPath(), filePath);
+    final options = OpenDatabaseOptions(
+      version: _kSchemaVersion,
+      onConfigure: (db) async {
+        await db.execute('PRAGMA foreign_keys = ON');
+      },
+      onCreate: _createDB,
+      onUpgrade: _onUpgrade,
+    );
+
+    if (_databaseFactory != null) {
+      return _databaseFactory.openDatabase(path, options: options);
+    }
 
     return openDatabase(
       path,
-      version: kLeafItToMeDatabaseVersion,
-      onConfigure: (db) => db.execute('PRAGMA foreign_keys = ON;'),
-      onCreate: _createDB,
-      onUpgrade: _upgradeDB,
+      version: _kSchemaVersion,
+      onConfigure: options.onConfigure,
+      onCreate: options.onCreate,
+      onUpgrade: options.onUpgrade,
     );
   }
 
   Future<void> _createDB(Database db, int version) async {
-    for (final statement in kLeafItToMeSchema) {
-      await db.execute(statement);
-    }
-    await _seedReferenceData(db);
+    await _createSchema(db);
   }
 
-  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
-    // v1 -> v2: tambah kolom synced_at pada scan_history (tanpa hapus data).
+  Future<void> _createSchema(DatabaseExecutor db) async {
+    await db.execute('''
+      CREATE TABLE plants (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        location TEXT NOT NULL,
+        planted_at TEXT NOT NULL,
+        last_inspection_at TEXT,
+        status TEXT NOT NULL,
+        note TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        deleted_at TEXT
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE scans (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        plant_id TEXT,
+        disease_label TEXT NOT NULL,
+        confidence REAL NOT NULL,
+        local_image_path TEXT NOT NULL,
+        cloud_image_url TEXT,
+        notes TEXT,
+        scanned_at TEXT NOT NULL,
+        sync_status TEXT NOT NULL DEFAULT 'pending'
+          CHECK (sync_status IN ('pending', 'synced')),
+        FOREIGN KEY (plant_id) REFERENCES plants(id) ON DELETE SET NULL
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE diseases (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT,
+        symptoms TEXT,
+        treatment TEXT,
+        image_url TEXT,
+        updated_at TEXT NOT NULL
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE guides (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        description TEXT,
+        content TEXT NOT NULL,
+        category TEXT,
+        updated_at TEXT NOT NULL
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE tools (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT,
+        image_url TEXT,
+        updated_at TEXT NOT NULL
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE products (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT,
+        image_url TEXT,
+        price REAL,
+        product_url TEXT,
+        updated_at TEXT NOT NULL
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE sync_queue (
+        id TEXT PRIMARY KEY,
+        entity_type TEXT NOT NULL,
+        entity_id TEXT NOT NULL,
+        operation TEXT NOT NULL,
+        payload TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        attempts INTEGER NOT NULL DEFAULT 0,
+        last_error TEXT,
+        UNIQUE (entity_type, entity_id, operation)
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE app_meta (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    ''');
+    await db.execute(
+      'INSERT OR REPLACE INTO app_meta (key, value, updated_at) '
+      'VALUES (?, ?, ?)',
+      ['schema_version', '$_kSchemaVersion', _utcNow()],
+    );
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
-      await db.execute('ALTER TABLE scan_history ADD COLUMN synced_at TEXT');
+      await db.execute(
+        'ALTER TABLE scan_history RENAME TO scan_history_legacy',
+      );
+      await _createSchema(db);
+      final legacyRows = await db.query('scan_history_legacy');
+      for (final row in legacyRows) {
+        final scannedAt = DateTime.parse(row['scanned_at'] as String)
+            .toUtc()
+            .toIso8601String();
+        final isSynced = row['is_synced'] == 1;
+        final scan = <String, Object?>{
+          'id': row['id'],
+          'user_id': row['user_id'],
+          'plant_id': null,
+          'disease_label': row['disease_name'],
+          'confidence': row['confidence'],
+          'local_image_path': row['local_image_path'],
+          'cloud_image_url': row['cloud_image_url'],
+          'notes': row['notes'],
+          'scanned_at': scannedAt,
+          'sync_status': isSynced ? 'synced' : 'pending',
+        };
+        await db.insert('scans', scan);
+        if (!isSynced) {
+          await db.insert('sync_queue', {
+            'id': 'scan:${row['id']}:upsert',
+            'entity_type': 'scan',
+            'entity_id': row['id'],
+            'operation': 'upsert',
+            'payload': jsonEncode(scan),
+            'created_at': _utcNow(),
+          });
+        }
+      }
+      await db.execute('DROP TABLE scan_history_legacy');
+      return;
     }
-    // v2 -> v3: scan_history (denormalized) -> 7 tabel sesuai proposal.
-    if (oldVersion < 3) {
-      await _migrateV2ToV3(db);
-    }
-  }
 
-  Future<void> _seedReferenceData(Database db) async {
-    for (final penyakit in kLeafItToMeSeedPenyakit) {
-      await db.insert(
+    // Database versi 3 lama memakai schema Indonesia (pengguna, tanaman, ...).
+    // Schema itu tidak kompatibel dengan v2, jadi tabel lamanya dibuang.
+    final tables = await db.rawQuery(
+      "SELECT name FROM sqlite_master WHERE type = 'table'",
+    );
+    final existing = tables.map((row) => row['name'] as String).toSet();
+    if (existing.contains('pengguna')) {
+      const legacyTables = <String>[
+        'riwayat_pemindaian',
+        'penanganan',
+        'panduan_menanam',
+        'rekomendasi_produk',
         'penyakit',
-        penyakit,
-        conflictAlgorithm: ConflictAlgorithm.ignore,
+        'tanaman',
+        'pengguna',
+      ];
+      for (final table in legacyTables) {
+        await db.execute('DROP TABLE IF EXISTS $table');
+      }
+    }
+
+    if (!existing.contains('plants')) {
+      await _createSchema(db);
+    } else {
+      await db.execute(
+        'INSERT OR REPLACE INTO app_meta (key, value, updated_at) '
+        'VALUES (?, ?, ?)',
+        ['schema_version', '$_kSchemaVersion', _utcNow()],
       );
     }
   }
 
-  Future<void> _migrateV2ToV3(Database db) async {
-    final hasScanHistory = await _tableExists(db, 'scan_history');
-    final legacyRows = hasScanHistory
-        ? await db.query('scan_history')
-        : const <Map<String, Object?>>[];
-
-    if (!await _tableExists(db, 'pengguna')) {
-      for (final statement in kLeafItToMeSchema) {
-        await db.execute(statement);
-      }
-      await _seedReferenceData(db);
-    }
-
-    for (final row in legacyRows) {
-      final userId = row['user_id'] as String? ?? 'unknown';
-      final scannedAt =
-          row['scanned_at'] as String? ?? DateTime.now().toIso8601String();
-      final diseaseName =
-          row['disease_name'] as String? ?? 'Penyakit Tidak Diketahui';
-      final isSynced = (row['is_synced'] as int? ?? 0) == 1;
-
-      await _ensurePenggunaById(db, userId, userId, scannedAt);
-
-      final plantId = 'TMT-DEFAULT-$userId';
-      await db.insert('tanaman', {
-        'id_tanaman': plantId,
-        'id_pengguna': userId,
-        'nama_tanaman': 'Tanaman Saya',
-        'lokasi': null,
-        'tanggal_tanam': null,
-        'status_sinkronisasi': 'pending',
-        'created_at': scannedAt,
-      }, conflictAlgorithm: ConflictAlgorithm.ignore);
-
-      final diseaseId = await _resolvePenyakitId(db, diseaseName);
-      await db.insert('riwayat_pemindaian', {
-        'id_riwayat': row['id'],
-        'id_tanaman': plantId,
-        'id_penyakit': diseaseId,
-        'foto_daun': row['local_image_path'],
-        'cloud_image_url': row['cloud_image_url'],
-        'confidence_score': row['confidence'],
-        'tanggal_pemeriksaan': scannedAt,
-        'catatan': row['notes'],
-        'status_sinkronisasi': isSynced ? 'synced' : 'pending',
-        'synced_at': row['synced_at'],
-        'created_at': scannedAt,
-      }, conflictAlgorithm: ConflictAlgorithm.ignore);
-    }
-
-    if (hasScanHistory) {
-      await db.execute('DROP TABLE scan_history');
-    }
-  }
-
-  Future<bool> _tableExists(Database db, String table) async {
-    final result = await db.rawQuery(
-      "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",
-      [table],
+  Future<int> insertScan(
+    ScanRecordModel scan, {
+    DatabaseExecutor? executor,
+  }) async {
+    final db = executor ?? await database;
+    return db.insert(
+      'scans',
+      scan.toSqliteMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
     );
-    return result.isNotEmpty;
   }
 
-  Future<int> insertScan(ScanRecordModel scan) async {
+  Future<void> saveScanResult(ScanRecordModel scan) async {
     final db = await database;
-    await _ensurePengguna(db, scan);
-    final plantId = await _ensureTanaman(db, scan);
-    final diseaseId = await _resolvePenyakitId(db, scan.diseaseName);
-    final now = DateTime.now().toIso8601String();
-
-    return await db.insert('riwayat_pemindaian', {
-      'id_riwayat': scan.id,
-      'id_tanaman': plantId,
-      'id_penyakit': diseaseId,
-      'foto_daun': scan.localImagePath,
-      'cloud_image_url': scan.cloudImageUrl,
-      'confidence_score': scan.confidence,
-      'tanggal_pemeriksaan': scan.scannedAt.toIso8601String(),
-      'catatan': scan.notes,
-      'status_sinkronisasi': scan.isSynced ? 'synced' : 'pending',
-      'synced_at': scan.isSynced ? now : null,
-      'created_at': now,
-    }, conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.transaction((transaction) async {
+      await insertScan(scan, executor: transaction);
+      if (scan.plantId != null) {
+        await transaction.update(
+          'plants',
+          {
+            'status': scan.diseaseName,
+            'last_inspection_at': scan.scannedAt.toUtc().toIso8601String(),
+            'updated_at': _utcNow(),
+          },
+          where: 'id = ? AND deleted_at IS NULL',
+          whereArgs: [scan.plantId],
+        );
+      }
+      await syncQueueDao.enqueue(
+        entityType: 'scan',
+        entityId: scan.id,
+        operation: 'upsert',
+        payload: jsonEncode(scan.toSqliteMap()),
+        executor: transaction,
+      );
+    });
   }
 
   Future<List<ScanRecordModel>> getScansByUser(String userId) async {
     final db = await database;
     final result = await db.rawQuery(
-      '$_scanSelect WHERE t.id_pengguna = ? '
-      'ORDER BY r.tanggal_pemeriksaan DESC',
+      '''
+      SELECT s.*, p.name AS plant_name, p.location AS plant_location
+      FROM scans s
+      LEFT JOIN plants p ON p.id = s.plant_id
+      WHERE s.user_id = ?
+      ORDER BY s.scanned_at DESC
+      ''',
       [userId],
     );
-    return result.map(_mapRowToScan).toList();
+    return result.map(ScanRecordModel.fromSqliteMap).toList();
   }
 
   Future<List<ScanRecordModel>> getUnsyncedScans(String userId) async {
     final db = await database;
-    final result = await db.rawQuery(
-      '$_scanSelect WHERE t.id_pengguna = ? '
-      "AND r.status_sinkronisasi = 'pending' "
-      'ORDER BY r.tanggal_pemeriksaan ASC',
-      [userId],
+    final result = await db.query(
+      'scans',
+      where: 'user_id = ? AND sync_status = ?',
+      whereArgs: [userId, 'pending'],
+      orderBy: 'scanned_at',
     );
-    return result.map(_mapRowToScan).toList();
-  }
-
-  Future<int> markAsSynced(String id, String? cloudImageUrl) async {
-    final db = await database;
-    return await db.update(
-      'riwayat_pemindaian',
-      {
-        'status_sinkronisasi': 'synced',
-        'cloud_image_url': cloudImageUrl,
-        'synced_at': DateTime.now().toIso8601String(),
-      },
-      where: 'id_riwayat = ?',
-      whereArgs: [id],
-    );
+    return result.map(ScanRecordModel.fromSqliteMap).toList();
   }
 
   Future<int> deleteScan(String id) async {
     final db = await database;
-    return await db.delete(
-      'riwayat_pemindaian',
-      where: 'id_riwayat = ?',
-      whereArgs: [id],
+    final deleted = await db.delete('scans', where: 'id = ?', whereArgs: [id]);
+    await syncQueueDao.remove(
+      entityType: 'scan',
+      entityId: id,
+      operation: 'upsert',
+      executor: db,
     );
+    return deleted;
+  }
+
+  Future<int> markAsSynced(String id, String? cloudImageUrl) async {
+    final db = await database;
+    return db.transaction((transaction) async {
+      final values = <String, Object?>{
+        'sync_status': 'synced',
+        'cloud_image_url': ?cloudImageUrl,
+      };
+      final updatedCount = await transaction.update(
+        'scans',
+        values,
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+      await syncQueueDao.remove(
+        entityType: 'scan',
+        entityId: id,
+        operation: 'upsert',
+        executor: transaction,
+      );
+      return updatedCount;
+    });
   }
 
   Future<void> close() async {
-    final db = await instance.database;
-    db.close();
+    await _database?.close();
+    _database = null;
   }
-
-  Future<void> _ensurePengguna(Database db, ScanRecordModel scan) async {
-    await _ensurePenggunaById(
-      db,
-      scan.userId,
-      scan.userId,
-      DateTime.now().toIso8601String(),
-    );
-  }
-
-  Future<void> _ensurePenggunaById(
-    Database db,
-    String id,
-    String namaLengkap,
-    String createdAt,
-  ) async {
-    await db.insert('pengguna', {
-      'id_pengguna': id,
-      'nama_lengkap': namaLengkap,
-      'email': '$id@local.invalid',
-      'foto_profil': null,
-      'created_at': createdAt,
-    }, conflictAlgorithm: ConflictAlgorithm.ignore);
-  }
-
-  Future<String> _ensureTanaman(Database db, ScanRecordModel scan) async {
-    final plantId = scan.plantId ?? 'TMT-DEFAULT-${scan.userId}';
-    await db.insert('tanaman', {
-      'id_tanaman': plantId,
-      'id_pengguna': scan.userId,
-      'nama_tanaman': scan.plantName ?? 'Tanaman Saya',
-      'lokasi': scan.plantLocation,
-      'tanggal_tanam': null,
-      'status_sinkronisasi': 'pending',
-      'created_at': DateTime.now().toIso8601String(),
-    }, conflictAlgorithm: ConflictAlgorithm.ignore);
-    return plantId;
-  }
-
-  Future<String> _resolvePenyakitId(Database db, String diseaseName) async {
-    final name = diseaseName.trim();
-    final slug = _slugify(name);
-    if (name.isNotEmpty) {
-      final candidates = <String>{name, slug, _diseaseAliases[slug] ?? name};
-      for (final candidate in candidates) {
-        final result = await db.query(
-          'penyakit',
-          columns: ['id_penyakit'],
-          where:
-              'LOWER(nama_penyakit) = LOWER(?) OR LOWER(label_code) = LOWER(?)',
-          whereArgs: [candidate, candidate],
-          limit: 1,
-        );
-        if (result.isNotEmpty) {
-          return result.first['id_penyakit'] as String;
-        }
-      }
-    }
-
-    final diseaseId = 'CUSTOM-${slug.toUpperCase()}';
-    await db.insert('penyakit', {
-      'id_penyakit': diseaseId,
-      'label_code': slug,
-      'nama_penyakit': name.isEmpty ? 'Penyakit Tidak Diketahui' : name,
-      'nama_latin': null,
-      'deskripsi': null,
-      'kategori': null,
-      'tingkat_risiko': 'sedang',
-    }, conflictAlgorithm: ConflictAlgorithm.ignore);
-    return diseaseId;
-  }
-
-  String _slugify(String value) {
-    final slug = value
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
-        .replaceAll(RegExp(r'^_+|_+$'), '');
-    return slug.isEmpty ? 'penyakit_tidak_diketahui' : slug;
-  }
-
-  ScanRecordModel _mapRowToScan(Map<String, Object?> row) {
-    return ScanRecordModel(
-      id: row['id_riwayat'] as String,
-      userId: row['id_pengguna'] as String,
-      diseaseName: row['nama_penyakit'] as String,
-      confidence: (row['confidence_score'] as num).toDouble(),
-      localImagePath: (row['foto_daun'] as String?) ?? '',
-      cloudImageUrl: row['cloud_image_url'] as String?,
-      notes: row['catatan'] as String?,
-      scannedAt: DateTime.parse(row['tanggal_pemeriksaan'] as String),
-      isSynced: row['status_sinkronisasi'] == 'synced',
-      plantId: row['id_tanaman'] as String?,
-    );
-  }
-
-  static const Map<String, String> _diseaseAliases = <String, String>{
-    'bacterial_spot': 'Bacterial_Spot',
-    'late_blight': 'Late_Blight',
-    'leaf_mold': 'Leaf_Mold',
-    'tylcv': 'TYLCV',
-    'tomato_yellow_leaf_curl_virus': 'TYLCV',
-    'tomato_yellow_leaf_curl_virus_tylcv': 'TYLCV',
-    'healthy': 'Healthy',
-  };
-
-  static const String _scanSelect = '''
-SELECT r.id_riwayat, t.id_pengguna, t.id_tanaman, p.nama_penyakit,
-       r.foto_daun, r.cloud_image_url, r.confidence_score,
-       r.tanggal_pemeriksaan, r.catatan, r.status_sinkronisasi
-FROM riwayat_pemindaian r
-JOIN tanaman t ON t.id_tanaman = r.id_tanaman
-JOIN penyakit p ON p.id_penyakit = r.id_penyakit
-''';
 }
+
+String _utcNow() => DateTime.now().toUtc().toIso8601String();
+
+/// Versi file database SQLite. Dinaikkan ke 4 agar perangkat yang masih
+/// menyimpan database lama (v1 `scan_history` atau v3 schema Indonesia)
+/// otomatis dimigrasikan, bukan melempar error downgrade.
+const int _kSchemaVersion = 4;

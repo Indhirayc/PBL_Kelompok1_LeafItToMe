@@ -3,9 +3,6 @@ import 'package:go_router/go_router.dart';
 
 import 'package:mobile_app/data/repositories/user_repository.dart';
 
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
@@ -219,7 +216,20 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   const SizedBox(height: 12),
 
-                  AppTextField(),
+                  AppTextField(
+                    key: const Key('registerEmailField'),
+                    controller: _emailController,
+                    label: 'Email',
+                    hintText: 'Masukkan email',
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                    validator: _validateEmail,
+                    prefixIcon: const Icon(
+                      Icons.mail_outline_rounded,
+                      color: Color(0xFF1F7338),
+                      size: 21,
+                    ),
+                  ),
                   const SizedBox(height: 12),
 
                   AppTextField(

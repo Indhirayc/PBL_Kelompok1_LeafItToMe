@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_initializing_formals
+
 import '../../data/datasources/local/app_database.dart';
 import '../../data/datasources/remote/cloudinary_source.dart';
 import '../../data/datasources/remote/firestore_scan_source.dart';
@@ -35,7 +37,7 @@ class SyncManager {
         // 1. Jika ada CloudinarySource, unggah gambar ke Cloudinary
         if (_cloudinarySource != null && scan.localImagePath.isNotEmpty) {
           try {
-            final uploadResult = await _cloudinarySource!.uploadScanImage(
+            final uploadResult = await _cloudinarySource.uploadScanImage(
               userId: scan.userId,
               localPath: scan.localImagePath,
             );
@@ -50,7 +52,7 @@ class SyncManager {
               cloudImageUrl: cloudImageUrl,
               isSynced: true,
             );
-            await _firestoreSource!.saveScanRecord(updatedRecord);
+            await _firestoreSource.saveScanRecord(updatedRecord);
           } catch (_) {}
         }
 

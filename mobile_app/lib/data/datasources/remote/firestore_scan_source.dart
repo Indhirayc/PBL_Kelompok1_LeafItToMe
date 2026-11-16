@@ -29,7 +29,7 @@ class FirestoreScanSource {
     return snapshot.docs.map((doc) => doc.data()).toList();
   }
 
-  /// Mengambil riwayat scan user dalam bentuk List<ScanRecordModel>
+  /// Mengambil riwayat scan user dalam bentuk `List<ScanRecordModel>`
   Future<List<ScanRecordModel>> getUserScans(String userId) async {
     final query = await _firestore
         .collection('users')

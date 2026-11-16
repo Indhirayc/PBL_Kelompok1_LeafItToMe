@@ -11,7 +11,7 @@ class ScanRepository {
       _syncManager = syncManager ?? SyncManager();
 
   Future<void> saveScanResult(ScanRecordModel record) async {
-    await _localDb.insertScan(record);
+    await _localDb.saveScanResult(record);
     _syncManager.syncPendingRecords(record.userId).catchError((_) {});
   }
 
