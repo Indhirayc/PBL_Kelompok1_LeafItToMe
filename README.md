@@ -299,6 +299,26 @@ flutter pub get
 flutter run
 ```
 
+### 5.7 Master data & backend REST
+
+Aplikasi membaca koleksi `diseases`, `guides`, dan `tools` dari Firestore
+(read-only, write hanya untuk admin). Seed dilakukan lewat script pada bagian 5.3.
+
+Urutan muat master data:
+
+1. Firestore (online)
+2. Cache SQLite (`app_meta`)
+3. Data bawaan aplikasi (`guide_data.dart`)
+
+Fitur plants memiliki data source REST (`mobile_app/lib/features/plants/data/...`)
+yang membaca `API_BASE_URL` dari `--dart-define`, tetapi **belum dikonfigurasi dan
+belum dipakai** — UI plants masih memakai data lokal. Untuk mengaktifkannya
+(setelah server REST tersedia):
+
+```powershell
+flutter run --dart-define=API_BASE_URL=https://api.example.com
+```
+
 ---
 
 ## 6. Melihat SQLite
