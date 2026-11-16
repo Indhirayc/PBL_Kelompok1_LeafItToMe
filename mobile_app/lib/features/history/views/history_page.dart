@@ -8,11 +8,16 @@ import '../data/history_data.dart';
 import '../widgets/history_card.dart';
 import '../widgets/history_page_header.dart';
 
-class HistoryPage extends StatelessWidget {
+class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key, this.plant});
 
   final HistoryPlant? plant;
 
+  @override
+  State<HistoryPage> createState() => _HistoryPageState();
+}
+
+class _HistoryPageState extends State<HistoryPage> {
   static const Color _background = Color(0xFFF8FAF5);
   static const Color _darkGreen = Color(0xFF183E2D);
   static const Color _secondaryText = Color(0xFF75857B);
@@ -22,8 +27,19 @@ class HistoryPage extends StatelessWidget {
   static const Color _borderColor = Color(0xFFDDE7DE);
 
   @override
+  void initState() {
+    super.initState();
+    _loadPersistedRecords();
+  }
+
+  Future<void> _loadPersistedRecords() async {
+    await HistoryData.loadPersistedRecords();
+    if (mounted) setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final HistoryPlant selected = plant ?? HistoryData.plants.first;
+    final HistoryPlant selected = widget.plant ?? HistoryData.plants.first;
 
     final List<HistoryRecord> records = HistoryData.recordsByPlantId(
       selected.id,
