@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../../app/theme/app_breakpoints.dart';
 import '../../../../core/widgets/app_content_layout.dart';
@@ -133,99 +134,110 @@ class ProfilePage extends StatelessWidget {
   }
 
   Widget _buildProfileCard(BuildContext context) {
-    return Container(
-      key: const Key('profileOverviewCard'),
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: borderColor),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 18,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 74,
-            height: 74,
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF0F7EE),
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFDCE9DC)),
-            ),
-            child: ClipOval(
-              child: Image.asset(
-                'assets/images/splash/leafittome_logo.png',
-                fit: BoxFit.contain,
-                filterQuality: FilterQuality.high,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(
-                    Icons.person_rounded,
-                    color: primaryGreen,
-                    size: 42,
-                  );
-                },
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.userChanges(),
+      builder: (context, snapshot) {
+        final user = snapshot.data ?? FirebaseAuth.instance.currentUser;
+        final displayName = (user?.displayName != null && user!.displayName!.trim().isNotEmpty)
+            ? user.displayName!.trim()
+            : (user?.email?.split('@').first ?? 'Pengguna');
+        final email = user?.email ?? 'Email tidak tersedia';
+
+        return Container(
+          key: const Key('profileOverviewCard'),
+          width: double.infinity,
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: borderColor),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 18,
+                offset: const Offset(0, 6),
               ),
-            ),
+            ],
           ),
-          const SizedBox(width: 15),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Indhira Yuantika Christy',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: darkGreen,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    height: 1.25,
+          child: Row(
+            children: [
+              Container(
+                width: 74,
+                height: 74,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0F7EE),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFDCE9DC)),
+                ),
+                child: ClipOval(
+                  child: Image.asset(
+                    'assets/images/splash/leafittome_logo.png',
+                    fit: BoxFit.contain,
+                    filterQuality: FilterQuality.high,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(
+                        Icons.person_rounded,
+                        color: primaryGreen,
+                        size: 42,
+                      );
+                    },
                   ),
                 ),
-                const SizedBox(height: 5),
-                const Text(
-                  'indhira@example.com',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: secondaryText, fontSize: 12),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  height: 34,
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      context.pushNamed('personal-information');
-                    },
-                    icon: const Icon(Icons.edit_outlined, size: 16),
-                    label: const Text('Edit Profil'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: primaryGreen,
-                      side: const BorderSide(color: Color(0xFFBFD7C4)),
-                      padding: const EdgeInsets.symmetric(horizontal: 13),
-                      textStyle: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      displayName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: darkGreen,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        height: 1.25,
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 5),
+                    Text(
+                      email,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: secondaryText, fontSize: 12),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 34,
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          context.pushNamed('personal-information');
+                        },
+                        icon: const Icon(Icons.edit_outlined, size: 16),
+                        label: const Text('Edit Profil'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: primaryGreen,
+                          side: const BorderSide(color: Color(0xFFBFD7C4)),
+                          padding: const EdgeInsets.symmetric(horizontal: 13),
+                          textStyle: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
 import 'package:mobile_app/data/repositories/user_repository.dart';
 
 import '../../../../core/widgets/app_content_layout.dart';
@@ -141,6 +142,15 @@ class _RegisterPageState extends State<RegisterPage> {
         setState(() {
           _isLoading = false;
         });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Pendaftaran berhasil'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+
+        context.goNamed('login');
       }
     }
   }
@@ -210,7 +220,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     key: const Key('registerEmailField'),
                     controller: _emailController,
                     label: 'Email',
-                    hintText: 'nama@email.com',
+                    hintText: 'Masukkan email',
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
                     validator: _validateEmail,
