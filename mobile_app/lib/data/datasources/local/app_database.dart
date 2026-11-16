@@ -382,6 +382,43 @@ class AppDatabase {
     });
   }
 
+  /// Simpan item master data (diseases/tools) sebagai JSON di tabel app_meta
+  /// agar aplikasi tetap bisa menampilkan data saat offline.
+  Future<void> saveMasterCache(
+    String key,
+    List<Map<String, dynamic>> items,
+  ) async {
+    final db = await database;
+    await db.insert(
+      'app_meta',
+      {
+        'key': 'master_cache_$key',
+        'value': jsonEncode(items),
+        'updated_at': _utcNow(),
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  /// Ambil item master data dari cache app_meta; null bila belum tersimpan
+  Future<List<Map<String, dynamic>>?> getMasterCache(String key) async {
+    final db = await database;
+    final rows = await db.query(
+      'app_meta',
+      where: "key = 'master_cache_$key'",
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+
+    final decoded = jsonDecode(rows.first['value'] as String);
+    if (decoded is! List) return null;
+
+    return decoded
+        .whereType<Map>()
+        .map((item) => Map<String, dynamic>.from(item))
+        .toList();
+  }
+
   Future<void> close() async {
     await _database?.close();
     _database = null;
