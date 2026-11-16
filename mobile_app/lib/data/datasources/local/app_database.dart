@@ -60,98 +60,9 @@ class AppDatabase {
   }
 
   Future<void> _createSchema(DatabaseExecutor db) async {
-    await db.execute('''
-      CREATE TABLE plants (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        location TEXT NOT NULL,
-        planted_at TEXT NOT NULL,
-        last_inspection_at TEXT,
-        status TEXT NOT NULL,
-        note TEXT,
-        created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL,
-        deleted_at TEXT
-      )
-    ''');
-    await db.execute('''
-      CREATE TABLE scans (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL,
-        plant_id TEXT,
-        disease_label TEXT NOT NULL,
-        confidence REAL NOT NULL,
-        local_image_path TEXT NOT NULL,
-        cloud_image_url TEXT,
-        notes TEXT,
-        scanned_at TEXT NOT NULL,
-        sync_status TEXT NOT NULL DEFAULT 'pending'
-          CHECK (sync_status IN ('pending', 'synced')),
-        FOREIGN KEY (plant_id) REFERENCES plants(id) ON DELETE SET NULL
-      )
-    ''');
-    await db.execute('''
-      CREATE TABLE diseases (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        description TEXT,
-        symptoms TEXT,
-        treatment TEXT,
-        image_url TEXT,
-        updated_at TEXT NOT NULL
-      )
-    ''');
-    await db.execute('''
-      CREATE TABLE guides (
-        id TEXT PRIMARY KEY,
-        title TEXT NOT NULL,
-        description TEXT,
-        content TEXT NOT NULL,
-        category TEXT,
-        video_url TEXT,
-        updated_at TEXT NOT NULL
-      )
-    ''');
-    await db.execute('''
-      CREATE TABLE tools (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        description TEXT,
-        image_url TEXT,
-        updated_at TEXT NOT NULL
-      )
-    ''');
-    await db.execute('''
-      CREATE TABLE products (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        description TEXT,
-        image_url TEXT,
-        price REAL,
-        product_url TEXT,
-        updated_at TEXT NOT NULL
-      )
-    ''');
-    await db.execute('''
-      CREATE TABLE sync_queue (
-        id TEXT PRIMARY KEY,
-        entity_type TEXT NOT NULL,
-        entity_id TEXT NOT NULL,
-        operation TEXT NOT NULL,
-        payload TEXT NOT NULL,
-        created_at TEXT NOT NULL,
-        attempts INTEGER NOT NULL DEFAULT 0,
-        last_error TEXT,
-        UNIQUE (entity_type, entity_id, operation)
-      )
-    ''');
-    await db.execute('''
-      CREATE TABLE app_meta (
-        key TEXT PRIMARY KEY,
-        value TEXT NOT NULL,
-        updated_at TEXT NOT NULL
-      )
-    ''');
+    for (final sql in kLeafItToMeSchema) {
+      await db.execute(sql);
+    }
     await db.execute(
       'INSERT OR REPLACE INTO app_meta (key, value, updated_at) '
       'VALUES (?, ?, ?)',
@@ -431,4 +342,4 @@ String _utcNow() => DateTime.now().toUtc().toIso8601String();
 /// menyimpan database lama (v1 `scan_history`, v3/v4 schema Indonesia, atau
 /// v4 schema Inggris tanpa `guides.video_url`) otomatis dimigrasikan, bukan
 /// melempar error downgrade.
-const int _kSchemaVersion = 5;
+const int _kSchemaVersion = kLeafItToMeDatabaseVersion;
