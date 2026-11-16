@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'package:mobile_app/data/repositories/user_repository.dart';
 
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
@@ -95,13 +95,12 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Future<void> _register() async {
     FocusScope.of(context).unfocus();
-
+    // 1. Validasi form
     final isValid = _formKey.currentState?.validate() ?? false;
-
     if (!isValid) {
       return;
     }
-
+    // 2. Cek persetujuan syarat & ketentuan
     if (!_agreeToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -111,85 +110,31 @@ class _RegisterPageState extends State<RegisterPage> {
       );
       return;
     }
-
     setState(() {
       _isLoading = true;
     });
-
     try {
-      // 2. Hubungkan ke Firebase Auth untuk verifikasi email & password
-      final credential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(
-            email: _emailController.text.trim(),
-            password: _passwordController.text,
-          );
-
-      // Simpan nama lengkap langsung dari field nama register ke profil Firebase Auth
-      await credential.user?.updateDisplayName(_nameController.text.trim());
-      await credential.user?.reload();
-
-      // Simpan dokumen profil awal ke Cloud Firestore
-      if (credential.user != null) {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(credential.user!.uid)
-            .set({
-          'displayName': _nameController.text.trim(),
-          'email': _emailController.text.trim(),
-          'createdAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
-      }
-
+      // 3. Panggil Firebase Auth & Firestore
+      await UserRepository().register(
+        _emailController.text.trim(),
+        _passwordController.text,
+        _nameController.text.trim(),
+      );
       if (!mounted) return;
-
-      // 3. Hanya pindah ke halaman home jika user terautentikasi
-      if (credential.user != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Pendaftaran berhasil'),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-        context.goNamed('home');
-      }
-    } on FirebaseAuthException catch (e) {
-      if (!mounted) return;
-
-      // 4. Tangani pesan error spesifik dari Firebase
-      String errorMessage = 'Gagal mendaftar. Silakan coba lagi.';
-
-      switch (e.code) {
-        case 'weak-password':
-          errorMessage =
-              'Kata sandi terlalu lemah. Gunakan minimal 6 karakter.';
-          break;
-        case 'email-already-in-use':
-          errorMessage = 'Email sudah terdaftar. Gunakan email lain.';
-          break;
-        case 'invalid-email':
-          errorMessage = 'Format email tidak valid.';
-          break;
-        case 'network-request-failed':
-          errorMessage = 'Tidak ada koneksi internet.';
-          break;
-      }
-
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(errorMessage),
-          backgroundColor: Colors.red,
+        const SnackBar(
+          content: Text('Pendaftaran berhasil! Silakan masuk.'),
           behavior: SnackBarBehavior.floating,
         ),
       );
+      context.goNamed('login');
     } catch (e) {
       if (!mounted) return;
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Terjadi kesalahan: ${e.toString()}'),
-          backgroundColor: Colors.red,
+          content: Text('Pendaftaran gagal: ${e.toString()}'),
           behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.red,
         ),
       );
     } finally {
@@ -275,7 +220,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     key: const Key('registerEmailField'),
                     controller: _emailController,
                     label: 'Email',
-                    hintText: 'nama@email.com',
+                    hintText: 'Masukkan email',
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
                     validator: _validateEmail,

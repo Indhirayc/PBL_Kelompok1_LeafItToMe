@@ -21,14 +21,14 @@ class GuideContentModel {
 
   factory GuideContentModel.fromMap(Map<String, Object?> map) {
     return GuideContentModel(
-      id: map['id_panduan'] as String,
-      category: map['kategori'] as String,
-      title: map['judul'] as String,
-      description: map['deskripsi'] as String?,
-      steps: map['langkah_langkah'] as String?,
-      image: map['gambar'] as String?,
+      id: map['id'] as String,
+      category: (map['category'] as String?) ?? '',
+      title: map['title'] as String,
+      description: map['description'] as String?,
+      steps: map['content'] as String?,
+      image: map['image_path'] as String?,
       videoUrl: map['video_url'] as String?,
-      createdAt: map['created_at'] as String?,
+      createdAt: map['updated_at'] as String?,
     );
   }
 }

@@ -62,11 +62,10 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _login() async {
     FocusScope.of(context).unfocus();
-
+    // 1. Validasi form terlebih dahulu
     if (!(_formKey.currentState?.validate() ?? false)) {
       return;
     }
-
     setState(() {
       _isLoading = true;
     });
