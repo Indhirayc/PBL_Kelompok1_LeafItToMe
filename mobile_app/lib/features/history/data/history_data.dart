@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/utils/disease_label_mapper.dart';
 import '../../../../data/models/scan_record_model.dart';
 import '../../../../data/repositories/plant_repository.dart';
 import '../../../../data/repositories/scan_repository.dart';
@@ -261,64 +262,24 @@ abstract final class HistoryData {
     searchKeyword: 'fungisida tembaga busuk daun late blight',
   );
 
-  static const Map<String, HistoryDisease> _diseasesByName = {
-    'Bacterial Spot': bacterialSpot,
-    'Leaf Mold': leafMold,
-    'Late Blight': lateBlight,
+  static const Map<String, HistoryDisease> _diseasesById = {
+    'P001': bacterialSpot,
+    'P002': lateBlight,
+    'P003': leafMold,
   };
 
-  /// Menyamakan label model ML dengan nama di data riwayat.
-  static String normalizeDiseaseName(String value) {
-    return value
-        .toLowerCase()
-        .replaceAll('_', ' ')
-        .replaceAll('-', ' ')
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim();
-  }
+  static String normalizeDiseaseName(String value) =>
+      DiseaseLabelMapper.normalizeName(value);
 
   /// Nama penyakit yang digunakan untuk ditampilkan di UI.
-  static String displayDiseaseName(String? name) {
-    if (name == null || name.trim().isEmpty) {
-      return 'Penyakit tidak diketahui';
-    }
+  static String displayDiseaseName(String? name) =>
+      DiseaseLabelMapper.displayName(name);
 
-    switch (normalizeDiseaseName(name)) {
-      case 'bacterial spot':
-        return 'Bacterial Spot';
-      case 'late blight':
-        return 'Late Blight';
-      case 'leaf mold':
-        return 'Leaf Mold';
-      case 'tomato yellow leaf curl virus':
-        return 'Tomato Yellow Leaf Curl Virus';
-      case 'healthy':
-      case 'sehat':
-        return 'Sehat';
-      default:
-        return name.replaceAll('_', ' ').replaceAll('-', ' ').trim();
-    }
-  }
-
-  static bool isHealthyName(String? name) {
-    if (name == null) return false;
-
-    final normalized = normalizeDiseaseName(name);
-    return normalized == 'healthy' || normalized == 'sehat';
-  }
+  static bool isHealthyName(String? name) => DiseaseLabelMapper.isHealthy(name);
 
   static HistoryDisease? byDisease(String? name) {
-    if (name == null) return null;
-
-    final normalized = normalizeDiseaseName(name);
-
-    for (final entry in _diseasesByName.entries) {
-      if (normalizeDiseaseName(entry.key) == normalized) {
-        return entry.value;
-      }
-    }
-
-    return null;
+    final documentId = DiseaseLabelMapper.documentId(name);
+    return documentId == null ? null : _diseasesById[documentId];
   }
 
   static HistoryPlant? plantById(String id) {
@@ -396,7 +357,7 @@ abstract final class HistoryData {
       plantId: (scan.plantId == null || scan.plantId!.isEmpty)
           ? plants.first.id
           : scan.plantId!,
-      diseaseName: scan.diseaseName,
+      diseaseName: DiseaseLabelMapper.canonicalName(scan.diseaseName),
       latinName: disease?.latinName ?? '',
       date: scan.scannedAt,
       accuracy: (scan.confidence * 100).round().clamp(0, 100).toInt(),

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -6,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/marketplace_card.dart';
+import '../../../core/utils/disease_label_mapper.dart';
 import '../../guide/data/guide_data.dart';
 import '../data/history_data.dart';
 import '../widgets/history_page_header.dart';
@@ -60,21 +60,9 @@ class TreatmentRecommendationPage extends StatelessWidget {
     );
   }
 
-  String _normalizeDiseaseName(String value) {
-    return HistoryData.normalizeDiseaseName(value);
-  }
-
   DiseaseModel? _guideDiseaseFor(String detectedDisease) {
-    final normalizedResult = _normalizeDiseaseName(detectedDisease);
-
     for (final guideDisease in GuideData.diseases) {
-      final normalizedName = _normalizeDiseaseName(guideDisease.name);
-      final normalizedNameWithoutAlias = _normalizeDiseaseName(
-        guideDisease.name.replaceAll(RegExp(r'\s*\([^)]*\)'), ''),
-      );
-
-      if (normalizedName == normalizedResult ||
-          normalizedNameWithoutAlias == normalizedResult) {
+      if (DiseaseLabelMapper.matches(detectedDisease, guideDisease.name)) {
         return guideDisease;
       }
     }
@@ -130,7 +118,6 @@ class TreatmentRecommendationPage extends StatelessWidget {
 
     final bool isHealthy =
         record.isHealthy || HistoryData.isHealthyName(record.diseaseName);
-
 
     final List<String> treatments =
         disease?.treatments ?? const [];

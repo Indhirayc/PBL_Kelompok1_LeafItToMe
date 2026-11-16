@@ -1,4 +1,3 @@
-
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_page_header.dart';
+import '../../../../core/utils/disease_label_mapper.dart';
 import '../../../../data/models/scan_record_model.dart';
 import '../../../../data/repositories/scan_repository.dart';
 import 'photo_preview_page.dart';
@@ -51,8 +51,7 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
 
     final draft = widget.selection.draft;
     final diseaseLabel = prediction.label;
-    final isHealthyClass =
-        diseaseLabel.trim().toLowerCase() == 'healthy';
+    final isHealthyClass = DiseaseLabelMapper.isHealthy(diseaseLabel);
 
     final confidenceScore =
         prediction.confidencePercentage.round().clamp(0, 100);
@@ -60,7 +59,7 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
     _detectionRecord = HistoryRecord(
       id: 'DET-${DateTime.now().microsecondsSinceEpoch}',
       plantId: draft.plant.id,
-      diseaseName: diseaseLabel,
+      diseaseName: DiseaseLabelMapper.canonicalName(diseaseLabel),
       latinName:
           isHealthyClass ? 'Solanum lycopersicum' : 'Pathogen spp.',
       date: draft.inspectionDate,
@@ -100,7 +99,7 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
         ScanRecordModel(
           id: record.id,
           userId: userId,
-          diseaseName: prediction.label,
+          diseaseName: DiseaseLabelMapper.canonicalName(prediction.label),
           confidence: prediction.confidence,
           localImagePath: widget.selection.imageFile?.path ?? '',
           notes: draft.note.isEmpty ? null : draft.note,
@@ -125,8 +124,7 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
     final prediction = widget.selection.predictionResult!;
     final diseaseLabel = prediction.label;
 
-    final isHealthyClass =
-        diseaseLabel.trim().toLowerCase() == 'healthy';
+    final isHealthyClass = DiseaseLabelMapper.isHealthy(diseaseLabel);
 
     return Scaffold(
       backgroundColor: _background,
@@ -398,20 +396,7 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
   }
 
   String _getDisplayName(String label) {
-    switch (label.trim()) {
-      case 'Bacterial_spot':
-        return 'Bacterial Spot (Bercak Bakteri)';
-      case 'Late_blight':
-        return 'Late Blight (Busuk Daun)';
-      case 'Leaf_Mold':
-        return 'Leaf Mold (Kapang Daun)';
-      case 'Tomato_Yellow_Leaf_Curl_Virus':
-        return 'Tomato Yellow Leaf Curl Virus';
-      case 'healthy':
-        return 'Daun Tomat Sehat';
-      default:
-        return label.replaceAll('_', ' ');
-    }
+    return DiseaseLabelMapper.detectionDisplayName(label);
   }
 }
 

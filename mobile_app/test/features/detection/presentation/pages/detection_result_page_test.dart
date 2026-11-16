@@ -66,7 +66,7 @@ void main() {
     // Pastikan data internal HistoryRecord tetap menyimpan akurasi
     expect(HistoryData.records.length, 1);
     expect(HistoryData.records.first.accuracy, 88);
-    expect(HistoryData.records.first.diseaseName, 'Bacterial_spot');
+    expect(HistoryData.records.first.diseaseName, 'Bacterial Spot');
     expect(HistoryData.records.first.isHealthy, isFalse);
   });
 
