@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mobile_app/core/providers/database_providers.dart';
+import 'package:mobile_app/core/sync/sync_manager.dart';
 import 'package:mobile_app/core/widgets/main_bottom_navigation.dart';
+import 'package:mobile_app/data/models/scan_record_model.dart';
+import 'package:mobile_app/data/repositories/scan_repository.dart';
 import 'package:mobile_app/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:mobile_app/features/detection/presentation/pages/data_inspection_page.dart';
 import 'package:mobile_app/features/guide/presentation/pages/guide_list_page.dart';
@@ -34,20 +38,73 @@ class _ResponsivePlantNotifier extends PlantNotifier {
   Future<List<Plant>> build() async => [plant];
 }
 
+class _ResponsivePlantsNotifier extends PlantNotifier {
+  _ResponsivePlantsNotifier(this.plants);
+
+  final List<Plant> plants;
+
+  @override
+  Future<List<Plant>> build() async => plants;
+}
+
+class _EmptyScanRepository implements ScanRepository {
+  @override
+  Future<void> deleteScan(String id) async {}
+
+  @override
+  Future<List<ScanRecordModel>> getUserHistory(String userId) async => [];
+
+  @override
+  Future<List<ScanRecordModel>> getUnsyncedScans(String userId) async => [];
+
+  @override
+  Future<List<ScanRecordModel>> getScansByPlantId(
+    String plantId,
+    String userId,
+  ) async => [];
+
+  @override
+  Future<void> saveScanResult(ScanRecordModel record) async {}
+
+  @override
+  Future<SyncBatchResult> triggerSync(String userId) async =>
+      const SyncBatchResult(syncedIds: [], failedIds: []);
+}
+
+final _dashboardPlant = Plant(
+  id: 'TMT-001',
+  name: 'Tomat Dashboard',
+  location: 'Kebun',
+  plantedDate: '25 Sep 2026',
+  lastInspectionDate: '25 Sep 2026',
+  status: 'Sehat',
+);
+
 void main() {
   double contentGapAfterAppBar(WidgetTester tester, Finder content) {
     final appBarBottom = tester.getRect(find.byType(AppBar).first).bottom;
     return tester.getTopLeft(content).dy - appBarBottom;
   }
 
-  Future<void> pumpDashboardAt(WidgetTester tester, Size size) async {
+  Future<void> pumpDashboardAt(
+    WidgetTester tester,
+    Size size, {
+    List<Plant>? plants,
+  }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
     await tester.pumpWidget(
-      const ProviderScope(child: MaterialApp(home: DashboardPage())),
+      ProviderScope(
+        overrides: [
+          plantProvider.overrideWith(
+            () => _ResponsivePlantsNotifier(plants ?? [_dashboardPlant]),
+          ),
+        ],
+        child: const MaterialApp(home: DashboardPage()),
+      ),
     );
     await tester.pumpAndSettle();
   }
@@ -99,6 +156,16 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump();
     }
+  });
+
+  testWidgets('dashboard menampilkan status kosong tanpa switch demo', (
+    tester,
+  ) async {
+    await pumpDashboardAt(tester, const Size(390, 844), plants: []);
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Belum Memiliki Tanaman'), findsOneWidget);
+    expect(find.byType(Switch), findsNothing);
   });
 
   testWidgets('daftar tanaman adaptif tanpa overflow pada HP dan tablet', (
@@ -332,7 +399,14 @@ void main() {
       const Size(1024, 768),
     ]) {
       tester.view.physicalSize = size;
-      await tester.pumpWidget(const MaterialApp(home: SyncStatusPage()));
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            scanRepositoryProvider.overrideWithValue(_EmptyScanRepository()),
+          ],
+          child: const MaterialApp(home: SyncStatusPage()),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
@@ -356,7 +430,9 @@ void main() {
       const Size(1024, 768),
     ]) {
       tester.view.physicalSize = size;
-      await tester.pumpWidget(const MaterialApp(home: HistoryPage()));
+      await tester.pumpWidget(
+        const ProviderScope(child: MaterialApp(home: HistoryPage())),
+      );
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
@@ -395,7 +471,9 @@ void main() {
     ]) {
       tester.view.physicalSize = size;
       await tester.pumpWidget(
-        MaterialApp(home: DetectionResultPage(selection: selection)),
+        ProviderScope(
+          child: MaterialApp(home: DetectionResultPage(selection: selection)),
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -422,7 +500,14 @@ void main() {
       const Size(1024, 768),
     ]) {
       tester.view.physicalSize = size;
-      await tester.pumpWidget(const MaterialApp(home: ProfilePage()));
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            scanRepositoryProvider.overrideWithValue(_EmptyScanRepository()),
+          ],
+          child: const MaterialApp(home: ProfilePage()),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);

@@ -2,19 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/app_button.dart';
+import '../../../../core/sync/sync_manager.dart';
 import '../../history/widgets/history_page_header.dart';
 import '../../history/data/history_data.dart';
-import '../data/sync_data.dart';
 
 class SyncResultPage extends StatelessWidget {
   const SyncResultPage({
     super.key,
-    required this.plant,
-    required this.isFailure,
+    required this.result,
+    required this.userId,
+    this.plant,
   });
 
-  final HistoryPlant plant;
-  final bool isFailure;
+  final SyncBatchResult result;
+  final String userId;
+  final HistoryPlant? plant;
+
+  bool get isFailure => result.hasFailures;
 
   static const Color _background = Color(0xFFF8FAF5);
   static const Color _secondaryText = Color(0xFF75857B);
@@ -58,9 +62,7 @@ class SyncResultPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      isFailure
-                          ? 'Koneksi terputus saat mengunggah data. Periksa internet lalu coba lagi.'
-                          : '${SyncData.items.length} data pemeriksaan berhasil disinkronkan ke penyimpanan cloud.',
+                      _resultMessage,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         color: _secondaryText,
@@ -68,6 +70,10 @@ class SyncResultPage extends StatelessWidget {
                         height: 1.5,
                       ),
                     ),
+                    if (isFailure && result.errors.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      _buildErrorDetails(),
+                    ],
                     const SizedBox(height: 34),
                     if (isFailure) ...[
                       _buildPrimaryButton(
@@ -84,18 +90,14 @@ class SyncResultPage extends StatelessWidget {
                         key: const Key('backFromFailureButton'),
                         label: 'Kembali',
                         variant: AppButtonVariant.secondary,
-                        onPressed: () {
-                          context.goNamed('history', extra: plant);
-                        },
+                        onPressed: () => _returnToHistory(context),
                       ),
                     ] else
                       _buildPrimaryButton(
                         key: const Key('backToHistoryButton'),
                         icon: Icons.history_rounded,
                         label: 'Kembali ke Riwayat',
-                        onPressed: () {
-                          context.goNamed('history', extra: plant);
-                        },
+                        onPressed: () => _returnToHistory(context),
                       ),
                   ],
                 ),
@@ -105,6 +107,71 @@ class SyncResultPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String get _resultMessage {
+    if (result.failedCount > 0) {
+      final syncedMessage = result.syncedCount == 0
+          ? ''
+          : '${result.syncedCount} data berhasil disinkronkan. ';
+      return '$syncedMessage${result.failedCount} data masih menunggu '
+          'sinkronisasi. Lihat detail kegagalan di bawah.';
+    }
+
+    if (result.syncedCount == 0) {
+      return 'Tidak ada data baru yang perlu disinkronkan.';
+    }
+    return '${result.syncedCount} data pemeriksaan berhasil disinkronkan '
+        'ke penyimpanan cloud.';
+  }
+
+  Widget _buildErrorDetails() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: _dangerBg,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Detail kegagalan',
+            style: TextStyle(
+              color: _dangerRed,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 6),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 140),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (final error in result.errors)
+                    SelectableText(
+                      error,
+                      style: const TextStyle(
+                        color: _secondaryText,
+                        fontSize: 12,
+                        height: 1.4,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _returnToHistory(BuildContext context) {
+    final selectedPlant = plant?.userId == userId ? plant : null;
+    context.goNamed('history', extra: selectedPlant);
   }
 
   Widget _buildStatusIcon() {

@@ -4,6 +4,7 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../../../core/database/database_schema.dart';
+import '../../../core/utils/disease_label_mapper.dart';
 import '../../models/guide_content_model.dart';
 import '../../models/scan_record_model.dart';
 import 'sync_queue_dao.dart';
@@ -142,6 +143,16 @@ class AppDatabase {
       );
     }
 
+    // v5 -> v6: add ownership to plants from existing installations.
+    if (!await _columnExists(db, 'plants', 'user_id')) {
+      await db.execute(
+        "ALTER TABLE plants ADD COLUMN user_id TEXT NOT NULL DEFAULT 'user-local'",
+      );
+    }
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_plants_user ON plants (user_id)',
+    );
+
     // v4 -> v5: tambah video_url pada guides lalu seed video panduan.
     if (!await _columnExists(db, 'guides', 'video_url')) {
       await db.execute('ALTER TABLE guides ADD COLUMN video_url TEXT');
@@ -203,17 +214,34 @@ class AppDatabase {
   Future<void> saveScanResult(ScanRecordModel scan) async {
     final db = await database;
     await db.transaction((transaction) async {
+      if (scan.plantId != null) {
+        final ownedPlants = await transaction.query(
+          'plants',
+          columns: ['id'],
+          where: 'id = ? AND user_id = ? AND deleted_at IS NULL',
+          whereArgs: [scan.plantId, scan.userId],
+          limit: 1,
+        );
+        if (ownedPlants.isEmpty) {
+          throw StateError(
+            'Tanaman ${scan.plantId} tidak ditemukan di akun pemilik scan.',
+          );
+        }
+      }
+
       await insertScan(scan, executor: transaction);
       if (scan.plantId != null) {
         await transaction.update(
           'plants',
           {
-            'status': scan.diseaseName,
+            'status': DiseaseLabelMapper.isHealthy(scan.diseaseName)
+                ? 'Sehat'
+                : scan.diseaseName,
             'last_inspection_at': scan.scannedAt.toUtc().toIso8601String(),
             'updated_at': _utcNow(),
           },
-          where: 'id = ? AND deleted_at IS NULL',
-          whereArgs: [scan.plantId],
+          where: 'id = ? AND user_id = ? AND deleted_at IS NULL',
+          whereArgs: [scan.plantId, scan.userId],
         );
       }
       await syncQueueDao.enqueue(
@@ -232,7 +260,7 @@ class AppDatabase {
       '''
       SELECT s.*, p.name AS plant_name, p.location AS plant_location
       FROM scans s
-      LEFT JOIN plants p ON p.id = s.plant_id
+      LEFT JOIN plants p ON p.id = s.plant_id AND p.user_id = s.user_id
       WHERE s.user_id = ?
       ORDER BY s.scanned_at DESC
       ''',
@@ -250,7 +278,7 @@ class AppDatabase {
       '''
       SELECT s.*, p.name AS plant_name, p.location AS plant_location
       FROM scans s
-      LEFT JOIN plants p ON p.id = s.plant_id
+      LEFT JOIN plants p ON p.id = s.plant_id AND p.user_id = s.user_id
       WHERE s.plant_id = ? AND s.user_id = ?
       ORDER BY s.scanned_at DESC
       ''',
@@ -301,12 +329,14 @@ class AppDatabase {
         where: 'id = ?',
         whereArgs: [id],
       );
-      await syncQueueDao.remove(
-        entityType: 'scan',
-        entityId: id,
-        operation: 'upsert',
-        executor: transaction,
-      );
+      if (updatedCount == 1) {
+        await syncQueueDao.remove(
+          entityType: 'scan',
+          entityId: id,
+          operation: 'upsert',
+          executor: transaction,
+        );
+      }
       return updatedCount;
     });
   }

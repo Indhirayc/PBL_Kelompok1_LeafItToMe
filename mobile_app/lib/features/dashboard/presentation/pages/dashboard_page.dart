@@ -13,18 +13,8 @@ import '../../../../features/history/data/history_data.dart'
 import '../../../../features/plants/models/plant.dart';
 import '../../../../features/plants/providers/plant_provider.dart';
 
-class DashboardPage extends ConsumerStatefulWidget {
+class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
-
-  @override
-  ConsumerState<DashboardPage> createState() => _DashboardPageState();
-}
-
-class _DashboardPageState extends ConsumerState<DashboardPage> {
-  // Flag untuk mendemonstrasikan 2 kondisi:
-  // true = sudah memiliki tanaman
-  // false = belum memiliki tanaman
-  bool _hasPlants = true;
 
   static const Color primaryGreen = Color(0xFF2F7D4A);
   static const Color darkGreen = Color(0xFF183E2D);
@@ -61,12 +51,17 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
         id: plant.id,
         name: plant.name,
         location: plant.location,
+        userId: plant.userId,
       ),
     );
   }
 
-  void _openLatestHistoryDetail(BuildContext context, String plantId) {
-    final records = HistoryData.recordsByPlantId(plantId);
+  void _openLatestHistoryDetail(
+    BuildContext context,
+    String plantId,
+    String userId,
+  ) {
+    final records = HistoryData.recordsByPlantId(plantId, userId: userId);
     if (records.isEmpty) {
       _showNavigationError(context);
       return;
@@ -86,25 +81,26 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     );
   }
 
-  String _nextPlantId(List<Plant> plants) {
-    var maxNumber = 0;
-    for (final plant in plants) {
-      final parts = plant.id.split('-');
-      if (parts.length < 2) {
-        continue;
+  Future<void> _openAddPlant(BuildContext context, WidgetRef ref) async {
+    try {
+      final nextId = await ref.read(plantProvider.notifier).nextPlantId();
+      if (context.mounted) {
+        context.pushNamed('add-plant', extra: nextId);
       }
-
-      final number = int.tryParse(parts.last);
-      if (number != null && number > maxNumber) {
-        maxNumber = number;
+    } catch (error, stackTrace) {
+      debugPrint('Gagal menyiapkan ID tanaman: $error\n$stackTrace');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Form tambah tanaman belum dapat dibuka.'),
+          ),
+        );
       }
     }
-
-    return 'TMT-${(maxNumber + 1).toString().padLeft(3, '0')}';
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isNarrowScreen = MediaQuery.sizeOf(context).width < 380;
     final plantsAsync = ref.watch(plantProvider);
 
@@ -166,59 +162,6 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
             ],
           ),
         ),
-        actions: [
-          // Toggle Switch untuk memudahkan pengujian 2 kondisi (Sudah vs Belum memiliki tanaman)
-          Padding(
-            padding: const EdgeInsets.only(top: 12.0, right: 20.0),
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: primaryGreen.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: primaryGreen.withValues(alpha: 0.2),
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    if (!isNarrowScreen)
-                      Text(
-                        _hasPlants ? 'Ada Tanaman' : 'Belum Ada',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: primaryGreen,
-                        ),
-                      ),
-                    if (!isNarrowScreen) const SizedBox(width: 6),
-                    Semantics(
-                      label: 'Tampilkan status tanaman pada beranda',
-                      value: _hasPlants ? 'Ada tanaman' : 'Belum ada tanaman',
-                      child: Transform.scale(
-                        scale: 0.72,
-                        child: Switch(
-                          value: _hasPlants,
-                          activeTrackColor: primaryGreen,
-                          onChanged: (val) {
-                            setState(() {
-                              _hasPlants = val;
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -230,40 +173,35 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 children: [
                   const SizedBox(height: 12),
                   // Banner Salam & Perkenalan
-                  _buildGreetingHeader(),
+                  _buildGreetingHeader(
+                    hasPlants: plantsAsync.value?.isNotEmpty ?? false,
+                  ),
                   const SizedBox(height: 20),
 
-                  // Tampilan Kondisi (Sudah vs Belum Memiliki Tanaman)
-                  if (_hasPlants)
-                    plantsAsync.when(
-                      data: (plants) => plants.isEmpty
-                          ? _buildEmptyDashboard(context, plants)
-                          : _buildActivePlantsDashboard(context, plants),
-                      loading: () => const Center(
-                        child: CircularProgressIndicator(
-                          color: Color(0xFF2F7D4A),
-                        ),
+                  plantsAsync.when(
+                    data: (plants) => plants.isEmpty
+                        ? _buildEmptyDashboard(context, ref)
+                        : _buildActivePlantsDashboard(context, plants, ref),
+                    loading: () => const Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF2F7D4A),
                       ),
-                      error: (error, stackTrace) => Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text('Data tanaman belum dapat dimuat.'),
-                            TextButton(
-                              onPressed: () => ref
-                                  .read(plantProvider.notifier)
-                                  .refreshPlants(),
-                              child: const Text('Coba Lagi'),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  else
-                    _buildEmptyDashboard(
-                      context,
-                      plantsAsync.value ?? const [],
                     ),
+                    error: (error, stackTrace) => Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('Data tanaman belum dapat dimuat.'),
+                          TextButton(
+                            onPressed: () => ref
+                                .read(plantProvider.notifier)
+                                .refreshPlants(),
+                            child: const Text('Coba Lagi'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -274,7 +212,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     );
   }
 
-  Widget _buildGreetingHeader() {
+  Widget _buildGreetingHeader({required bool hasPlants}) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -317,7 +255,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
               ),
               const SizedBox(height: 6),
               Text(
-                _hasPlants
+                hasPlants
                     ? 'Pantau kesehatan tanamanmu & ikuti panduan perawatan harian.'
                     : 'Mulai petualangan berkebunmu dengan menambah tanaman pertamamu.',
                 style: TextStyle(
@@ -334,7 +272,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
   }
 
   // --- KONDISI 1: BELUM MEMILIKI TANAMAN (EMPTY STATE) ---
-  Widget _buildEmptyDashboard(BuildContext context, List<Plant> plants) {
+  Widget _buildEmptyDashboard(BuildContext context, WidgetRef ref) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
@@ -381,8 +319,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
           ),
           const SizedBox(height: 20),
           ElevatedButton.icon(
-            onPressed: () =>
-                context.pushNamed('add-plant', extra: _nextPlantId(plants)),
+            onPressed: () => _openAddPlant(context, ref),
             style: ElevatedButton.styleFrom(
               backgroundColor: primaryGreen,
               foregroundColor: Colors.white,
@@ -404,7 +341,11 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
   }
 
   // --- KONDISI 2: SUDAH MEMILIKI TANAMAN (ACTIVE STATE) ---
-  Widget _buildActivePlantsDashboard(BuildContext context, List<Plant> plants) {
+  Widget _buildActivePlantsDashboard(
+    BuildContext context,
+    List<Plant> plants,
+    WidgetRef ref,
+  ) {
     final healthyCount = plants
         .where((plant) => plant.status.toLowerCase() == 'sehat')
         .length;
@@ -490,8 +431,11 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                       ),
                       onOpenHistory: () =>
                           _openPlantHistory(context, ref, plant.id),
-                      onOpenLatestHistory: () =>
-                          _openLatestHistoryDetail(context, plant.id),
+                      onOpenLatestHistory: () => _openLatestHistoryDetail(
+                        context,
+                        plant.id,
+                        plant.userId,
+                      ),
                       onInspect: () => _openInspection(context, plant),
                     ),
                   ),

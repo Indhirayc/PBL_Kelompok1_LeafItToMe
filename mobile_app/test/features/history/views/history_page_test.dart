@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_app/features/history/data/history_data.dart';
 import 'package:mobile_app/features/history/views/history_page.dart';
@@ -11,7 +12,15 @@ void main() {
   });
 
   testWidgets('menampilkan riwayat untuk tanaman yang dipilih', (tester) async {
-    await tester.pumpWidget(const MaterialApp(home: HistoryPage()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          persistedHistoryProvider('user-local').overrideWith((ref) async {}),
+        ],
+        child: const MaterialApp(home: HistoryPage()),
+      ),
+    );
+    await tester.pumpAndSettle();
 
     expect(find.text('Riwayat Pemeriksaan'), findsOneWidget);
     expect(find.text('Hasil pemeriksaan untuk tanaman ini.'), findsOneWidget);
@@ -23,8 +32,14 @@ void main() {
 
   testWidgets('menyaring riwayat sesuai tanaman yang dikirim', (tester) async {
     await tester.pumpWidget(
-      MaterialApp(home: HistoryPage(plant: HistoryData.plants[1])),
+      ProviderScope(
+        overrides: [
+          persistedHistoryProvider('user-local').overrideWith((ref) async {}),
+        ],
+        child: MaterialApp(home: HistoryPage(plant: HistoryData.plants[1])),
+      ),
     );
+    await tester.pumpAndSettle();
 
     expect(find.text('Tomat Kebun Belakang'), findsOneWidget);
     expect(find.text('Healthy'), findsOneWidget);

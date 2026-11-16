@@ -103,6 +103,14 @@ class _AddPlantPageState extends ConsumerState<AddPlantPage> {
 
     try {
       await ref.read(plantProvider.notifier).addPlant(newPlant);
+    } catch (error, stackTrace) {
+      debugPrint('Gagal menyimpan tanaman: $error\n$stackTrace');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tanaman gagal disimpan. Coba lagi.')),
+        );
+      }
+      return;
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);

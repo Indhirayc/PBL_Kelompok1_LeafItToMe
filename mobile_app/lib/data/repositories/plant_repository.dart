@@ -18,22 +18,67 @@ class PlantRepository {
     });
   }
 
-  Future<Plant?> getById(String id) async {
+  Future<void> claimLegacyPlants(String userId) async {
+    if (userId == 'user-local') return;
+
+    final db = await _database.database;
+    await db.transaction((transaction) async {
+      final claim = await transaction.query(
+        'app_meta',
+        columns: ['value'],
+        where: 'key = ?',
+        whereArgs: ['legacy_plants_claimed'],
+        limit: 1,
+      );
+      if (claim.isNotEmpty) return;
+
+      final now = _utcNow();
+      await transaction.update(
+        'plants',
+        {'user_id': userId, 'updated_at': now},
+        where: 'user_id = ?',
+        whereArgs: ['user-local'],
+      );
+      await transaction.insert('app_meta', {
+        'key': 'legacy_plants_claimed',
+        'value': userId,
+        'updated_at': now,
+      });
+    });
+  }
+
+  Future<String> nextPlantId() async {
+    final db = await _database.database;
+    final rows = await db.query('plants', columns: ['id']);
+    var maxNumber = 0;
+    for (final row in rows) {
+      final match = RegExp(r'^TMT-(\d+)$').firstMatch(row['id']! as String);
+      final number = int.tryParse(match?.group(1) ?? '');
+      if (number != null && number > maxNumber) {
+        maxNumber = number;
+      }
+    }
+
+    return 'TMT-${(maxNumber + 1).toString().padLeft(3, '0')}';
+  }
+
+  Future<Plant?> getById(String id, {String userId = 'user-local'}) async {
     final db = await _database.database;
     final rows = await db.query(
       'plants',
-      where: 'id = ? AND deleted_at IS NULL',
-      whereArgs: [id],
+      where: 'id = ? AND user_id = ? AND deleted_at IS NULL',
+      whereArgs: [id, userId],
       limit: 1,
     );
     return rows.isEmpty ? null : _fromDatabaseMap(rows.single);
   }
 
-  Future<List<Plant>> getAll() async {
+  Future<List<Plant>> getAll({String userId = 'user-local'}) async {
     final db = await _database.database;
     final rows = await db.query(
       'plants',
-      where: 'deleted_at IS NULL',
+      where: 'user_id = ? AND deleted_at IS NULL',
+      whereArgs: [userId],
       orderBy: 'created_at DESC',
     );
     return rows.map(_fromDatabaseMap).toList();
@@ -44,25 +89,26 @@ class PlantRepository {
     return db.update(
       'plants',
       {..._toDatabaseMap(plant), 'updated_at': _utcNow()},
-      where: 'id = ? AND deleted_at IS NULL',
-      whereArgs: [plant.id],
+      where: 'id = ? AND user_id = ? AND deleted_at IS NULL',
+      whereArgs: [plant.id, plant.userId],
     );
   }
 
-  Future<int> softDelete(String id) async {
+  Future<int> softDelete(String id, {String userId = 'user-local'}) async {
     final db = await _database.database;
     final now = _utcNow();
     return db.update(
       'plants',
       {'deleted_at': now, 'updated_at': now},
-      where: 'id = ? AND deleted_at IS NULL',
-      whereArgs: [id],
+      where: 'id = ? AND user_id = ? AND deleted_at IS NULL',
+      whereArgs: [id, userId],
     );
   }
 }
 
 Map<String, Object?> _toDatabaseMap(Plant plant) => {
   'id': plant.id,
+  'user_id': plant.userId,
   'name': plant.name,
   'location': plant.location,
   'planted_at': _parseDate(plant.plantedDate).toIso8601String(),
@@ -74,6 +120,7 @@ Map<String, Object?> _toDatabaseMap(Plant plant) => {
 
 Plant _fromDatabaseMap(Map<String, Object?> map) => Plant(
   id: map['id']! as String,
+  userId: map['user_id'] as String? ?? 'user-local',
   name: map['name']! as String,
   location: map['location']! as String,
   plantedDate: _formatDate(DateTime.parse(map['planted_at']! as String)),

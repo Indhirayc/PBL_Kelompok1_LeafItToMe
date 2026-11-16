@@ -1,14 +1,60 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../../app/theme/app_breakpoints.dart';
+import '../../../../core/providers/database_providers.dart';
+import '../../../../core/utils/disease_label_mapper.dart';
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../data/repositories/user_repository.dart';
 import '../widgets/profile_menu_tile.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
+
+FirebaseApp? _defaultFirebaseApp() {
+  for (final app in Firebase.apps) {
+    if (app.name == '[DEFAULT]') {
+      return app;
+    }
+  }
+  return null;
+}
+
+FirebaseAuth? _firebaseAuth() {
+  final app = _defaultFirebaseApp();
+  return app == null ? null : FirebaseAuth.instanceFor(app: app);
+}
+
+class PlantActivityStats {
+  const PlantActivityStats({
+    required this.totalScans,
+    required this.diseasedScans,
+    required this.healthyScans,
+  });
+
+  final int totalScans;
+  final int diseasedScans;
+  final int healthyScans;
+}
+
+final plantActivityStatsProvider =
+    FutureProvider.autoDispose<PlantActivityStats>((ref) async {
+      final userId = ref.watch(currentUserIdProvider);
+      final scans = await ref
+          .read(scanRepositoryProvider)
+          .getUserHistory(userId);
+      final healthyScans = scans
+          .where((scan) => DiseaseLabelMapper.isHealthy(scan.diseaseName))
+          .length;
+
+      return PlantActivityStats(
+        totalScans: scans.length,
+        diseasedScans: scans.length - healthyScans,
+        healthyScans: healthyScans,
+      );
+    });
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -145,11 +191,13 @@ class ProfilePage extends StatelessWidget {
   }
 
   Widget _buildProfileCard(BuildContext context) {
+    final auth = _firebaseAuth();
     return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.userChanges(),
+      stream: auth?.userChanges() ?? const Stream<User?>.empty(),
       builder: (context, snapshot) {
-        final user = snapshot.data ?? FirebaseAuth.instance.currentUser;
-        final displayName = (user?.displayName != null && user!.displayName!.trim().isNotEmpty)
+        final user = snapshot.data ?? auth?.currentUser;
+        final displayName =
+            (user?.displayName != null && user!.displayName!.trim().isNotEmpty)
             ? user.displayName!.trim()
             : (user?.email?.split('@').first ?? 'Pengguna');
         final email = user?.email ?? 'Email tidak tersedia';
@@ -217,7 +265,10 @@ class ProfilePage extends StatelessWidget {
                       email,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: secondaryText, fontSize: 12),
+                      style: const TextStyle(
+                        color: secondaryText,
+                        fontSize: 12,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     SizedBox(
@@ -398,36 +449,73 @@ class _ActivitySection extends StatelessWidget {
   }
 }
 
-class _ActivityCard extends StatelessWidget {
+class _ActivityCard extends ConsumerWidget {
   const _ActivityCard();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final statsAsync = ref.watch(plantActivityStatsProvider);
+    return statsAsync.when(
+      data: (stats) => _buildItems(
+        totalScans: '${stats.totalScans}',
+        diseasedScans: '${stats.diseasedScans}',
+        healthyScans: '${stats.healthyScans}',
+      ),
+      loading: () => _buildItems(
+        totalScans: '...',
+        diseasedScans: '...',
+        healthyScans: '...',
+      ),
+      error: (error, stackTrace) => Column(
+        children: [
+          _buildItems(totalScans: '-', diseasedScans: '-', healthyScans: '-'),
+          const Padding(
+            padding: EdgeInsets.only(top: 8),
+            child: Text(
+              'Statistik aktivitas belum dapat dimuat.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: ProfilePage.secondaryText, fontSize: 12),
+            ),
+          ),
+          TextButton(
+            onPressed: () => ref.invalidate(plantActivityStatsProvider),
+            child: const Text('Coba Lagi'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildItems({
+    required String totalScans,
+    required String diseasedScans,
+    required String healthyScans,
+  }) {
     return SizedBox(
       width: double.infinity,
-      child: const Row(
+      child: Row(
         children: [
           Expanded(
             child: _ActivityItem(
-              value: '2',
+              value: totalScans,
               label: 'Pemindaian',
-              color: Color(0xFF2F7D4A),
+              color: const Color(0xFF2F7D4A),
             ),
           ),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           Expanded(
             child: _ActivityItem(
-              value: '1',
+              value: diseasedScans,
               label: 'Penyakit',
-              color: Color(0xFFED6C02),
+              color: const Color(0xFFED6C02),
             ),
           ),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           Expanded(
             child: _ActivityItem(
-              value: '1',
+              value: healthyScans,
               label: 'Sehat',
-              color: Color(0xFF2E7D32),
+              color: const Color(0xFF2E7D32),
             ),
           ),
         ],

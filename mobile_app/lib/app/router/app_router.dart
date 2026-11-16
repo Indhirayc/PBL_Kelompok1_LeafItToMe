@@ -28,6 +28,8 @@ import '../../features/plants/views/history_detail_page.dart';
 import '../../features/sync/views/sync_process_page.dart';
 import '../../features/sync/views/sync_result_page.dart';
 import '../../features/sync/views/sync_status_page.dart';
+import '../../features/sync/data/sync_data.dart';
+import '../../core/sync/sync_manager.dart';
 
 abstract final class AppRouter {
   static final GoRouter router = GoRouter(
@@ -148,7 +150,7 @@ abstract final class AppRouter {
 
           return selectedPlant is history_data.HistoryPlant
               ? HistoryPage(plant: selectedPlant)
-              : HistoryPage(plant: history_data.HistoryData.plants.first);
+              : const HistoryPage();
         },
       ),
 
@@ -161,6 +163,7 @@ abstract final class AppRouter {
           if (record is history_data.HistoryRecord) {
             final selectedPlant = history_data.HistoryData.plantById(
               record.plantId,
+              userId: record.userId,
             );
 
             return HistoryDetailPage(
@@ -172,6 +175,7 @@ abstract final class AppRouter {
                 date: history_data.formatHistoryDate(record.date),
                 accuracy: '${record.accuracy}%',
                 note: record.note,
+                userId: record.userId,
               ),
             );
           }
@@ -206,7 +210,8 @@ abstract final class AppRouter {
             final matchingRecord = history_data.HistoryData.records.where(
               (historyRecord) =>
                   historyRecord.plantId == record.plantId &&
-                  historyRecord.diseaseName == record.disease,
+                  historyRecord.diseaseName == record.disease &&
+                  historyRecord.userId == record.userId,
             );
             final DateTime inspectionDate = matchingRecord.isNotEmpty
                 ? matchingRecord.first.date
@@ -226,6 +231,7 @@ abstract final class AppRouter {
                     record.disease.toLowerCase() == 'sehat',
                 note: record.note,
                 plantName: record.plantName,
+                userId: record.userId,
               ),
             );
           }
@@ -362,26 +368,42 @@ abstract final class AppRouter {
         name: 'sync-process',
         builder: (context, state) {
           final extra = state.extra;
-          history_data.HistoryPlant plant =
-              history_data.HistoryData.plants.first;
+          history_data.HistoryPlant? plant;
+          var userId = 'user-local';
+          var items = const <SyncItem>[];
+          var isOffline = false;
           bool isFailure = false;
 
           if (extra is Map<String, dynamic>) {
             final plantData = extra['plant'];
+            final userIdData = extra['userId'];
+            final itemsData = extra['items'];
+            final offlineData = extra['isOffline'];
             final failureData = extra['isFailure'];
             if (plantData is history_data.HistoryPlant) {
               plant = plantData;
             }
+            if (userIdData is String) {
+              userId = userIdData;
+            }
+            if (itemsData is List<SyncItem>) {
+              items = itemsData;
+            }
+            if (offlineData is bool) {
+              isOffline = offlineData;
+            }
             if (failureData is bool) {
               isFailure = failureData;
             }
-          } else if (extra is history_data.HistoryPlant) {
-            plant = extra;
-          } else if (extra is bool) {
-            isFailure = extra;
           }
 
-          return SyncProcessPage(plant: plant, isFailure: isFailure);
+          return SyncProcessPage(
+            plant: plant,
+            userId: userId,
+            items: items,
+            isOffline: isOffline,
+            isFailure: isFailure,
+          );
         },
       ),
 
@@ -391,24 +413,34 @@ abstract final class AppRouter {
         builder: (context, state) {
           final extra = state.extra;
 
-          history_data.HistoryPlant selectedPlant =
-              history_data.HistoryData.plants.first;
-          bool isFailure = false;
+          history_data.HistoryPlant? selectedPlant;
+          var userId = 'user-local';
+          SyncBatchResult result = SyncBatchResult.failed(
+            const [],
+            StateError('Hasil sinkronisasi tidak tersedia.'),
+          );
 
           if (extra is Map<String, dynamic>) {
             final plantData = extra['plant'];
-            final failureData = extra['isFailure'];
+            final userIdData = extra['userId'];
+            final resultData = extra['result'];
 
             if (plantData is history_data.HistoryPlant) {
               selectedPlant = plantData;
             }
-
-            if (failureData is bool) {
-              isFailure = failureData;
+            if (userIdData is String) {
+              userId = userIdData;
+            }
+            if (resultData is SyncBatchResult) {
+              result = resultData;
             }
           }
 
-          return SyncResultPage(plant: selectedPlant, isFailure: isFailure);
+          return SyncResultPage(
+            plant: selectedPlant,
+            userId: userId,
+            result: result,
+          );
         },
       ),
     ],

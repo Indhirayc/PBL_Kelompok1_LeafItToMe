@@ -1,5 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/utils/disease_label_mapper.dart';
@@ -29,11 +27,13 @@ class HistoryPlant {
   final String id;
   final String name;
   final String location;
+  final String userId;
 
   const HistoryPlant({
     required this.id,
     required this.name,
     required this.location,
+    this.userId = 'user-local',
   });
 }
 
@@ -75,6 +75,7 @@ class HistoryRecord {
   final String? plantLocation;
   final String? photoAssetPath;
   final String? photoSource;
+  final String userId;
 
   const HistoryRecord({
     required this.id,
@@ -90,7 +91,27 @@ class HistoryRecord {
     this.plantLocation,
     this.photoAssetPath,
     this.photoSource,
+    this.userId = 'user-local',
   });
+
+  HistoryRecord copyWith({bool? isSynced}) {
+    return HistoryRecord(
+      id: id,
+      plantId: plantId,
+      diseaseName: diseaseName,
+      latinName: latinName,
+      date: date,
+      accuracy: accuracy,
+      isHealthy: isHealthy,
+      note: note,
+      isSynced: isSynced ?? this.isSynced,
+      plantName: plantName,
+      plantLocation: plantLocation,
+      photoAssetPath: photoAssetPath,
+      photoSource: photoSource,
+      userId: userId,
+    );
+  }
 }
 
 abstract final class HistoryData {
@@ -282,9 +303,9 @@ abstract final class HistoryData {
     return documentId == null ? null : _diseasesById[documentId];
   }
 
-  static HistoryPlant? plantById(String id) {
+  static HistoryPlant? plantById(String id, {String userId = 'user-local'}) {
     for (final plant in plants) {
-      if (plant.id == id) {
+      if (plant.id == id && plant.userId == userId) {
         return plant;
       }
     }
@@ -292,15 +313,26 @@ abstract final class HistoryData {
     return null;
   }
 
-  static Future<void> loadPersistedPlants({PlantRepository? repository}) async {
-    final persistedPlants = await (repository ?? PlantRepository()).getAll();
+  static List<HistoryPlant> plantsForUser(String userId) =>
+      plants.where((plant) => plant.userId == userId).toList();
+
+  static Future<void> loadPersistedPlants({
+    PlantRepository? repository,
+    String userId = 'user-local',
+  }) async {
+    final persistedPlants = await (repository ?? PlantRepository()).getAll(
+      userId: userId,
+    );
     for (final plant in persistedPlants) {
       final historyPlant = HistoryPlant(
         id: plant.id,
         name: plant.name,
         location: plant.location,
+        userId: plant.userId,
       );
-      final index = plants.indexWhere((item) => item.id == plant.id);
+      final index = plants.indexWhere(
+        (item) => item.id == plant.id && item.userId == plant.userId,
+      );
       if (index == -1) {
         plants.add(historyPlant);
       } else {
@@ -309,9 +341,12 @@ abstract final class HistoryData {
     }
   }
 
-  static List<HistoryRecord> recordsByPlantId(String plantId) {
+  static List<HistoryRecord> recordsByPlantId(
+    String plantId, {
+    String userId = 'user-local',
+  }) {
     final recordsForPlant = records
-        .where((record) => record.plantId == plantId)
+        .where((record) => record.plantId == plantId && record.userId == userId)
         .toList();
 
     recordsForPlant.sort((first, second) => second.date.compareTo(first.date));
@@ -319,32 +354,45 @@ abstract final class HistoryData {
     return recordsForPlant;
   }
 
+  static void markScansSynced({
+    required String userId,
+    required Iterable<String> scanIds,
+  }) {
+    final syncedIds = scanIds.toSet();
+    for (var index = 0; index < records.length; index++) {
+      final record = records[index];
+      if (record.userId == userId && syncedIds.contains(record.id)) {
+        records[index] = record.copyWith(isSynced: true);
+      }
+    }
+  }
+
   /// Memuat riwayat yang tersimpan di SQLite (milik user yang sedang login)
   /// lalu menggabungkannya ke [records] berdasarkan ID.
   /// Data contoh di atas tetap dipakai bila database kosong/gagal dimuat.
-  static bool _persistedLoaded = false;
+  static final Set<String> _persistedLoadedUserIds = {};
 
-  static Future<void> loadPersistedRecords() async {
-    if (_persistedLoaded) return;
+  static Future<void> loadPersistedRecords({
+    String userId = 'user-local',
+  }) async {
+    if (_persistedLoadedUserIds.contains(userId)) return;
     try {
-      await loadPersistedPlants();
-      if (Firebase.apps.isEmpty) {
-        _persistedLoaded = true;
-        return;
-      }
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        _persistedLoaded = true;
+      await loadPersistedPlants(userId: userId);
+      if (userId == 'user-local') {
+        _persistedLoadedUserIds.add(userId);
         return;
       }
 
-      final scans = await ScanRepository().getUserHistory(user.uid);
-      final existingIds = records.map((record) => record.id).toSet();
+      final scans = await ScanRepository().getUserHistory(userId);
+      final existingIds = records
+          .where((record) => record.userId == userId)
+          .map((record) => record.id)
+          .toSet();
       for (final scan in scans) {
         if (existingIds.contains(scan.id)) continue;
         records.add(recordFromScan(scan));
       }
-      _persistedLoaded = true;
+      _persistedLoadedUserIds.add(userId);
     } catch (e) {
       debugPrint('Gagal memuat riwayat tersimpan: $e');
     }
@@ -354,9 +402,7 @@ abstract final class HistoryData {
     final disease = byDisease(scan.diseaseName);
     return HistoryRecord(
       id: scan.id,
-      plantId: (scan.plantId == null || scan.plantId!.isEmpty)
-          ? plants.first.id
-          : scan.plantId!,
+      plantId: scan.plantId ?? '',
       diseaseName: DiseaseLabelMapper.canonicalName(scan.diseaseName),
       latinName: disease?.latinName ?? '',
       date: scan.scannedAt,
@@ -366,6 +412,7 @@ abstract final class HistoryData {
       isSynced: scan.isSynced,
       plantName: scan.plantName,
       plantLocation: scan.plantLocation,
+      userId: scan.userId,
       photoAssetPath: scan.localImagePath,
     );
   }

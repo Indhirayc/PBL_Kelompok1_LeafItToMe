@@ -12,18 +12,22 @@ import '../../../../core/widgets/main_bottom_navigation.dart';
 class PlantListPage extends ConsumerWidget {
   const PlantListPage({super.key});
 
-  String _generateNextPlantId(List<Plant> plants) {
-    int maxNum = 0;
-    for (final plant in plants) {
-      final parts = plant.id.split('-');
-      if (parts.length > 1) {
-        final num = int.tryParse(parts[1]);
-        if (num != null && num > maxNum) {
-          maxNum = num;
-        }
+  Future<void> _openAddPlant(BuildContext context, WidgetRef ref) async {
+    try {
+      final nextId = await ref.read(plantProvider.notifier).nextPlantId();
+      if (context.mounted) {
+        context.pushNamed('add-plant', extra: nextId);
+      }
+    } catch (error, stackTrace) {
+      debugPrint('Gagal menyiapkan ID tanaman: $error\n$stackTrace');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Form tambah tanaman belum dapat dibuka.'),
+          ),
+        );
       }
     }
-    return "TMT-${(maxNum + 1).toString().padLeft(3, '0')}";
   }
 
   Widget _buildStatItem(String count, String label, Color countColor) {
@@ -141,7 +145,6 @@ class PlantListPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final plantsAsync = ref.watch(plantProvider);
-    final plants = plantsAsync.value ?? const <Plant>[];
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9FBF9),
@@ -201,10 +204,7 @@ class PlantListPage extends ConsumerWidget {
                             ),
                           ),
                           onPressed: plantsAsync.hasValue
-                              ? () => context.pushNamed(
-                                  'add-plant',
-                                  extra: _generateNextPlantId(plants),
-                                )
+                              ? () => _openAddPlant(context, ref)
                               : null,
                           icon: const Icon(Icons.add, size: 14),
                           label: const Text(

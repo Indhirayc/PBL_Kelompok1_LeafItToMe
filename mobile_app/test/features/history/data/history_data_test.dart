@@ -47,6 +47,105 @@ void main() {
     expect(HistoryData.recordFromScan(scan(1.2)).accuracy, 100);
   });
 
+  test('history records are filtered by account', () {
+    final firstAccount = HistoryRecord(
+      id: 'account-1-scan',
+      plantId: 'shared-test-plant',
+      diseaseName: 'Healthy',
+      latinName: '',
+      date: DateTime.utc(2026, 10, 23),
+      accuracy: 95,
+      isHealthy: true,
+      note: '',
+      userId: 'account-1',
+    );
+    final secondAccount = HistoryRecord(
+      id: 'account-2-scan',
+      plantId: 'shared-test-plant',
+      diseaseName: 'Late Blight',
+      latinName: '',
+      date: DateTime.utc(2026, 10, 24),
+      accuracy: 90,
+      isHealthy: false,
+      note: '',
+      userId: 'account-2',
+    );
+    HistoryData.records.addAll([firstAccount, secondAccount]);
+    addTearDown(
+      () => HistoryData.records.removeWhere(
+        (record) =>
+            record.id == firstAccount.id || record.id == secondAccount.id,
+      ),
+    );
+
+    expect(
+      HistoryData.recordsByPlantId(
+        'shared-test-plant',
+        userId: 'account-1',
+      ).map((record) => record.id),
+      [firstAccount.id],
+    );
+    expect(
+      HistoryData.recordsByPlantId(
+        'shared-test-plant',
+        userId: 'account-2',
+      ).map((record) => record.id),
+      [secondAccount.id],
+    );
+  });
+
+  test('sync status updates only records owned by the matching account', () {
+    final firstAccount = HistoryRecord(
+      id: 'sync-account-1',
+      plantId: 'plant-1',
+      diseaseName: 'Late Blight',
+      latinName: '',
+      date: DateTime.utc(2026, 10, 23),
+      accuracy: 90,
+      isHealthy: false,
+      note: '',
+      isSynced: false,
+      userId: 'account-1',
+    );
+    final secondAccount = HistoryRecord(
+      id: 'sync-account-2',
+      plantId: 'plant-2',
+      diseaseName: 'Late Blight',
+      latinName: '',
+      date: DateTime.utc(2026, 10, 23),
+      accuracy: 90,
+      isHealthy: false,
+      note: '',
+      isSynced: false,
+      userId: 'account-2',
+    );
+    HistoryData.records.addAll([firstAccount, secondAccount]);
+    addTearDown(
+      () => HistoryData.records.removeWhere(
+        (record) =>
+            record.id == firstAccount.id || record.id == secondAccount.id,
+      ),
+    );
+
+    HistoryData.markScansSynced(
+      userId: 'account-1',
+      scanIds: [firstAccount.id, secondAccount.id],
+    );
+
+    expect(
+      HistoryData.records
+          .singleWhere((record) => record.id == firstAccount.id)
+          .isSynced,
+      isTrue,
+    );
+    expect(
+      HistoryData.records
+          .singleWhere((record) => record.id == secondAccount.id)
+          .isSynced,
+      isFalse,
+    );
+  });
+
   test('plantById resolves plants loaded from SQLite', () async {
     const plant = Plant(
       id: 'history-dynamic-plant',

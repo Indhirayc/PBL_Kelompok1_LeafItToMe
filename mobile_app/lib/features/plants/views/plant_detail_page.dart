@@ -277,6 +277,7 @@ class PlantDetailPage extends ConsumerWidget {
         date: history.date,
         accuracy: history.accuracy,
         note: history.note,
+        userId: plant.userId,
       ),
     );
   }
@@ -288,6 +289,7 @@ class PlantDetailPage extends ConsumerWidget {
         id: plant.id,
         name: plant.name,
         location: plant.location,
+        userId: plant.userId,
       ),
     );
   }

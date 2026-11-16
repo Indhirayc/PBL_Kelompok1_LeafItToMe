@@ -29,26 +29,3 @@ class SyncItem {
     required this.date,
   });
 }
-
-abstract final class SyncData {
-  static final List<SyncItem> items = [
-    SyncItem(
-      id: 'S-001',
-      plantName: 'Tomat Pot Depan',
-      diseaseName: 'Bacterial Spot',
-      date: DateTime(2026, 9, 18),
-    ),
-    SyncItem(
-      id: 'S-002',
-      plantName: 'Tomat Kebun Belakang',
-      diseaseName: 'Leaf Mold',
-      date: DateTime(2026, 9, 26),
-    ),
-    SyncItem(
-      id: 'S-003',
-      plantName: 'Tomat Kebun Belakang',
-      diseaseName: 'Late Blight',
-      date: DateTime(2026, 9, 12),
-    ),
-  ];
-}

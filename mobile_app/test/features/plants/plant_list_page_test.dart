@@ -35,13 +35,16 @@ class _FailingPlantNotifier extends PlantNotifier {
 
 class _MemoryPlantRepository extends PlantRepository {
   @override
-  Future<List<Plant>> getAll() async => const [];
+  Future<List<Plant>> getAll({String userId = 'user-local'}) async => const [];
+
+  @override
+  Future<String> nextPlantId() async => 'TMT-001';
 
   @override
   Future<void> create(Plant plant) async {}
 
   @override
-  Future<int> softDelete(String id) async => 1;
+  Future<int> softDelete(String id, {String userId = 'user-local'}) async => 1;
 }
 
 Plant _plant({String id = 'TMT-010', String name = 'Tomat Uji'}) {

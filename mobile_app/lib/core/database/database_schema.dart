@@ -1,4 +1,4 @@
-/// Cetak biru (DDL) database SQLite LeafItToMe — versi 5.
+/// Cetak biru (DDL) database SQLite LeafItToMe — versi 6.
 ///
 /// Menyajikan skema tabel database offline-first aplikasi (`sqflite`):
 /// 8 tabel ternormalisasi: `plants`, `scans`, `diseases`, `guides`, `tools`,
@@ -7,7 +7,7 @@
 /// Skema ini adalah Single Source of Truth yang dieksekusi oleh `AppDatabase`.
 library;
 
-const int kLeafItToMeDatabaseVersion = 5;
+const int kLeafItToMeDatabaseVersion = 6;
 
 /// Daftar nama tabel yang dikelola oleh database aplikasi.
 const List<String> kLeafItToMeTables = <String>[
@@ -26,6 +26,7 @@ const List<String> kLeafItToMeSchema = <String>[
   '''
   CREATE TABLE plants (
     id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL DEFAULT 'user-local',
     name TEXT NOT NULL,
     location TEXT NOT NULL,
     planted_at TEXT NOT NULL,
@@ -120,6 +121,7 @@ const List<String> kLeafItToMeSchema = <String>[
   'CREATE INDEX IF NOT EXISTS idx_scans_sync ON scans (sync_status)',
   'CREATE INDEX IF NOT EXISTS idx_plants_status ON plants (status)',
   'CREATE INDEX IF NOT EXISTS idx_plants_deleted ON plants (deleted_at)',
+  'CREATE INDEX IF NOT EXISTS idx_plants_user ON plants (user_id)',
 ];
 
 /// Referensi 5 kelas penyakit yang dipakai model ML & master data awal.

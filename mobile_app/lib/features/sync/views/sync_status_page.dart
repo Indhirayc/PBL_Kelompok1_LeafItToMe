@@ -1,24 +1,24 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
-import '../../../../data/datasources/local/app_database.dart';
+import '../../../../core/providers/database_providers.dart';
 import '../../history/data/history_data.dart';
 import '../../history/widgets/history_page_header.dart';
 import '../data/sync_data.dart';
 
-class SyncStatusPage extends StatefulWidget {
+class SyncStatusPage extends ConsumerStatefulWidget {
   const SyncStatusPage({super.key, this.plant});
 
   final HistoryPlant? plant;
 
   @override
-  State<SyncStatusPage> createState() => _SyncStatusPageState();
+  ConsumerState<SyncStatusPage> createState() => _SyncStatusPageState();
 }
 
-class _SyncStatusPageState extends State<SyncStatusPage> {
+class _SyncStatusPageState extends ConsumerState<SyncStatusPage> {
   static const Color _background = Color(0xFFF8FAF5);
   static const Color _darkGreen = Color(0xFF183E2D);
   static const Color _secondaryText = Color(0xFF75857B);
@@ -32,7 +32,10 @@ class _SyncStatusPageState extends State<SyncStatusPage> {
 
   bool _offlineMode = true;
   bool _simulateFailure = false;
-  List<SyncItem> _items = SyncData.items;
+  bool _isLoading = true;
+  String? _loadError;
+  String _userId = 'user-local';
+  List<SyncItem> _items = const [];
 
   @override
   void initState() {
@@ -42,24 +45,42 @@ class _SyncStatusPageState extends State<SyncStatusPage> {
 
   Future<void> _loadUnsyncedItems() async {
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        final unsynced = await AppDatabase.instance.getUnsyncedScans(user.uid);
-        if (unsynced.isNotEmpty && mounted) {
-          setState(() {
-            _items = unsynced.map((scan) {
-              return SyncItem(
-                id: scan.id,
-                plantName:
-                    scan.plantName ?? (widget.plant?.name ?? 'Tanaman Tomat'),
-                diseaseName: scan.diseaseName,
-                date: scan.scannedAt,
-              );
-            }).toList();
-          });
-        }
+      final userId = ref.read(currentUserIdProvider);
+      final unsynced = await ref
+          .read(scanRepositoryProvider)
+          .getUnsyncedScans(userId);
+      if (!mounted) return;
+
+      setState(() {
+        _userId = userId;
+        _items = unsynced.map((scan) {
+          final plant = scan.plantId == null
+              ? null
+              : HistoryData.plantById(scan.plantId!, userId: userId);
+          return SyncItem(
+            id: scan.id,
+            plantName:
+                scan.plantName ??
+                plant?.name ??
+                'Tanaman ${scan.plantId ?? ''}',
+            diseaseName: scan.diseaseName,
+            date: scan.scannedAt,
+          );
+        }).toList();
+        _loadError = null;
+        _isLoading = false;
+      });
+    } catch (error, stackTrace) {
+      debugPrint(
+        'Gagal memuat scan yang menunggu sinkronisasi: $error\n$stackTrace',
+      );
+      if (mounted) {
+        setState(() {
+          _loadError = 'Data sinkronisasi belum dapat dimuat.';
+          _isLoading = false;
+        });
       }
-    } catch (_) {}
+    }
   }
 
   @override
@@ -95,17 +116,21 @@ class _SyncStatusPageState extends State<SyncStatusPage> {
                       key: const Key('syncNowButton'),
                       icon: Icons.sync_rounded,
                       label: 'Sinkronkan Sekarang',
-                      onPressed: () {
-                        final targetPlant =
-                            widget.plant ?? HistoryData.plants.first;
-                        context.pushNamed(
-                          'sync-process',
-                          extra: <String, dynamic>{
-                            'plant': targetPlant,
-                            'isFailure': _simulateFailure,
-                          },
-                        );
-                      },
+                      onPressed:
+                          _isLoading || _loadError != null || items.isEmpty
+                          ? null
+                          : () {
+                              context.pushNamed(
+                                'sync-process',
+                                extra: <String, dynamic>{
+                                  'plant': widget.plant,
+                                  'userId': _userId,
+                                  'isOffline': _offlineMode,
+                                  'items': items,
+                                  'isFailure': _simulateFailure,
+                                },
+                              );
+                            },
                     ),
                   ],
                 ),
@@ -122,10 +147,11 @@ class _SyncStatusPageState extends State<SyncStatusPage> {
     final Color background = offline ? _offlineBg : _accentGreen;
     final Color iconBg = offline ? _offlineIconBg : _avatarGreen;
     final Color iconColor = offline ? _offlineRed : _primaryGreen;
-    final String title = offline ? 'Anda Sedang Offline' : 'Anda Sudah Online';
+    final String title = offline ? 'Mode Offline Aktif' : 'Mode Online Aktif';
     final String subtitle = offline
-        ? 'Data pemeriksaan akan disinkronkan saat kembali online.'
-        : 'Data pemeriksaan siap disinkronkan ke penyimpanan cloud.';
+        ? 'Pengiriman cloud dilewati. Data tetap tersimpan di perangkat.'
+        : 'Aplikasi akan mencoba mengirim ke cloud. Keberhasilan bergantung '
+              'pada koneksi dan izin akun.';
 
     return Container(
       width: double.infinity,
@@ -141,7 +167,7 @@ class _SyncStatusPageState extends State<SyncStatusPage> {
             height: 64,
             decoration: BoxDecoration(color: iconBg, shape: BoxShape.circle),
             child: Icon(
-              offline ? Icons.cloud_off_rounded : Icons.cloud_done_rounded,
+              offline ? Icons.cloud_off_rounded : Icons.cloud_upload_rounded,
               color: iconColor,
               size: 30,
             ),
@@ -238,10 +264,23 @@ class _SyncStatusPageState extends State<SyncStatusPage> {
             ],
           ),
           const SizedBox(height: 16),
-          for (int i = 0; i < items.length; i++) ...[
-            _buildPendingItem(items[i]),
-            if (i != items.length - 1) const SizedBox(height: 16),
-          ],
+          if (_isLoading)
+            const Center(child: CircularProgressIndicator())
+          else if (_loadError != null)
+            Text(
+              _loadError!,
+              style: const TextStyle(color: _offlineRed, fontSize: 13),
+            )
+          else if (items.isEmpty)
+            const Text(
+              'Tidak ada data yang menunggu sinkronisasi.',
+              style: TextStyle(color: _secondaryText, fontSize: 13),
+            )
+          else
+            for (int i = 0; i < items.length; i++) ...[
+              _buildPendingItem(items[i]),
+              if (i != items.length - 1) const SizedBox(height: 16),
+            ],
         ],
       ),
     );

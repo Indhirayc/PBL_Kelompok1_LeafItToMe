@@ -1,115 +1,92 @@
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../data/datasources/local/app_database.dart';
-import '../../../data/repositories/scan_repository.dart';
+import '../../../../core/providers/database_providers.dart';
+import '../../../../core/sync/sync_manager.dart';
 import '../../history/widgets/history_page_header.dart';
 import '../../history/data/history_data.dart';
 import '../data/sync_data.dart';
 
-class SyncProcessPage extends StatefulWidget {
+class SyncProcessPage extends ConsumerStatefulWidget {
   const SyncProcessPage({
     super.key,
     required this.plant,
+    required this.userId,
+    required this.items,
+    this.isOffline = false,
     this.isFailure = false,
   });
 
-  final HistoryPlant plant;
+  final HistoryPlant? plant;
+  final String userId;
+  final List<SyncItem> items;
+  final bool isOffline;
   final bool isFailure;
 
   @override
-  State<SyncProcessPage> createState() => _SyncProcessPageState();
+  ConsumerState<SyncProcessPage> createState() => _SyncProcessPageState();
 }
 
-class _SyncProcessPageState extends State<SyncProcessPage>
-    with SingleTickerProviderStateMixin {
+class _SyncProcessPageState extends ConsumerState<SyncProcessPage> {
   static const Color _background = Color(0xFFF8FAF5);
   static const Color _darkGreen = Color(0xFF183E2D);
   static const Color _secondaryText = Color(0xFF75857B);
   static const Color _border = Color(0xFFE3EAE4);
   static const Color _primaryGreen = Color(0xFF2F7D4A);
-  static const Color _track = Color(0xFFDFE7E0);
-
-  late final AnimationController _controller;
-  late bool _syncFailed;
-  List<SyncItem> _items = SyncData.items;
+  late final Future<SyncBatchResult> _syncFuture;
 
   @override
   void initState() {
     super.initState();
-    _syncFailed = widget.isFailure;
-    _loadUnsyncedItems();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 4),
-    );
-    _controller.addStatusListener(_onStatusChanged);
-    _controller.forward();
-    _triggerBackendSync();
+    _syncFuture = _syncPendingScans();
+    unawaited(_showResultWhenReady());
   }
 
-  Future<void> _loadUnsyncedItems() async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        final unsynced = await AppDatabase.instance.getUnsyncedScans(user.uid);
-        if (unsynced.isNotEmpty && mounted) {
-          setState(() {
-            _items = unsynced.map((scan) {
-              return SyncItem(
-                id: scan.id,
-                plantName: scan.plantName ?? widget.plant.name,
-                diseaseName: scan.diseaseName,
-                date: scan.scannedAt,
-              );
-            }).toList();
-          });
-        }
-      }
-    } catch (_) {}
-  }
-
-  /// Jalankan sync antrean offline (SQLite → Cloudinary/Firestore) saat
-  /// halaman proses dibuka.
-  void _triggerBackendSync() {
-    unawaited(() async {
-      try {
-        if (Firebase.apps.isEmpty) return;
-        final user = FirebaseAuth.instance.currentUser;
-        if (user == null) return;
-        await ScanRepository().triggerSync(user.uid);
-      } catch (e) {
-        debugPrint('Sync manual gagal: $e');
-        _syncFailed = true;
-      }
-    }());
-  }
-
-  void _onStatusChanged(AnimationStatus status) {
-    if (status == AnimationStatus.completed && mounted) {
-      context.pushReplacementNamed(
-        'sync-result',
-        extra: <String, dynamic>{
-          'plant': widget.plant,
-          'isFailure': _syncFailed,
-        },
+  Future<SyncBatchResult> _syncPendingScans() async {
+    final pendingIds = widget.items.map((item) => item.id);
+    if (widget.isFailure) {
+      return SyncBatchResult.failed(
+        pendingIds,
+        StateError('Sinkronisasi gagal sesuai simulasi.'),
       );
+    }
+    if (widget.isOffline) {
+      return SyncBatchResult.offline(pendingIds);
+    }
+
+    try {
+      return await ref.read(scanRepositoryProvider).triggerSync(widget.userId);
+    } catch (error, stackTrace) {
+      debugPrint('Sinkronisasi manual gagal: $error\n$stackTrace');
+      return SyncBatchResult.failed(pendingIds, error);
     }
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  Future<void> _showResultWhenReady() async {
+    final result = await _syncFuture;
+    await Future<void>.delayed(const Duration(milliseconds: 350));
+    HistoryData.markScansSynced(
+      userId: widget.userId,
+      scanIds: result.syncedIds,
+    );
+    if (!mounted) return;
+
+    context.pushReplacementNamed(
+      'sync-result',
+      extra: <String, dynamic>{
+        'plant': widget.plant,
+        'userId': widget.userId,
+        'result': result,
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final List<SyncItem> items = _items;
+    final items = widget.items;
 
     return Scaffold(
       backgroundColor: _background,
@@ -124,49 +101,40 @@ class _SyncProcessPageState extends State<SyncProcessPage>
               fallbackExtra: widget.plant,
             ),
             Expanded(
-              child: AnimatedBuilder(
-                animation: _controller,
-                builder: (context, child) {
-                  final double progress = _controller.value;
-                  final int percent = (progress * 100).round();
-                  final int index = (progress * items.length).floor().clamp(
-                    0,
-                    items.length - 1,
-                  );
-                  final SyncItem current = items[index];
-
-                  return Column(
-                    children: [
-                      const Spacer(flex: 2),
-                      _buildProgressRing(percent, progress),
-                      const SizedBox(height: 28),
-                      const Text(
-                        'Mengunggah data pemeriksaan...',
-                        style: TextStyle(
-                          color: _darkGreen,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Jangan tutup aplikasi selama proses berlangsung.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: _secondaryText,
-                          fontSize: 13,
-                          height: 1.4,
-                        ),
-                      ),
-                      const SizedBox(height: 28),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: _buildCurrentItemCard(current),
-                      ),
-                      const Spacer(flex: 3),
-                    ],
-                  );
-                },
+              child: Column(
+                children: [
+                  const Spacer(flex: 2),
+                  _buildProgressIndicator(),
+                  const SizedBox(height: 28),
+                  const Text(
+                    'Mengirim data ke penyimpanan cloud...',
+                    style: TextStyle(
+                      color: _darkGreen,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Menunggu konfirmasi. Hasil ditampilkan setelah '
+                    'penyimpanan merespons.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: _secondaryText,
+                      fontSize: 13,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  if (items.isEmpty)
+                    const Text('Tidak ada data yang menunggu sinkronisasi.')
+                  else
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: _buildCurrentItemCard(items.first),
+                    ),
+                  const Spacer(flex: 3),
+                ],
               ),
             ),
           ],
@@ -175,7 +143,7 @@ class _SyncProcessPageState extends State<SyncProcessPage>
     );
   }
 
-  Widget _buildProgressRing(int percent, double progress) {
+  Widget _buildProgressIndicator() {
     return SizedBox(
       width: 150,
       height: 150,
@@ -186,20 +154,10 @@ class _SyncProcessPageState extends State<SyncProcessPage>
             width: 150,
             height: 150,
             child: CircularProgressIndicator(
-              value: progress,
+              value: null,
               strokeWidth: 9,
-              backgroundColor: _track,
               strokeCap: StrokeCap.round,
               valueColor: const AlwaysStoppedAnimation<Color>(_primaryGreen),
-            ),
-          ),
-          Text(
-            '$percent%',
-            style: const TextStyle(
-              color: _darkGreen,
-              fontSize: 32,
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.5,
             ),
           ),
         ],

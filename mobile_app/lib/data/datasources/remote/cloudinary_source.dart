@@ -1,7 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
-class CloudinarySource {
+abstract interface class ScanImageUploader {
+  Future<Map<String, String>> uploadScanImage({
+    required String userId,
+    required String localPath,
+  });
+}
+
+class CloudinarySource implements ScanImageUploader {
   final Dio _dio = Dio();
 
   // Ganti dengan Cloud Name Anda atau ambil dari environment config
@@ -12,6 +19,7 @@ class CloudinarySource {
 
   /// Mengunggah file gambar lokal ke Cloudinary secara unsigned.
   /// Mengembalikan map berisi [secure_url] dan [public_id].
+  @override
   Future<Map<String, String>> uploadScanImage({
     required String userId,
     required String localPath,
