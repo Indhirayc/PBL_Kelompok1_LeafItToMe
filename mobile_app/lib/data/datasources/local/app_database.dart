@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
+import '../../../core/database/database_schema.dart';
+import '../../models/guide_content_model.dart';
 import '../../models/scan_record_model.dart';
 import 'sync_queue_dao.dart';
 
@@ -54,6 +56,7 @@ class AppDatabase {
 
   Future<void> _createDB(Database db, int version) async {
     await _createSchema(db);
+    await _seedGuides(db);
   }
 
   Future<void> _createSchema(DatabaseExecutor db) async {
@@ -105,6 +108,7 @@ class AppDatabase {
         description TEXT,
         content TEXT NOT NULL,
         category TEXT,
+        video_url TEXT,
         updated_at TEXT NOT NULL
       )
     ''');
@@ -192,6 +196,7 @@ class AppDatabase {
         }
       }
       await db.execute('DROP TABLE scan_history_legacy');
+      await _seedGuides(db);
       return;
     }
 
@@ -225,6 +230,51 @@ class AppDatabase {
         ['schema_version', '$_kSchemaVersion', _utcNow()],
       );
     }
+
+    // v4 -> v5: tambah video_url pada guides lalu seed video panduan.
+    if (!await _columnExists(db, 'guides', 'video_url')) {
+      await db.execute('ALTER TABLE guides ADD COLUMN video_url TEXT');
+    }
+    await _seedGuides(db);
+  }
+
+  Future<void> _seedGuides(DatabaseExecutor db) async {
+    for (final guide in kLeafItToMeSeedGuides) {
+      final guideId = guide['id_panduan'] as String;
+      final videoUrl = guide['video_url'] as String?;
+
+      await db.insert(
+        'guides',
+        {
+          'id': guideId,
+          'title': guide['judul'],
+          'description': guide['deskripsi'],
+          'content': guide['langkah_langkah'] ?? '',
+          'category': guide['kategori'],
+          'video_url': videoUrl,
+          'updated_at': guide['created_at'] ?? _utcNow(),
+        },
+        conflictAlgorithm: ConflictAlgorithm.ignore,
+      );
+
+      if (videoUrl != null) {
+        await db.update(
+          'guides',
+          {'video_url': videoUrl},
+          where: 'id = ? AND video_url IS NULL',
+          whereArgs: [guideId],
+        );
+      }
+    }
+  }
+
+  Future<bool> _columnExists(
+    DatabaseExecutor db,
+    String table,
+    String column,
+  ) async {
+    final rows = await db.rawQuery('PRAGMA table_info($table)');
+    return rows.any((row) => row['name'] == column);
   }
 
   Future<int> insertScan(
@@ -291,6 +341,12 @@ class AppDatabase {
     return result.map(ScanRecordModel.fromSqliteMap).toList();
   }
 
+  Future<List<GuideContentModel>> getGuideContents() async {
+    final db = await database;
+    final result = await db.query('guides', orderBy: 'id ASC');
+    return result.map(GuideContentModel.fromMap).toList();
+  }
+
   Future<int> deleteScan(String id) async {
     final db = await database;
     final deleted = await db.delete('scans', where: 'id = ?', whereArgs: [id]);
@@ -334,7 +390,8 @@ class AppDatabase {
 
 String _utcNow() => DateTime.now().toUtc().toIso8601String();
 
-/// Versi file database SQLite. Dinaikkan ke 4 agar perangkat yang masih
-/// menyimpan database lama (v1 `scan_history` atau v3 schema Indonesia)
-/// otomatis dimigrasikan, bukan melempar error downgrade.
-const int _kSchemaVersion = 4;
+/// Versi file database SQLite. Dinaikkan ke 5 agar perangkat yang masih
+/// menyimpan database lama (v1 `scan_history`, v3/v4 schema Indonesia, atau
+/// v4 schema Inggris tanpa `guides.video_url`) otomatis dimigrasikan, bukan
+/// melempar error downgrade.
+const int _kSchemaVersion = 5;
