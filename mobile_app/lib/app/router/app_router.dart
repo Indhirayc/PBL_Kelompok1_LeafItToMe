@@ -27,6 +27,7 @@ import '../../features/history/views/history_page.dart';
 import '../../features/plants/views/history_detail_page.dart';
 import '../../features/sync/views/sync_process_page.dart';
 import '../../features/sync/views/sync_result_page.dart';
+import '../../features/sync/views/sync_status_page.dart';
 
 abstract final class AppRouter {
   static final GoRouter router = GoRouter(
@@ -347,11 +348,39 @@ abstract final class AppRouter {
         builder: (context, state) {
           final selectedPlant = state.extra;
 
-          return SyncProcessPage(
+          return SyncStatusPage(
             plant: selectedPlant is history_data.HistoryPlant
                 ? selectedPlant
-                : history_data.HistoryData.plants.first,
+                : null,
           );
+        },
+      ),
+
+      GoRoute(
+        path: '/sync-process',
+        name: 'sync-process',
+        builder: (context, state) {
+          final extra = state.extra;
+          history_data.HistoryPlant plant =
+              history_data.HistoryData.plants.first;
+          bool isFailure = false;
+
+          if (extra is Map<String, dynamic>) {
+            final plantData = extra['plant'];
+            final failureData = extra['isFailure'];
+            if (plantData is history_data.HistoryPlant) {
+              plant = plantData;
+            }
+            if (failureData is bool) {
+              isFailure = failureData;
+            }
+          } else if (extra is history_data.HistoryPlant) {
+            plant = extra;
+          } else if (extra is bool) {
+            isFailure = extra;
+          }
+
+          return SyncProcessPage(plant: plant, isFailure: isFailure);
         },
       ),
 

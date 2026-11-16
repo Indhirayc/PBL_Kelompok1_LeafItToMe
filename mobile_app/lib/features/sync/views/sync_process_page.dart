@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../data/datasources/local/app_database.dart';
 import '../../../data/repositories/scan_repository.dart';
 import '../../history/widgets/history_page_header.dart';
 import '../../history/data/history_data.dart';
@@ -34,22 +35,46 @@ class _SyncProcessPageState extends State<SyncProcessPage>
   static const Color _track = Color(0xFFDFE7E0);
 
   late final AnimationController _controller;
+  late bool _syncFailed;
+  List<SyncItem> _items = SyncData.items;
 
   @override
   void initState() {
     super.initState();
+    _syncFailed = widget.isFailure;
+    _loadUnsyncedItems();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 6),
+      duration: const Duration(seconds: 4),
     );
     _controller.addStatusListener(_onStatusChanged);
     _controller.forward();
     _triggerBackendSync();
   }
 
+  Future<void> _loadUnsyncedItems() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final unsynced = await AppDatabase.instance.getUnsyncedScans(user.uid);
+        if (unsynced.isNotEmpty && mounted) {
+          setState(() {
+            _items = unsynced.map((scan) {
+              return SyncItem(
+                id: scan.id,
+                plantName: scan.plantName ?? widget.plant.name,
+                diseaseName: scan.diseaseName,
+                date: scan.scannedAt,
+              );
+            }).toList();
+          });
+        }
+      }
+    } catch (_) {}
+  }
+
   /// Jalankan sync antrean offline (SQLite → Cloudinary/Firestore) saat
-  /// halaman proses dibuka. Kegagalan tidak mengubah alur UI (tetap lanjut
-  /// ke halaman hasil).
+  /// halaman proses dibuka.
   void _triggerBackendSync() {
     unawaited(() async {
       try {
@@ -58,7 +83,8 @@ class _SyncProcessPageState extends State<SyncProcessPage>
         if (user == null) return;
         await ScanRepository().triggerSync(user.uid);
       } catch (e) {
-        debugPrint('Sync manual dilewati: $e');
+        debugPrint('Sync manual gagal: $e');
+        _syncFailed = true;
       }
     }());
   }
@@ -69,7 +95,7 @@ class _SyncProcessPageState extends State<SyncProcessPage>
         'sync-result',
         extra: <String, dynamic>{
           'plant': widget.plant,
-          'isFailure': widget.isFailure,
+          'isFailure': _syncFailed,
         },
       );
     }
@@ -83,7 +109,7 @@ class _SyncProcessPageState extends State<SyncProcessPage>
 
   @override
   Widget build(BuildContext context) {
-    final List<SyncItem> items = SyncData.items;
+    final List<SyncItem> items = _items;
 
     return Scaffold(
       backgroundColor: _background,

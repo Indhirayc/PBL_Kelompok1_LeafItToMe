@@ -1,13 +1,18 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../../../../data/datasources/local/app_database.dart';
+import '../../history/data/history_data.dart';
 import '../../history/widgets/history_page_header.dart';
 import '../data/sync_data.dart';
 
 class SyncStatusPage extends StatefulWidget {
-  const SyncStatusPage({super.key});
+  const SyncStatusPage({super.key, this.plant});
+
+  final HistoryPlant? plant;
 
   @override
   State<SyncStatusPage> createState() => _SyncStatusPageState();
@@ -27,10 +32,39 @@ class _SyncStatusPageState extends State<SyncStatusPage> {
 
   bool _offlineMode = true;
   bool _simulateFailure = false;
+  List<SyncItem> _items = SyncData.items;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUnsyncedItems();
+  }
+
+  Future<void> _loadUnsyncedItems() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final unsynced = await AppDatabase.instance.getUnsyncedScans(user.uid);
+        if (unsynced.isNotEmpty && mounted) {
+          setState(() {
+            _items = unsynced.map((scan) {
+              return SyncItem(
+                id: scan.id,
+                plantName:
+                    scan.plantName ?? (widget.plant?.name ?? 'Tanaman Tomat'),
+                diseaseName: scan.diseaseName,
+                date: scan.scannedAt,
+              );
+            }).toList();
+          });
+        }
+      }
+    } catch (_) {}
+  }
 
   @override
   Widget build(BuildContext context) {
-    final List<SyncItem> items = SyncData.items;
+    final List<SyncItem> items = _items;
 
     return Scaffold(
       backgroundColor: _background,
@@ -39,9 +73,11 @@ class _SyncStatusPageState extends State<SyncStatusPage> {
         child: AppContentLayout(
           child: Column(
             children: [
-              const HistoryPageHeader(
+              HistoryPageHeader(
                 title: 'Sinkronisasi Data',
                 subtitle: 'Kelola data pemeriksaan yang belum tersinkron.',
+                fallbackRoute: 'history',
+                fallbackExtra: widget.plant,
               ),
               Expanded(
                 child: ListView(
@@ -59,10 +95,17 @@ class _SyncStatusPageState extends State<SyncStatusPage> {
                       key: const Key('syncNowButton'),
                       icon: Icons.sync_rounded,
                       label: 'Sinkronkan Sekarang',
-                      onPressed: () => context.pushNamed(
-                        'sync-process',
-                        extra: _simulateFailure,
-                      ),
+                      onPressed: () {
+                        final targetPlant =
+                            widget.plant ?? HistoryData.plants.first;
+                        context.pushNamed(
+                          'sync-process',
+                          extra: <String, dynamic>{
+                            'plant': targetPlant,
+                            'isFailure': _simulateFailure,
+                          },
+                        );
+                      },
                     ),
                   ],
                 ),
