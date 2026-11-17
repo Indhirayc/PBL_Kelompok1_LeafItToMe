@@ -25,11 +25,7 @@ import '../../features/history/data/history_data.dart' as history_data;
 import '../../features/history/views/treatment_recommendation_page.dart';
 import '../../features/history/views/history_page.dart';
 import '../../features/plants/views/history_detail_page.dart';
-import '../../features/sync/views/sync_process_page.dart';
-import '../../features/sync/views/sync_result_page.dart';
 import '../../features/sync/views/sync_status_page.dart';
-import '../../features/sync/data/sync_data.dart';
-import '../../core/sync/sync_manager.dart';
 
 abstract final class AppRouter {
   static final GoRouter router = GoRouter(
@@ -359,87 +355,6 @@ abstract final class AppRouter {
             plant: selectedPlant is history_data.HistoryPlant
                 ? selectedPlant
                 : null,
-          );
-        },
-      ),
-
-      GoRoute(
-        path: '/sync-process',
-        name: 'sync-process',
-        builder: (context, state) {
-          final extra = state.extra;
-          history_data.HistoryPlant? plant;
-          var userId = 'user-local';
-          var items = const <SyncItem>[];
-          var isOffline = false;
-          bool isFailure = false;
-
-          if (extra is Map<String, dynamic>) {
-            final plantData = extra['plant'];
-            final userIdData = extra['userId'];
-            final itemsData = extra['items'];
-            final offlineData = extra['isOffline'];
-            final failureData = extra['isFailure'];
-            if (plantData is history_data.HistoryPlant) {
-              plant = plantData;
-            }
-            if (userIdData is String) {
-              userId = userIdData;
-            }
-            if (itemsData is List<SyncItem>) {
-              items = itemsData;
-            }
-            if (offlineData is bool) {
-              isOffline = offlineData;
-            }
-            if (failureData is bool) {
-              isFailure = failureData;
-            }
-          }
-
-          return SyncProcessPage(
-            plant: plant,
-            userId: userId,
-            items: items,
-            isOffline: isOffline,
-            isFailure: isFailure,
-          );
-        },
-      ),
-
-      GoRoute(
-        path: '/sync-result',
-        name: 'sync-result',
-        builder: (context, state) {
-          final extra = state.extra;
-
-          history_data.HistoryPlant? selectedPlant;
-          var userId = 'user-local';
-          SyncBatchResult result = SyncBatchResult.failed(
-            const [],
-            StateError('Hasil sinkronisasi tidak tersedia.'),
-          );
-
-          if (extra is Map<String, dynamic>) {
-            final plantData = extra['plant'];
-            final userIdData = extra['userId'];
-            final resultData = extra['result'];
-
-            if (plantData is history_data.HistoryPlant) {
-              selectedPlant = plantData;
-            }
-            if (userIdData is String) {
-              userId = userIdData;
-            }
-            if (resultData is SyncBatchResult) {
-              result = resultData;
-            }
-          }
-
-          return SyncResultPage(
-            plant: selectedPlant,
-            userId: userId,
-            result: result,
           );
         },
       ),
