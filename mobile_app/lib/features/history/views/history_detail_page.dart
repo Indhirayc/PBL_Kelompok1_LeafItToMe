@@ -24,7 +24,16 @@ class HistoryDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final HistoryPlant? plant = HistoryData.plantById(record.plantId);
+    final HistoryPlant? plant =
+        HistoryData.plantById(record.plantId, userId: record.userId) ??
+        (record.plantName != null || record.plantLocation != null
+            ? HistoryPlant(
+                id: record.plantId,
+                name: record.plantName ?? record.plantId,
+                location: record.plantLocation ?? '',
+                userId: record.userId,
+              )
+            : null);
     final HistoryDisease? disease = HistoryData.byDisease(record.diseaseName);
 
     return Scaffold(
@@ -38,7 +47,10 @@ class HistoryDetailPage extends StatelessWidget {
                 title: 'Detail Riwayat',
                 subtitle: 'Rincian hasil pemeriksaan tanaman.',
                 fallbackRoute: 'history',
-                fallbackExtra: HistoryData.plantById(record.plantId),
+                fallbackExtra: HistoryData.plantById(
+                  record.plantId,
+                  userId: record.userId,
+                ),
               ),
               Expanded(
                 child: ListView(

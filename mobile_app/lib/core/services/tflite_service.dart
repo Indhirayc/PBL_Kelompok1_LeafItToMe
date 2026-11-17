@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
 import 'package:tflite_flutter/tflite_flutter.dart';
 
+import '../utils/disease_label_mapper.dart';
+
 /// Menyimpan hasil prediksi model daun tomat.
 class PredictionResult {
   final String label;
@@ -24,18 +26,7 @@ class PredictionResult {
 
   /// Nama kelas untuk ditampilkan di UI.
   /// Label asli tetap dipertahankan untuk pencocokan data.
-  String get displayLabel {
-    const displayNames = <String, String>{
-      'Bacterial_spot': 'Bacterial Spot',
-      'Late_blight': 'Late Blight',
-      'Leaf_Mold': 'Leaf Mold',
-      'Tomato_Yellow_Leaf_Curl_Virus':
-          'Tomato Yellow Leaf Curl Virus',
-      'healthy': 'Sehat',
-    };
-
-    return displayNames[label] ?? label.replaceAll('_', ' ');
-  }
+  String get displayLabel => DiseaseLabelMapper.displayName(label);
 }
 
 /// Mode normalisasi input.

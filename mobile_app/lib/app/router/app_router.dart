@@ -25,8 +25,7 @@ import '../../features/history/data/history_data.dart' as history_data;
 import '../../features/history/views/treatment_recommendation_page.dart';
 import '../../features/history/views/history_page.dart';
 import '../../features/plants/views/history_detail_page.dart';
-import '../../features/sync/views/sync_process_page.dart';
-import '../../features/sync/views/sync_result_page.dart';
+import '../../features/sync/views/sync_status_page.dart';
 
 abstract final class AppRouter {
   static final GoRouter router = GoRouter(
@@ -147,7 +146,7 @@ abstract final class AppRouter {
 
           return selectedPlant is history_data.HistoryPlant
               ? HistoryPage(plant: selectedPlant)
-              : HistoryPage(plant: history_data.HistoryData.plants.first);
+              : const HistoryPage();
         },
       ),
 
@@ -160,16 +159,19 @@ abstract final class AppRouter {
           if (record is history_data.HistoryRecord) {
             final selectedPlant = history_data.HistoryData.plantById(
               record.plantId,
+              userId: record.userId,
             );
 
             return HistoryDetailPage(
               record: HistoryRecord(
                 plantId: record.plantId,
-                plantName: selectedPlant?.name ?? 'Tanaman Tomat',
+                plantName:
+                    selectedPlant?.name ?? record.plantName ?? 'Tanaman Tomat',
                 disease: record.diseaseName,
                 date: history_data.formatHistoryDate(record.date),
                 accuracy: '${record.accuracy}%',
                 note: record.note,
+                userId: record.userId,
               ),
             );
           }
@@ -204,7 +206,8 @@ abstract final class AppRouter {
             final matchingRecord = history_data.HistoryData.records.where(
               (historyRecord) =>
                   historyRecord.plantId == record.plantId &&
-                  historyRecord.diseaseName == record.disease,
+                  historyRecord.diseaseName == record.disease &&
+                  historyRecord.userId == record.userId,
             );
             final DateTime inspectionDate = matchingRecord.isNotEmpty
                 ? matchingRecord.first.date
@@ -224,6 +227,7 @@ abstract final class AppRouter {
                     record.disease.toLowerCase() == 'sehat',
                 note: record.note,
                 plantName: record.plantName,
+                userId: record.userId,
               ),
             );
           }
@@ -347,38 +351,11 @@ abstract final class AppRouter {
         builder: (context, state) {
           final selectedPlant = state.extra;
 
-          return SyncProcessPage(
+          return SyncStatusPage(
             plant: selectedPlant is history_data.HistoryPlant
                 ? selectedPlant
-                : history_data.HistoryData.plants.first,
+                : null,
           );
-        },
-      ),
-
-      GoRoute(
-        path: '/sync-result',
-        name: 'sync-result',
-        builder: (context, state) {
-          final extra = state.extra;
-
-          history_data.HistoryPlant selectedPlant =
-              history_data.HistoryData.plants.first;
-          bool isFailure = false;
-
-          if (extra is Map<String, dynamic>) {
-            final plantData = extra['plant'];
-            final failureData = extra['isFailure'];
-
-            if (plantData is history_data.HistoryPlant) {
-              selectedPlant = plantData;
-            }
-
-            if (failureData is bool) {
-              isFailure = failureData;
-            }
-          }
-
-          return SyncResultPage(plant: selectedPlant, isFailure: isFailure);
         },
       ),
     ],

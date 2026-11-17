@@ -70,7 +70,10 @@ class HistoryDiseaseDetailPage extends StatelessWidget {
                 title: 'Detail Penyakit',
                 subtitle: 'Gejala dan cara pencegahan.',
                 fallbackRoute: 'history',
-                fallbackExtra: HistoryData.plantById(record.plantId),
+                fallbackExtra: HistoryData.plantById(
+                  record.plantId,
+                  userId: record.userId,
+                ),
               ),
               Expanded(
                 child: ListView(

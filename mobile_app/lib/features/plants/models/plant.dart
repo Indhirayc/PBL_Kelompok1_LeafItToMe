@@ -7,6 +7,7 @@ class Plant {
     required this.lastInspectionDate,
     required this.status,
     this.note,
+    this.userId = 'user-local',
   });
 
   final String id;
@@ -16,6 +17,7 @@ class Plant {
   final String lastInspectionDate;
   final String status;
   final String? note;
+  final String userId;
 
   Plant copyWith({
     String? id,
@@ -25,6 +27,7 @@ class Plant {
     String? lastInspectionDate,
     String? status,
     String? note,
+    String? userId,
   }) {
     return Plant(
       id: id ?? this.id,
@@ -34,6 +37,7 @@ class Plant {
       lastInspectionDate: lastInspectionDate ?? this.lastInspectionDate,
       status: status ?? this.status,
       note: note ?? this.note,
+      userId: userId ?? this.userId,
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/utils/disease_label_mapper.dart';
 import '../../../../data/datasources/local/app_database.dart';
 import '../../../../data/datasources/remote/master_data_source.dart';
 
@@ -319,7 +320,7 @@ abstract final class GuideData {
   static DiseaseModel? _diseaseById(String? id) {
     if (id == null) return null;
     for (final disease in _bundledDiseases) {
-      if (disease.id == id) return disease;
+      if (DiseaseLabelMapper.matches(disease.id, id)) return disease;
     }
     return null;
   }
@@ -356,13 +357,21 @@ abstract final class GuideData {
   }
 
   static DiseaseModel? _diseaseFromMap(Map<String, dynamic> map) {
-    final name = map['name'];
-    if (name is! String || name.isEmpty) return null;
-    final bundled = _diseaseById(map['id']?.toString());
+    final rawName = map['name'];
+    if (rawName is! String || rawName.isEmpty) return null;
+    final rawId = map['id']?.toString();
+    final label =
+        DiseaseLabelMapper.resolve(rawId) ??
+        DiseaseLabelMapper.resolve(map['label_code']?.toString()) ??
+        DiseaseLabelMapper.resolve(rawName);
+    final bundled = _diseaseById(rawId ?? label?.documentId ?? rawName);
 
     return DiseaseModel(
-      id: map['id']?.toString() ?? name.toLowerCase().replaceAll(' ', '-'),
-      name: name,
+      id:
+          rawId ??
+          label?.documentId ??
+          rawName.toLowerCase().replaceAll(' ', '-'),
+      name: label?.canonicalName ?? rawName,
       latinName: map['latin_name']?.toString() ?? bundled?.latinName ?? '',
       category: map['category']?.toString() ?? bundled?.category ?? '',
       severity: map['severity']?.toString() ?? bundled?.severity ?? '',

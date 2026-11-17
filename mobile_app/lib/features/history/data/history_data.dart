@@ -1,8 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/utils/disease_label_mapper.dart';
 import '../../../../data/models/scan_record_model.dart';
+import '../../../../data/repositories/plant_repository.dart';
 import '../../../../data/repositories/scan_repository.dart';
 
 const List<String> _historyMonthNames = [
@@ -27,11 +27,13 @@ class HistoryPlant {
   final String id;
   final String name;
   final String location;
+  final String userId;
 
   const HistoryPlant({
     required this.id,
     required this.name,
     required this.location,
+    this.userId = 'user-local',
   });
 }
 
@@ -73,6 +75,7 @@ class HistoryRecord {
   final String? plantLocation;
   final String? photoAssetPath;
   final String? photoSource;
+  final String userId;
 
   const HistoryRecord({
     required this.id,
@@ -88,11 +91,31 @@ class HistoryRecord {
     this.plantLocation,
     this.photoAssetPath,
     this.photoSource,
+    this.userId = 'user-local',
   });
+
+  HistoryRecord copyWith({bool? isSynced}) {
+    return HistoryRecord(
+      id: id,
+      plantId: plantId,
+      diseaseName: diseaseName,
+      latinName: latinName,
+      date: date,
+      accuracy: accuracy,
+      isHealthy: isHealthy,
+      note: note,
+      isSynced: isSynced ?? this.isSynced,
+      plantName: plantName,
+      plantLocation: plantLocation,
+      photoAssetPath: photoAssetPath,
+      photoSource: photoSource,
+      userId: userId,
+    );
+  }
 }
 
 abstract final class HistoryData {
-  static const List<HistoryPlant> plants = [
+  static final List<HistoryPlant> plants = [
     HistoryPlant(
       id: 'TMT-001',
       name: 'Tomat Pot Depan',
@@ -260,72 +283,29 @@ abstract final class HistoryData {
     searchKeyword: 'fungisida tembaga busuk daun late blight',
   );
 
-  static const Map<String, HistoryDisease> _diseasesByName = {
-    'Bacterial Spot': bacterialSpot,
-    'Leaf Mold': leafMold,
-    'Late Blight': lateBlight,
+  static const Map<String, HistoryDisease> _diseasesById = {
+    'P001': bacterialSpot,
+    'P002': lateBlight,
+    'P003': leafMold,
   };
 
-  /// Menyamakan label model ML dengan nama di data riwayat.
-  static String normalizeDiseaseName(String value) {
-    return value
-        .toLowerCase()
-        .replaceAll('_', ' ')
-        .replaceAll('-', ' ')
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim();
-  }
+  static String normalizeDiseaseName(String value) =>
+      DiseaseLabelMapper.normalizeName(value);
 
   /// Nama penyakit yang digunakan untuk ditampilkan di UI.
-  static String displayDiseaseName(String? name) {
-    if (name == null || name.trim().isEmpty) {
-      return 'Penyakit tidak diketahui';
-    }
+  static String displayDiseaseName(String? name) =>
+      DiseaseLabelMapper.displayName(name);
 
-    switch (normalizeDiseaseName(name)) {
-      case 'bacterial spot':
-        return 'Bacterial Spot';
-      case 'late blight':
-        return 'Late Blight';
-      case 'leaf mold':
-        return 'Leaf Mold';
-      case 'tomato yellow leaf curl virus':
-        return 'Tomato Yellow Leaf Curl Virus';
-      case 'healthy':
-      case 'sehat':
-        return 'Sehat';
-      default:
-        return name
-            .replaceAll('_', ' ')
-            .replaceAll('-', ' ')
-            .trim();
-    }
-  }
-
-  static bool isHealthyName(String? name) {
-    if (name == null) return false;
-
-    final normalized = normalizeDiseaseName(name);
-    return normalized == 'healthy' || normalized == 'sehat';
-  }
+  static bool isHealthyName(String? name) => DiseaseLabelMapper.isHealthy(name);
 
   static HistoryDisease? byDisease(String? name) {
-    if (name == null) return null;
-
-    final normalized = normalizeDiseaseName(name);
-
-    for (final entry in _diseasesByName.entries) {
-      if (normalizeDiseaseName(entry.key) == normalized) {
-        return entry.value;
-      }
-    }
-
-    return null;
+    final documentId = DiseaseLabelMapper.documentId(name);
+    return documentId == null ? null : _diseasesById[documentId];
   }
 
-  static HistoryPlant? plantById(String id) {
+  static HistoryPlant? plantById(String id, {String userId = 'user-local'}) {
     for (final plant in plants) {
-      if (plant.id == id) {
+      if (plant.id == id && plant.userId == userId) {
         return plant;
       }
     }
@@ -333,9 +313,40 @@ abstract final class HistoryData {
     return null;
   }
 
-  static List<HistoryRecord> recordsByPlantId(String plantId) {
+  static List<HistoryPlant> plantsForUser(String userId) =>
+      plants.where((plant) => plant.userId == userId).toList();
+
+  static Future<void> loadPersistedPlants({
+    PlantRepository? repository,
+    String userId = 'user-local',
+  }) async {
+    final persistedPlants = await (repository ?? PlantRepository()).getAll(
+      userId: userId,
+    );
+    for (final plant in persistedPlants) {
+      final historyPlant = HistoryPlant(
+        id: plant.id,
+        name: plant.name,
+        location: plant.location,
+        userId: plant.userId,
+      );
+      final index = plants.indexWhere(
+        (item) => item.id == plant.id && item.userId == plant.userId,
+      );
+      if (index == -1) {
+        plants.add(historyPlant);
+      } else {
+        plants[index] = historyPlant;
+      }
+    }
+  }
+
+  static List<HistoryRecord> recordsByPlantId(
+    String plantId, {
+    String userId = 'user-local',
+  }) {
     final recordsForPlant = records
-        .where((record) => record.plantId == plantId)
+        .where((record) => record.plantId == plantId && record.userId == userId)
         .toList();
 
     recordsForPlant.sort((first, second) => second.date.compareTo(first.date));
@@ -343,47 +354,65 @@ abstract final class HistoryData {
     return recordsForPlant;
   }
 
+  static void markScansSynced({
+    required String userId,
+    required Iterable<String> scanIds,
+  }) {
+    final syncedIds = scanIds.toSet();
+    for (var index = 0; index < records.length; index++) {
+      final record = records[index];
+      if (record.userId == userId && syncedIds.contains(record.id)) {
+        records[index] = record.copyWith(isSynced: true);
+      }
+    }
+  }
+
   /// Memuat riwayat yang tersimpan di SQLite (milik user yang sedang login)
   /// lalu menggabungkannya ke [records] berdasarkan ID.
   /// Data contoh di atas tetap dipakai bila database kosong/gagal dimuat.
-  static bool _persistedLoaded = false;
+  static final Set<String> _persistedLoadedUserIds = {};
 
-  static Future<void> loadPersistedRecords() async {
-    if (_persistedLoaded) return;
-    _persistedLoaded = true;
+  static Future<void> loadPersistedRecords({
+    String userId = 'user-local',
+  }) async {
+    if (_persistedLoadedUserIds.contains(userId)) return;
     try {
-      if (Firebase.apps.isEmpty) return;
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
+      await loadPersistedPlants(userId: userId);
+      if (userId == 'user-local') {
+        _persistedLoadedUserIds.add(userId);
+        return;
+      }
 
-      final scans = await ScanRepository().getUserHistory(user.uid);
-      final existingIds = records.map((record) => record.id).toSet();
+      final scans = await ScanRepository().getUserHistory(userId);
+      final existingIds = records
+          .where((record) => record.userId == userId)
+          .map((record) => record.id)
+          .toSet();
       for (final scan in scans) {
         if (existingIds.contains(scan.id)) continue;
-        records.add(_recordFromScan(scan));
+        records.add(recordFromScan(scan));
       }
+      _persistedLoadedUserIds.add(userId);
     } catch (e) {
       debugPrint('Gagal memuat riwayat tersimpan: $e');
     }
   }
 
-  static HistoryRecord _recordFromScan(ScanRecordModel scan) {
+  static HistoryRecord recordFromScan(ScanRecordModel scan) {
     final disease = byDisease(scan.diseaseName);
     return HistoryRecord(
       id: scan.id,
-      plantId:
-          (scan.plantId == null || scan.plantId!.isEmpty)
-          ? plants.first.id
-          : scan.plantId!,
-      diseaseName: scan.diseaseName,
+      plantId: scan.plantId ?? '',
+      diseaseName: DiseaseLabelMapper.canonicalName(scan.diseaseName),
       latinName: disease?.latinName ?? '',
       date: scan.scannedAt,
-      accuracy: scan.confidence.round(),
+      accuracy: (scan.confidence * 100).round().clamp(0, 100).toInt(),
       isHealthy: isHealthyName(scan.diseaseName),
       note: scan.notes ?? '',
       isSynced: scan.isSynced,
       plantName: scan.plantName,
       plantLocation: scan.plantLocation,
+      userId: scan.userId,
       photoAssetPath: scan.localImagePath,
     );
   }

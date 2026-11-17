@@ -1,57 +1,71 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/providers/database_providers.dart';
+import '../../../../data/models/scan_record_model.dart';
 import '../models/plant.dart';
-
-const List<Plant> initialPlants = [
-  Plant(
-    id: 'TMT-001',
-    name: 'Tomat Pot Depan',
-    location: 'Teras depan',
-    plantedDate: '28 Sep 2026',
-    lastInspectionDate: '28 Sep 2026',
-    status: 'Sehat',
-  ),
-  Plant(
-    id: 'TMT-002',
-    name: 'Tomat Kebun Belakang',
-    location: 'Kebun belakang',
-    plantedDate: '25 Sep 2026',
-    lastInspectionDate: '25 Sep 2026',
-    status: 'Perlu perhatian',
-  ),
-];
 
 class PlantNotifier extends AsyncNotifier<List<Plant>> {
   @override
   Future<List<Plant>> build() async {
-    await Future<void>.delayed(const Duration(milliseconds: 400));
-    return initialPlants;
+    final userId = ref.watch(currentUserIdProvider);
+    final repository = ref.watch(plantRepositoryProvider);
+    await repository.claimLegacyPlants(userId);
+    return repository.getAll(userId: userId);
   }
 
   Future<void> addPlant(Plant plant) async {
     final current = state.value ?? await future;
-    state = AsyncData([...current, plant]);
+    final userId = ref.read(currentUserIdProvider);
+    final ownedPlant = plant.userId == userId
+        ? plant
+        : plant.copyWith(userId: userId);
+    await ref.read(plantRepositoryProvider).create(ownedPlant);
+    state = AsyncData([...current, ownedPlant]);
+  }
+
+  Future<String> nextPlantId() {
+    return ref.read(plantRepositoryProvider).nextPlantId();
   }
 
   Future<void> deletePlant(String plantId) async {
     final current = state.value ?? await future;
+    final userId = ref.read(currentUserIdProvider);
+    final deleted = await ref
+        .read(plantRepositoryProvider)
+        .softDelete(plantId, userId: userId);
+    if (deleted == 0) {
+      throw StateError(
+        'Tanaman $plantId tidak ditemukan di penyimpanan lokal.',
+      );
+    }
     state = AsyncData(current.where((plant) => plant.id != plantId).toList());
   }
 
   Future<void> updatePlant(Plant updatedPlant) async {
     final current = state.value ?? await future;
+    final userId = ref.read(currentUserIdProvider);
+    final ownedPlant = updatedPlant.userId == userId
+        ? updatedPlant
+        : updatedPlant.copyWith(userId: userId);
+    final updated = await ref.read(plantRepositoryProvider).update(ownedPlant);
+    if (updated == 0) {
+      throw StateError(
+        'Tanaman ${ownedPlant.id} tidak ditemukan di penyimpanan akun ini.',
+      );
+    }
     state = AsyncData([
       for (final plant in current)
-        if (plant.id == updatedPlant.id) updatedPlant else plant,
+        if (plant.id == ownedPlant.id) ownedPlant else plant,
     ]);
   }
 
   Future<void> refreshPlants() async {
-    final current = state.value ?? initialPlants;
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      await Future<void>.delayed(const Duration(milliseconds: 500));
-      return current;
+      final userId = ref.read(currentUserIdProvider);
+      final repository = ref.read(plantRepositoryProvider);
+      await repository.claimLegacyPlants(userId);
+      return repository.getAll(userId: userId);
     });
   }
 }
@@ -73,3 +87,11 @@ final plantByIdProvider = Provider.family<Plant?, String>((ref, plantId) {
 
   return null;
 });
+
+final plantScanHistoryProvider =
+    FutureProvider.family<List<ScanRecordModel>, String>((ref, plantId) {
+      final userId = ref.watch(currentUserIdProvider);
+      return ref
+          .read(scanRepositoryProvider)
+          .getScansByPlantId(plantId, userId);
+    });

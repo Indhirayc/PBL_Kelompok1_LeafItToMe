@@ -32,7 +32,7 @@ void main() {
     await tempDirectory.delete(recursive: true);
   });
 
-  test('creates all v2 tables and enables foreign keys', () async {
+  test('creates all schema tables and enables foreign keys', () async {
     final db = await appDatabase.database;
     final tables = await db.rawQuery(
       "SELECT name FROM sqlite_master WHERE type = 'table'",
@@ -55,6 +55,75 @@ void main() {
     expect(
       (await db.rawQuery('PRAGMA foreign_keys')).single['foreign_keys'],
       1,
+    );
+  });
+
+  test('adds account ownership to existing plants during upgrade', () async {
+    final databasePath = path.join(tempDirectory.path, 'v5.db');
+    final oldDatabase = await databaseFactoryFfi.openDatabase(
+      databasePath,
+      options: OpenDatabaseOptions(
+        version: 5,
+        onCreate: (db, version) async {
+          await db.execute('''
+            CREATE TABLE plants (
+              id TEXT PRIMARY KEY,
+              name TEXT NOT NULL,
+              location TEXT NOT NULL,
+              planted_at TEXT NOT NULL,
+              last_inspection_at TEXT,
+              status TEXT NOT NULL,
+              note TEXT,
+              created_at TEXT NOT NULL,
+              updated_at TEXT NOT NULL,
+              deleted_at TEXT
+            )
+          ''');
+          await db.execute('''
+            CREATE TABLE app_meta (
+              key TEXT PRIMARY KEY,
+              value TEXT NOT NULL,
+              updated_at TEXT NOT NULL
+            )
+          ''');
+          await db.execute('''
+            CREATE TABLE guides (
+              id TEXT PRIMARY KEY,
+              title TEXT NOT NULL,
+              description TEXT,
+              content TEXT NOT NULL,
+              category TEXT,
+              video_url TEXT,
+              updated_at TEXT NOT NULL
+            )
+          ''');
+          await db.insert('plants', {
+            'id': 'legacy-plant',
+            'name': 'Legacy Tomato',
+            'location': 'Garden',
+            'planted_at': '2026-10-12T00:00:00.000Z',
+            'status': 'Sehat',
+            'created_at': '2026-10-12T00:00:00.000Z',
+            'updated_at': '2026-10-12T00:00:00.000Z',
+          });
+        },
+      ),
+    );
+    await oldDatabase.close();
+
+    final migratedDatabase = AppDatabase.forTesting(
+      databaseFactory: databaseFactoryFfi,
+      databasePath: databasePath,
+    );
+    addTearDown(migratedDatabase.close);
+    final migratedRepository = PlantRepository(database: migratedDatabase);
+
+    await migratedRepository.claimLegacyPlants('first-user');
+
+    expect(await migratedRepository.getAll(userId: 'user-local'), isEmpty);
+    expect(
+      (await migratedRepository.getAll(userId: 'first-user')).single.name,
+      'Legacy Tomato',
     );
   });
 
@@ -168,6 +237,68 @@ void main() {
     );
   });
 
+  test('next plant ID accounts for soft-deleted plants', () async {
+    const deletedPlant = Plant(
+      id: 'TMT-001',
+      name: 'Deleted Tomato',
+      location: 'Balcony',
+      plantedDate: '12 Okt 2026',
+      lastInspectionDate: 'Belum ada pemeriksaan',
+      status: 'Sehat',
+    );
+    await plantRepository.create(deletedPlant);
+    await plantRepository.softDelete(deletedPlant.id);
+
+    expect(await plantRepository.nextPlantId(), 'TMT-002');
+  });
+
+  test(
+    'plants are scoped to their owner and legacy plants are claimed once',
+    () async {
+      const legacyPlant = Plant(
+        id: 'legacy-plant',
+        name: 'Legacy Tomato',
+        location: 'Garden',
+        plantedDate: '12 Okt 2026',
+        lastInspectionDate: 'Belum ada pemeriksaan',
+        status: 'Sehat',
+      );
+      const secondUserPlant = Plant(
+        id: 'second-user-plant',
+        name: 'Other Tomato',
+        location: 'Balcony',
+        plantedDate: '12 Okt 2026',
+        lastInspectionDate: 'Belum ada pemeriksaan',
+        status: 'Sehat',
+        userId: 'user-2',
+      );
+
+      await plantRepository.create(legacyPlant);
+      await plantRepository.create(secondUserPlant);
+      await plantRepository.claimLegacyPlants('user-1');
+      await plantRepository.claimLegacyPlants('user-2');
+
+      expect(
+        (await plantRepository.getAll(userId: 'user-1'))
+            .map((plant) => plant.id),
+        ['legacy-plant'],
+      );
+      expect(
+        (await plantRepository.getAll(userId: 'user-2'))
+            .map((plant) => plant.id),
+        ['second-user-plant'],
+      );
+      expect(
+        await plantRepository.getById('legacy-plant', userId: 'user-2'),
+        isNull,
+      );
+      expect(
+        await plantRepository.softDelete('legacy-plant', userId: 'user-2'),
+        0,
+      );
+    },
+  );
+
   test(
     'scan transaction updates plant and queues sync; sync clears queue',
     () async {
@@ -178,6 +309,7 @@ void main() {
         plantedDate: '2026-10-01',
         lastInspectionDate: '2026-10-20',
         status: 'Sehat',
+        userId: 'user-2',
       );
       await plantRepository.create(plant);
       final scan = ScanRecordModel(
@@ -193,15 +325,100 @@ void main() {
       await appDatabase.saveScanResult(scan);
       final db = await appDatabase.database;
       expect(await db.query('scans'), hasLength(1));
-      expect((await plantRepository.getById(plant.id))?.status, 'Early blight');
+      expect(
+        (await plantRepository.getById(plant.id, userId: 'user-2'))?.status,
+        'Early blight',
+      );
+      expect(
+        (await plantRepository.getById(
+          plant.id,
+          userId: 'user-2',
+        ))?.lastInspectionDate,
+        '23 Okt 2026',
+      );
       expect(await appDatabase.syncQueueDao.getPending(), hasLength(1));
       expect(await appDatabase.getUnsyncedScans('user-2'), hasLength(1));
+
+      expect(await appDatabase.markAsSynced('missing-scan', null), 0);
+      expect(await appDatabase.syncQueueDao.getPending(), hasLength(1));
 
       await appDatabase.markAsSynced(scan.id, 'https://example.com/scan.jpg');
       expect(await appDatabase.getUnsyncedScans('user-2'), isEmpty);
       expect(await appDatabase.syncQueueDao.getPending(), isEmpty);
     },
   );
+
+  test('filters plant scan history by plant and user', () async {
+    const firstPlant = Plant(
+      id: 'plant-history-1',
+      name: 'Tomato One',
+      location: 'Garden',
+      plantedDate: '2026-10-01',
+      lastInspectionDate: 'Belum ada pemeriksaan',
+      status: 'Sehat',
+      userId: 'user-1',
+    );
+    const secondPlant = Plant(
+      id: 'plant-history-2',
+      name: 'Tomato Two',
+      location: 'Balcony',
+      plantedDate: '2026-10-01',
+      lastInspectionDate: 'Belum ada pemeriksaan',
+      status: 'Sehat',
+      userId: 'user-2',
+    );
+    await plantRepository.create(firstPlant);
+    await plantRepository.create(secondPlant);
+
+    Future<void> saveScan({
+      required String id,
+      required String userId,
+      required String plantId,
+    }) {
+      return appDatabase.saveScanResult(
+        ScanRecordModel(
+          id: id,
+          userId: userId,
+          plantId: plantId,
+          diseaseName: 'Healthy',
+          confidence: 0.95,
+          localImagePath: '/tmp/$id.jpg',
+          scannedAt: DateTime.utc(2026, 10, 23),
+        ),
+      );
+    }
+
+    await saveScan(id: 'scan-owner', userId: 'user-1', plantId: firstPlant.id);
+    await saveScan(
+      id: 'scan-other-user',
+      userId: 'user-2',
+      plantId: secondPlant.id,
+    );
+    final inspectedPlant = await plantRepository.getById(
+      secondPlant.id,
+      userId: 'user-2',
+    );
+    expect(inspectedPlant?.status, 'Sehat');
+    expect(inspectedPlant?.lastInspectionDate, '23 Okt 2026');
+
+    await expectLater(
+      saveScan(
+        id: 'scan-cross-account',
+        userId: 'user-2',
+        plantId: firstPlant.id,
+      ),
+      throwsStateError,
+    );
+
+    final scans = await appDatabase.getScansByPlantId(firstPlant.id, 'user-1');
+    final otherUserScans = await appDatabase.getScansByUser('user-2');
+
+    expect(scans.map((scan) => scan.id), ['scan-owner']);
+    expect(scans.single.plantName, firstPlant.name);
+    expect(scans.single.plantLocation, firstPlant.location);
+    expect(otherUserScans.single.id, 'scan-other-user');
+    expect(otherUserScans.single.plantName, secondPlant.name);
+  });
 
   test('migrates legacy v3 indonesian schema to v2 tables', () async {
     final databasePath = path.join(tempDirectory.path, 'legacy_v3.db');
@@ -231,15 +448,11 @@ void main() {
     addTearDown(migratedDb.close);
 
     final db = await migratedDb.database;
-    final names =
-        (await db.rawQuery(
-          "SELECT name FROM sqlite_master WHERE type = 'table'",
-        )).map((row) => row['name']).toSet();
+    final names = (await db.rawQuery(
+      "SELECT name FROM sqlite_master WHERE type = 'table'",
+    )).map((row) => row['name']).toSet();
 
-    expect(
-      names,
-      containsAll({'plants', 'scans', 'sync_queue', 'app_meta'}),
-    );
+    expect(names, containsAll({'plants', 'scans', 'sync_queue', 'app_meta'}));
     expect(names, isNot(contains('pengguna')));
     expect(names, isNot(contains('tanaman')));
   });

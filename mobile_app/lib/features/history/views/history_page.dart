@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/providers/database_providers.dart';
 import '../../../core/widgets/app_content_layout.dart';
 
 import '../../../../core/widgets/main_bottom_navigation.dart';
@@ -8,16 +10,18 @@ import '../data/history_data.dart';
 import '../widgets/history_card.dart';
 import '../widgets/history_page_header.dart';
 
-class HistoryPage extends StatefulWidget {
+final persistedHistoryProvider = FutureProvider.family<void, String>((
+  ref,
+  userId,
+) async {
+  await HistoryData.loadPersistedRecords(userId: userId);
+});
+
+class HistoryPage extends ConsumerWidget {
   const HistoryPage({super.key, this.plant});
 
   final HistoryPlant? plant;
 
-  @override
-  State<HistoryPage> createState() => _HistoryPageState();
-}
-
-class _HistoryPageState extends State<HistoryPage> {
   static const Color _background = Color(0xFFF8FAF5);
   static const Color _darkGreen = Color(0xFF183E2D);
   static const Color _secondaryText = Color(0xFF75857B);
@@ -27,24 +31,81 @@ class _HistoryPageState extends State<HistoryPage> {
   static const Color _borderColor = Color(0xFFDDE7DE);
 
   @override
-  void initState() {
-    super.initState();
-    _loadPersistedRecords();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userId = ref.watch(currentUserIdProvider);
+    return ref
+        .watch(persistedHistoryProvider(userId))
+        .when(
+          data: (_) {
+            final selected = plant?.userId == userId
+                ? plant
+                : plant == null
+                ? _firstPlantForUser(userId)
+                : null;
+            if (selected == null) {
+              return _buildNoPlantsPage(context);
+            }
+
+            final records = HistoryData.recordsByPlantId(
+              selected.id,
+              userId: userId,
+            );
+            return _buildHistoryPage(context, selected, records);
+          },
+          loading: _buildLoadingPage,
+          error: (error, stackTrace) => _buildErrorPage(),
+        );
   }
 
-  Future<void> _loadPersistedRecords() async {
-    await HistoryData.loadPersistedRecords();
-    if (mounted) setState(() {});
+  HistoryPlant? _firstPlantForUser(String userId) {
+    for (final plant in HistoryData.plantsForUser(userId)) {
+      return plant;
+    }
+    return null;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final HistoryPlant selected = widget.plant ?? HistoryData.plants.first;
+  Widget _buildLoadingPage() => const Scaffold(
+    backgroundColor: _background,
+    body: Center(child: CircularProgressIndicator()),
+    bottomNavigationBar: MainBottomNavigation(currentIndex: 2),
+  );
 
-    final List<HistoryRecord> records = HistoryData.recordsByPlantId(
-      selected.id,
-    );
+  Widget _buildErrorPage() => const Scaffold(
+    backgroundColor: _background,
+    body: Center(child: Text('Riwayat belum dapat dimuat.')),
+    bottomNavigationBar: MainBottomNavigation(currentIndex: 2),
+  );
 
+  Widget _buildNoPlantsPage(BuildContext context) => Scaffold(
+    backgroundColor: _background,
+    body: Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Belum ada tanaman di akun ini.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: _darkGreen, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () => context.goNamed('plants'),
+              child: const Text('Buka Tanamanku'),
+            ),
+          ],
+        ),
+      ),
+    ),
+    bottomNavigationBar: const MainBottomNavigation(currentIndex: 2),
+  );
+
+  Widget _buildHistoryPage(
+    BuildContext context,
+    HistoryPlant selected,
+    List<HistoryRecord> records,
+  ) {
     return Scaffold(
       backgroundColor: _background,
       body: AppContentLayout(

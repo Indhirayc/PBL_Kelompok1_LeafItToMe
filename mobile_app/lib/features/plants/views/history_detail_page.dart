@@ -16,6 +16,7 @@ class HistoryRecord {
     this.plantVariety = 'Solanum lycopersicum',
     this.diseaseScientificName = 'Early Blight • Alternaria solani',
     this.note = 'Tidak ada catatan tambahan.',
+    this.userId = 'user-local',
   });
 
   final String plantId;
@@ -26,6 +27,7 @@ class HistoryRecord {
   final String plantVariety;
   final String diseaseScientificName;
   final String note;
+  final String userId;
 }
 
 class HistoryDetailPage extends StatelessWidget {

@@ -1,19 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../../../../core/providers/database_providers.dart';
+import '../../../../core/sync/sync_manager.dart';
+import '../../history/data/history_data.dart';
 import '../../history/widgets/history_page_header.dart';
 import '../data/sync_data.dart';
 
-class SyncStatusPage extends StatefulWidget {
-  const SyncStatusPage({super.key});
+class SyncStatusPage extends ConsumerStatefulWidget {
+  const SyncStatusPage({super.key, this.plant});
+
+  final HistoryPlant? plant;
 
   @override
-  State<SyncStatusPage> createState() => _SyncStatusPageState();
+  ConsumerState<SyncStatusPage> createState() => _SyncStatusPageState();
 }
 
-class _SyncStatusPageState extends State<SyncStatusPage> {
+class _SyncStatusPageState extends ConsumerState<SyncStatusPage> {
   static const Color _background = Color(0xFFF8FAF5);
   static const Color _darkGreen = Color(0xFF183E2D);
   static const Color _secondaryText = Color(0xFF75857B);
@@ -21,16 +26,92 @@ class _SyncStatusPageState extends State<SyncStatusPage> {
   static const Color _primaryGreen = Color(0xFF2F7D4A);
   static const Color _accentGreen = Color(0xFFE8F5E9);
   static const Color _avatarGreen = Color(0xFFDCEFD9);
-  static const Color _offlineBg = Color(0xFFFBE9E7);
-  static const Color _offlineIconBg = Color(0xFFF6D5D1);
-  static const Color _offlineRed = Color(0xFFD32F2F);
+  static const Color _errorRed = Color(0xFFD32F2F);
+  static const Color _errorBackground = Color(0xFFFBE9E7);
 
-  bool _offlineMode = true;
-  bool _simulateFailure = false;
+  bool _isLoading = true;
+  bool _isSyncing = false;
+  String? _loadError;
+  String _userId = 'user-local';
+  List<SyncItem> _items = const [];
+  SyncBatchResult? _lastSyncResult;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUnsyncedItems();
+  }
+
+  Future<void> _loadUnsyncedItems() async {
+    try {
+      final userId = ref.read(currentUserIdProvider);
+      final unsynced = await ref
+          .read(scanRepositoryProvider)
+          .getUnsyncedScans(userId);
+      if (!mounted) return;
+
+      setState(() {
+        _userId = userId;
+        _items = unsynced.map((scan) {
+          final plant = scan.plantId == null
+              ? null
+              : HistoryData.plantById(scan.plantId!, userId: userId);
+          return SyncItem(
+            id: scan.id,
+            plantName:
+                scan.plantName ??
+                plant?.name ??
+                'Tanaman ${scan.plantId ?? ''}',
+            diseaseName: scan.diseaseName,
+            date: scan.scannedAt,
+          );
+        }).toList();
+        _loadError = null;
+        _isLoading = false;
+      });
+    } catch (error, stackTrace) {
+      debugPrint(
+        'Gagal memuat scan yang menunggu sinkronisasi: $error\n$stackTrace',
+      );
+      if (mounted) {
+        setState(() {
+          _loadError = 'Data sinkronisasi belum dapat dimuat.';
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _syncPendingScans() async {
+    final pendingIds = _items.map((item) => item.id).toList();
+    setState(() {
+      _isSyncing = true;
+      _lastSyncResult = null;
+    });
+
+    SyncBatchResult result;
+    try {
+      result = await ref.read(scanRepositoryProvider).triggerSync(_userId);
+    } catch (error, stackTrace) {
+      debugPrint('Sinkronisasi manual gagal: $error\n$stackTrace');
+      result = SyncBatchResult.failed(pendingIds, error);
+    }
+
+    HistoryData.markScansSynced(userId: _userId, scanIds: result.syncedIds);
+    if (!mounted) return;
+
+    await _loadUnsyncedItems();
+    if (!mounted) return;
+
+    setState(() {
+      _lastSyncResult = result;
+      _isSyncing = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final List<SyncItem> items = SyncData.items;
+    final List<SyncItem> items = _items;
 
     return Scaffold(
       backgroundColor: _background,
@@ -39,30 +120,50 @@ class _SyncStatusPageState extends State<SyncStatusPage> {
         child: AppContentLayout(
           child: Column(
             children: [
-              const HistoryPageHeader(
+              HistoryPageHeader(
                 title: 'Sinkronisasi Data',
                 subtitle: 'Kelola data pemeriksaan yang belum tersinkron.',
+                fallbackRoute: 'history',
+                fallbackExtra: widget.plant,
               ),
               Expanded(
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                   children: [
-                    _buildConnectionBanner(),
-                    const SizedBox(height: 16),
-                    _buildOfflineToggleCard(),
+                    _buildCloudInfoCard(),
                     const SizedBox(height: 14),
                     _buildPendingCard(items),
-                    const SizedBox(height: 14),
-                    _buildSimulateFailureCard(),
+                    if (_lastSyncResult != null) ...[
+                      const SizedBox(height: 14),
+                      _buildSyncResultCard(_lastSyncResult!),
+                    ],
+                    if (_isSyncing) ...[
+                      const SizedBox(height: 18),
+                      const LinearProgressIndicator(
+                        color: _primaryGreen,
+                        backgroundColor: _border,
+                      ),
+                      const SizedBox(height: 8),
+                      const Center(
+                        child: Text(
+                          'Sinkronisasi sedang berlangsung...',
+                          style: TextStyle(color: _secondaryText, fontSize: 12),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 20),
                     AppButton(
                       key: const Key('syncNowButton'),
-                      icon: Icons.sync_rounded,
-                      label: 'Sinkronkan Sekarang',
-                      onPressed: () => context.pushNamed(
-                        'sync-process',
-                        extra: _simulateFailure,
-                      ),
+                      label: _isSyncing
+                          ? 'Menyinkronkan...'
+                          : 'Sinkronkan Sekarang',
+                      onPressed:
+                          _isLoading ||
+                              _isSyncing ||
+                              _loadError != null ||
+                              items.isEmpty
+                          ? null
+                          : _syncPendingScans,
                     ),
                   ],
                 ),
@@ -74,94 +175,39 @@ class _SyncStatusPageState extends State<SyncStatusPage> {
     );
   }
 
-  Widget _buildConnectionBanner() {
-    final bool offline = _offlineMode;
-    final Color background = offline ? _offlineBg : _accentGreen;
-    final Color iconBg = offline ? _offlineIconBg : _avatarGreen;
-    final Color iconColor = offline ? _offlineRed : _primaryGreen;
-    final String title = offline ? 'Anda Sedang Offline' : 'Anda Sudah Online';
-    final String subtitle = offline
-        ? 'Data pemeriksaan akan disinkronkan saat kembali online.'
-        : 'Data pemeriksaan siap disinkronkan ke penyimpanan cloud.';
-
+  Widget _buildCloudInfoCard() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(20),
+        color: const Color(0xFFE8F5E9),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(color: iconBg, shape: BoxShape.circle),
-            child: Icon(
-              offline ? Icons.cloud_off_rounded : Icons.cloud_done_rounded,
-              color: iconColor,
-              size: 30,
-            ),
-          ),
-          const SizedBox(height: 14),
-          Text(
-            title,
-            style: TextStyle(
-              color: iconColor,
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            subtitle,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: _secondaryText,
-              fontSize: 13,
-              height: 1.4,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOfflineToggleCard() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: _cardDecoration(),
-      child: Row(
-        children: [
-          const Icon(Icons.wifi_off_rounded, color: _primaryGreen, size: 22),
-          const SizedBox(width: 14),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Mode offline',
+          const Row(
+            children: [
+              Icon(Icons.cloud_upload_outlined, color: _primaryGreen, size: 26),
+              SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Sinkronisasi Cloud',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: _darkGreen,
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                SizedBox(height: 2),
-                Text(
-                  'Simulasi perangkat tanpa koneksi',
-                  style: TextStyle(color: _secondaryText, fontSize: 12),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-          Transform.scale(
-            scale: 0.85,
-            child: Switch(
-              value: _offlineMode,
-              activeTrackColor: _primaryGreen,
-              onChanged: (value) => setState(() => _offlineMode = value),
-            ),
+          const SizedBox(height: 8),
+          const Text(
+            'Data tersimpan di perangkat sampai berhasil dikirim.',
+            style: TextStyle(color: _secondaryText, fontSize: 12, height: 1.4),
           ),
         ],
       ),
@@ -195,10 +241,23 @@ class _SyncStatusPageState extends State<SyncStatusPage> {
             ],
           ),
           const SizedBox(height: 16),
-          for (int i = 0; i < items.length; i++) ...[
-            _buildPendingItem(items[i]),
-            if (i != items.length - 1) const SizedBox(height: 16),
-          ],
+          if (_isLoading)
+            const Center(child: CircularProgressIndicator())
+          else if (_loadError != null)
+            Text(
+              _loadError!,
+              style: const TextStyle(color: _errorRed, fontSize: 13),
+            )
+          else if (items.isEmpty)
+            const Text(
+              'Tidak ada data yang menunggu sinkronisasi.',
+              style: TextStyle(color: _secondaryText, fontSize: 13),
+            )
+          else
+            for (int i = 0; i < items.length; i++) ...[
+              _buildPendingItem(items[i]),
+              if (i != items.length - 1) const SizedBox(height: 16),
+            ],
         ],
       ),
     );
@@ -241,46 +300,93 @@ class _SyncStatusPageState extends State<SyncStatusPage> {
     );
   }
 
-  Widget _buildSimulateFailureCard() {
+  Widget _buildSyncResultCard(SyncBatchResult result) {
+    final hasFailures = result.hasFailures;
+    final background = hasFailures ? _errorBackground : _accentGreen;
+    final statusColor = hasFailures ? _errorRed : _primaryGreen;
+    final title = hasFailures
+        ? result.syncedCount == 0
+              ? 'Sinkronisasi Gagal'
+              : 'Sinkronisasi Sebagian Berhasil'
+        : 'Sinkronisasi Berhasil';
+    final message = hasFailures
+        ? '${result.syncedCount} berhasil, ${result.failedCount} masih tertunda.'
+        : result.syncedCount == 0
+        ? 'Tidak ada data baru yang perlu disinkronkan.'
+        : '${result.syncedCount} data berhasil disinkronkan.';
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: _cardDecoration(),
-      child: Row(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.warning_amber_rounded,
-            color: _secondaryText,
-            size: 22,
-          ),
-          const SizedBox(width: 14),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Simulasikan sinkronisasi gagal',
+          Row(
+            children: [
+              Icon(
+                hasFailures
+                    ? Icons.warning_amber_rounded
+                    : Icons.check_circle_outline_rounded,
+                color: statusColor,
+                size: 22,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  title,
                   style: TextStyle(
-                    color: _darkGreen,
+                    color: statusColor,
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                SizedBox(height: 2),
-                Text(
-                  'Untuk menguji tampilan kegagalan',
-                  style: TextStyle(color: _secondaryText, fontSize: 12),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            message,
+            style: const TextStyle(
+              color: _secondaryText,
+              fontSize: 12,
+              height: 1.4,
+            ),
+          ),
+          if (hasFailures && result.errors.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            const Text(
+              'Detail kegagalan',
+              style: TextStyle(
+                color: _errorRed,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 4),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 120),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (final error in result.errors)
+                      SelectableText(
+                        error,
+                        style: const TextStyle(
+                          color: _secondaryText,
+                          fontSize: 11,
+                          height: 1.4,
+                        ),
+                      ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-          Transform.scale(
-            scale: 0.85,
-            child: Switch(
-              value: _simulateFailure,
-              activeTrackColor: _primaryGreen,
-              onChanged: (value) => setState(() => _simulateFailure = value),
-            ),
-          ),
+          ],
         ],
       ),
     );

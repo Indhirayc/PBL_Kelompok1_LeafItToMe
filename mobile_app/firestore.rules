@@ -15,12 +15,18 @@ service cloud.firestore {
     }
 
     function validPlant(d) {
-      return d.nama_tanaman is string
-        && d.nama_tanaman.size() > 0
-        && d.nama_tanaman.size() <= 100
-        && d.lokasi is string
-        && d.status_kesehatan in ['sehat', 'perlu_perhatian', 'kritis']
-        && d.tanggal_tanam is string;
+      return d.name is string
+        && d.name.size() > 0
+        && d.name.size() <= 100
+        && d.location is string
+        && d.location.size() > 0
+        && d.location.size() <= 100
+        && d.status is string
+        && d.status.size() > 0
+        && d.status.size() <= 100
+        && d.plantedDate is string
+        && d.plantedDate.size() > 0
+        && d.plantedDate.size() <= 40;
     }
 
     // Field harus cocok dengan ScanRecordModel.toFirestore()

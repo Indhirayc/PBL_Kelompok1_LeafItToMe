@@ -1,13 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../../models/scan_record_model.dart';
 
-class FirestoreScanSource {
+abstract interface class FirestoreScanWriter {
+  Future<void> saveScanRecord(ScanRecordModel record);
+}
+
+class FirestoreScanSource implements FirestoreScanWriter {
   final FirebaseFirestore _firestore;
 
   FirestoreScanSource({FirebaseFirestore? firestore})
     : _firestore = firestore ?? FirebaseFirestore.instance;
 
   /// Menyimpan hasil scan ke subkoleksi users/{uid}/scans/{scanId}
+  @override
   Future<void> saveScanRecord(ScanRecordModel record) async {
     await _firestore
         .collection('users')
@@ -48,7 +54,8 @@ class FirestoreScanSource {
         localImagePath: '',
         cloudImageUrl: data['cloud_image_url'],
         notes: data['notes'],
-        scannedAt: (data['scanned_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
+        scannedAt:
+            (data['scanned_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
         isSynced: true,
       );
     }).toList();

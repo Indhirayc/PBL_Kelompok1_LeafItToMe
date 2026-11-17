@@ -14,7 +14,10 @@ final Provider<PlantRemoteDataSource> plantRemoteDataSourceProvider =
       ),
     );
 
-final Provider<PlantRepository> plantRepositoryProvider =
+/// Provider untuk PlantRepository remote (legacy/REST API).
+/// Gunakan `plantRepositoryProvider` dari `core/providers/database_providers.dart`
+/// untuk operasi lokal SQLite utama.
+final Provider<PlantRepository> plantRemoteRepositoryProvider =
     Provider<PlantRepository>(
       (ref) => PlantRepositoryImpl(
         remoteDataSource: ref.watch(plantRemoteDataSourceProvider),

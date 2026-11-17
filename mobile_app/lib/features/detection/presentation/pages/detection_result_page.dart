@@ -1,32 +1,31 @@
-
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_page_header.dart';
+import '../../../../core/utils/disease_label_mapper.dart';
+import '../../../../core/providers/database_providers.dart';
 import '../../../../data/models/scan_record_model.dart';
-import '../../../../data/repositories/scan_repository.dart';
 import 'photo_preview_page.dart';
 import '../../../history/data/history_data.dart';
+import '../../../plants/providers/plant_provider.dart';
 import '../widgets/plant_context_card.dart';
 
-class DetectionResultPage extends StatefulWidget {
-  const DetectionResultPage({
-    super.key,
-    required this.selection,
-  });
+class DetectionResultPage extends ConsumerStatefulWidget {
+  const DetectionResultPage({super.key, required this.selection});
 
   final InspectionPhotoSelection selection;
 
   @override
-  State<DetectionResultPage> createState() => _DetectionResultPageState();
+  ConsumerState<DetectionResultPage> createState() =>
+      _DetectionResultPageState();
 }
 
-class _DetectionResultPageState extends State<DetectionResultPage> {
+class _DetectionResultPageState extends ConsumerState<DetectionResultPage> {
   static const Color _background = Color(0xFFFBFCF9);
   static const Color _darkGreen = Color(0xFF183E2D);
   static const Color _secondaryText = Color(0xFF718478);
@@ -35,8 +34,7 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
 
   HistoryRecord? _detectionRecord;
 
-  bool get _hasPrediction =>
-      widget.selection.predictionResult != null;
+  bool get _hasPrediction => widget.selection.predictionResult != null;
 
   @override
   void initState() {
@@ -51,18 +49,18 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
 
     final draft = widget.selection.draft;
     final diseaseLabel = prediction.label;
-    final isHealthyClass =
-        diseaseLabel.trim().toLowerCase() == 'healthy';
+    final isHealthyClass = DiseaseLabelMapper.isHealthy(diseaseLabel);
 
-    final confidenceScore =
-        prediction.confidencePercentage.round().clamp(0, 100);
+    final confidenceScore = prediction.confidencePercentage.round().clamp(
+      0,
+      100,
+    );
 
     _detectionRecord = HistoryRecord(
       id: 'DET-${DateTime.now().microsecondsSinceEpoch}',
       plantId: draft.plant.id,
-      diseaseName: diseaseLabel,
-      latinName:
-          isHealthyClass ? 'Solanum lycopersicum' : 'Pathogen spp.',
+      diseaseName: DiseaseLabelMapper.canonicalName(diseaseLabel),
+      latinName: isHealthyClass ? 'Solanum lycopersicum' : 'Pathogen spp.',
       date: draft.inspectionDate,
       accuracy: confidenceScore,
       isHealthy: isHealthyClass,
@@ -70,7 +68,9 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
       isSynced: false,
       plantName: draft.plant.name,
       plantLocation: draft.plant.location,
-      photoAssetPath: widget.selection.imageFile?.path ??
+      userId: ref.read(currentUserIdProvider),
+      photoAssetPath:
+          widget.selection.imageFile?.path ??
           InspectionPhotoSelection.sampleImageAsset,
       photoSource: widget.selection.source,
     );
@@ -88,29 +88,28 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
     }
 
     try {
-      String userId = 'user-local';
-      try {
-        userId = FirebaseAuth.instance.currentUser?.uid ?? 'user-local';
-      } catch (_) {
-        // Firebase belum siap (mis. widget test): pakai id lokal.
-      }
-
       final draft = widget.selection.draft;
-      await ScanRepository().saveScanResult(
-        ScanRecordModel(
-          id: record.id,
-          userId: userId,
-          diseaseName: prediction.label,
-          confidence: prediction.confidence,
-          localImagePath: widget.selection.imageFile?.path ?? '',
-          notes: draft.note.isEmpty ? null : draft.note,
-          scannedAt: draft.inspectionDate,
-          isSynced: false,
-          plantId: draft.plant.id,
-          plantName: draft.plant.name,
-          plantLocation: draft.plant.location,
-        ),
-      );
+      await ref
+          .read(scanRepositoryProvider)
+          .saveScanResult(
+            ScanRecordModel(
+              id: record.id,
+              userId: record.userId,
+              diseaseName: DiseaseLabelMapper.canonicalName(prediction.label),
+              confidence: prediction.confidence,
+              localImagePath: widget.selection.imageFile?.path ?? '',
+              notes: draft.note.isEmpty ? null : draft.note,
+              scannedAt: draft.inspectionDate,
+              isSynced: false,
+              plantId: draft.plant.id,
+              plantName: draft.plant.name,
+              plantLocation: draft.plant.location,
+            ),
+          );
+      if (mounted) {
+        ref.invalidate(plantScanHistoryProvider(draft.plant.id));
+        ref.invalidate(plantProvider);
+      }
     } catch (_) {
       // Offline atau penyimpanan belum siap: riwayat sesi tetap tersedia.
     }
@@ -125,8 +124,7 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
     final prediction = widget.selection.predictionResult!;
     final diseaseLabel = prediction.label;
 
-    final isHealthyClass =
-        diseaseLabel.trim().toLowerCase() == 'healthy';
+    final isHealthyClass = DiseaseLabelMapper.isHealthy(diseaseLabel);
 
     return Scaffold(
       backgroundColor: _background,
@@ -148,10 +146,7 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
                         location: widget.selection.draft.plant.location,
                       ),
                       const SizedBox(height: 18),
-                      _buildDiseaseCard(
-                        diseaseLabel,
-                        isHealthyClass,
-                      ),
+                      _buildDiseaseCard(diseaseLabel, isHealthyClass),
                       const SizedBox(height: 12),
                       AppButton(
                         key: const Key('treatmentButton'),
@@ -294,19 +289,14 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
     );
   }
 
-  Widget _buildDiseaseCard(
-    String diseaseName,
-    bool isHealthy,
-  ) {
+  Widget _buildDiseaseCard(String diseaseName, bool isHealthy) {
     final displayName = _getDisplayName(diseaseName);
 
     final statusColor = isHealthy
         ? const Color(0xFF2F7D46)
         : const Color(0xFFB94135);
 
-    final statusBackground = isHealthy
-        ? _paleGreen
-        : const Color(0xFFFFE6E2);
+    final statusBackground = isHealthy ? _paleGreen : const Color(0xFFFFE6E2);
 
     return Container(
       width: double.infinity,
@@ -320,10 +310,7 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 10,
-              vertical: 6,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
               color: statusBackground,
               borderRadius: BorderRadius.circular(20),
@@ -386,7 +373,8 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
                 ),
                 const SizedBox(height: 4),
                 const _SymptomItem(
-                  text: 'Hasil merupakan prediksi model dan perlu '
+                  text:
+                      'Hasil merupakan prediksi model dan perlu '
                       'diperiksa kembali jika gejala tidak sesuai.',
                 ),
               ],
@@ -398,20 +386,7 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
   }
 
   String _getDisplayName(String label) {
-    switch (label.trim()) {
-      case 'Bacterial_spot':
-        return 'Bacterial Spot (Bercak Bakteri)';
-      case 'Late_blight':
-        return 'Late Blight (Busuk Daun)';
-      case 'Leaf_Mold':
-        return 'Leaf Mold (Kapang Daun)';
-      case 'Tomato_Yellow_Leaf_Curl_Virus':
-        return 'Tomato Yellow Leaf Curl Virus';
-      case 'healthy':
-        return 'Daun Tomat Sehat';
-      default:
-        return label.replaceAll('_', ' ');
-    }
+    return DiseaseLabelMapper.detectionDisplayName(label);
   }
 }
 
@@ -427,10 +402,7 @@ class _SymptomItem extends StatelessWidget {
       children: [
         const Text(
           '• ',
-          style: TextStyle(
-            color: Color(0xFF477254),
-            fontSize: 11,
-          ),
+          style: TextStyle(color: Color(0xFF477254), fontSize: 11),
         ),
         Expanded(
           child: Text(
