@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/history_data.dart';
+import 'scanned_leaf_image.dart';
 
 class HistoryCard extends StatelessWidget {
   const HistoryCard({super.key, required this.record, required this.onTap});
@@ -158,20 +159,28 @@ class HistoryCard extends StatelessWidget {
         color: background,
         borderRadius: BorderRadius.circular(14),
       ),
-      child: healthy
-          ? Padding(
-              padding: const EdgeInsets.all(6),
-              child: Image.asset(
-                'assets/images/tomato_plant.png',
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) => const Icon(
-                  Icons.eco_rounded,
-                  color: _healthyGreen,
-                  size: 28,
+      child: ScannedLeafImage(
+        cloudImageUrl: record.cloudImageUrl,
+        localPath: record.photoAssetPath,
+        width: 56,
+        height: 56,
+        fit: BoxFit.cover,
+        isHealthy: healthy,
+        fallbackWidget: healthy
+            ? Padding(
+                padding: const EdgeInsets.all(6),
+                child: Image.asset(
+                  'assets/images/tomato_plant.png',
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                    Icons.eco_rounded,
+                    color: _healthyGreen,
+                    size: 28,
+                  ),
                 ),
-              ),
-            )
-          : const Icon(Icons.eco_rounded, color: _dangerRed, size: 28),
+              )
+            : const Icon(Icons.eco_rounded, color: _dangerRed, size: 28),
+      ),
     );
   }
 }

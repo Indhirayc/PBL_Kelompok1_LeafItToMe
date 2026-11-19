@@ -7,6 +7,7 @@ import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
 import '../data/history_data.dart';
 import '../widgets/history_page_header.dart';
+import '../widgets/scanned_leaf_image.dart';
 
 class HistoryDetailPage extends StatelessWidget {
   const HistoryDetailPage({super.key, required this.record});
@@ -99,16 +100,24 @@ class HistoryDetailPage extends StatelessWidget {
         child: Stack(
           children: [
             Positioned.fill(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Image.asset(
-                  'assets/images/tomato_plant.png',
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => const Center(
-                    child: Icon(
-                      Icons.eco_rounded,
-                      color: Color(0xFF6FA98A),
-                      size: 64,
+              child: ScannedLeafImage(
+                cloudImageUrl: record.cloudImageUrl,
+                localPath: record.photoAssetPath,
+                width: double.infinity,
+                height: 200,
+                fit: BoxFit.cover,
+                isHealthy: healthy,
+                fallbackWidget: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Image.asset(
+                    'assets/images/tomato_plant.png',
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) => const Center(
+                      child: Icon(
+                        Icons.eco_rounded,
+                        color: Color(0xFF6FA98A),
+                        size: 64,
+                      ),
                     ),
                   ),
                 ),

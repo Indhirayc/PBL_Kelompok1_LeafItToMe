@@ -172,6 +172,8 @@ abstract final class AppRouter {
                 accuracy: '${record.accuracy}%',
                 note: record.note,
                 userId: record.userId,
+                photoAssetPath: record.photoAssetPath,
+                cloudImageUrl: record.cloudImageUrl,
               ),
             );
           }
