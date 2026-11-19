@@ -75,6 +75,7 @@ class HistoryRecord {
   final String? plantLocation;
   final String? photoAssetPath;
   final String? photoSource;
+  final String? cloudImageUrl;
   final String userId;
 
   const HistoryRecord({
@@ -91,10 +92,11 @@ class HistoryRecord {
     this.plantLocation,
     this.photoAssetPath,
     this.photoSource,
+    this.cloudImageUrl,
     this.userId = 'user-local',
   });
 
-  HistoryRecord copyWith({bool? isSynced}) {
+  HistoryRecord copyWith({bool? isSynced, String? cloudImageUrl}) {
     return HistoryRecord(
       id: id,
       plantId: plantId,
@@ -109,6 +111,7 @@ class HistoryRecord {
       plantLocation: plantLocation,
       photoAssetPath: photoAssetPath,
       photoSource: photoSource,
+      cloudImageUrl: cloudImageUrl ?? this.cloudImageUrl,
       userId: userId,
     );
   }
@@ -138,6 +141,7 @@ abstract final class HistoryData {
       accuracy: 96,
       isHealthy: true,
       note: 'Daun tampak hijau segar, tidak ditemukan bercak.',
+      photoAssetPath: 'assets/images/tomato_plant.png',
     ),
     HistoryRecord(
       id: 'H-002',
@@ -148,6 +152,7 @@ abstract final class HistoryData {
       accuracy: 89,
       isHealthy: false,
       note: 'Terdapat bercak cokelat pada beberapa daun.',
+      photoAssetPath: 'assets/images/bacterial_spot.jpg',
     ),
     HistoryRecord(
       id: 'H-003',
@@ -158,6 +163,7 @@ abstract final class HistoryData {
       accuracy: 94,
       isHealthy: true,
       note: 'Tanaman dalam kondisi sehat.',
+      photoAssetPath: 'assets/images/tomato_plant.png',
     ),
     HistoryRecord(
       id: 'H-004',
@@ -168,6 +174,7 @@ abstract final class HistoryData {
       accuracy: 91,
       isHealthy: false,
       note: 'Terlihat bercak kekuningan dan lapisan seperti jamur pada daun.',
+      photoAssetPath: 'assets/images/leaf_mold.jpg',
     ),
     HistoryRecord(
       id: 'H-005',
@@ -178,6 +185,7 @@ abstract final class HistoryData {
       accuracy: 87,
       isHealthy: false,
       note: 'Ditemukan bercak berwarna cokelat gelap pada bagian tepi daun.',
+      photoAssetPath: 'assets/images/late_blight.jpg',
     ),
     HistoryRecord(
       id: 'H-006',
@@ -188,6 +196,7 @@ abstract final class HistoryData {
       accuracy: 95,
       isHealthy: true,
       note: 'Kondisi tanaman sehat dan daun tidak menunjukkan gejala penyakit.',
+      photoAssetPath: 'assets/images/tomato_plant.png',
     ),
     HistoryRecord(
       id: 'H-007',
@@ -198,6 +207,7 @@ abstract final class HistoryData {
       accuracy: 88,
       isHealthy: false,
       note: 'Ditemukan bercak kekuningan pada permukaan bagian atas daun.',
+      photoAssetPath: 'assets/images/leaf_mold.jpg',
     ),
     HistoryRecord(
       id: 'H-008',
@@ -208,6 +218,7 @@ abstract final class HistoryData {
       accuracy: 90,
       isHealthy: false,
       note: 'Ditemukan bercak basah kehitaman pada bagian tepi daun.',
+      photoAssetPath: 'assets/images/late_blight.jpg',
     ),
   ];
 
@@ -414,6 +425,7 @@ abstract final class HistoryData {
       plantLocation: scan.plantLocation,
       userId: scan.userId,
       photoAssetPath: scan.localImagePath,
+      cloudImageUrl: scan.cloudImageUrl,
     );
   }
 }

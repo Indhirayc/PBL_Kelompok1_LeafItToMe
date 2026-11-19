@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/marketplace_card.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
+import '../../history/widgets/scanned_leaf_image.dart';
 
 class HistoryRecord {
   const HistoryRecord({
@@ -17,6 +18,8 @@ class HistoryRecord {
     this.diseaseScientificName = 'Early Blight • Alternaria solani',
     this.note = 'Tidak ada catatan tambahan.',
     this.userId = 'user-local',
+    this.photoAssetPath,
+    this.cloudImageUrl,
   });
 
   final String plantId;
@@ -28,6 +31,8 @@ class HistoryRecord {
   final String diseaseScientificName;
   final String note;
   final String userId;
+  final String? photoAssetPath;
+  final String? cloudImageUrl;
 }
 
 class HistoryDetailPage extends StatelessWidget {
@@ -122,6 +127,11 @@ class HistoryDetailPage extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
             children: [
+              if (record.photoAssetPath != null ||
+                  record.cloudImageUrl != null) ...[
+                _ScannedLeafPhotoCard(record: record, isHealthy: _isHealthy),
+                const SizedBox(height: 12),
+              ],
               _PlantInformationCard(record: record),
               const SizedBox(height: 12),
               _DetectionResultCard(record: record, isHealthy: _isHealthy),
@@ -144,6 +154,63 @@ class HistoryDetailPage extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: const MainBottomNavigation(currentIndex: 2),
+    );
+  }
+}
+
+class _ScannedLeafPhotoCard extends StatelessWidget {
+  const _ScannedLeafPhotoCard({
+    required this.record,
+    required this.isHealthy,
+  });
+
+  final HistoryRecord record;
+  final bool isHealthy;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: HistoryDetailPage._borderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ScannedLeafImage(
+            cloudImageUrl: record.cloudImageUrl,
+            localPath: record.photoAssetPath,
+            height: 220,
+            width: double.infinity,
+            fit: BoxFit.cover,
+            isHealthy: isHealthy,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.camera_alt_outlined,
+                  size: 16,
+                  color: HistoryDetailPage._secondaryText,
+                ),
+                const SizedBox(width: 6),
+                const Text(
+                  'Foto Daun Saat Pemeriksaan',
+                  style: TextStyle(
+                    color: HistoryDetailPage._secondaryText,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -20,6 +20,8 @@ class _HistoryPreview {
     required this.accuracy,
     required this.note,
     required this.isHealthy,
+    this.photoAssetPath,
+    this.cloudImageUrl,
   });
 
   final String disease;
@@ -27,6 +29,8 @@ class _HistoryPreview {
   final String accuracy;
   final String note;
   final bool isHealthy;
+  final String? photoAssetPath;
+  final String? cloudImageUrl;
 }
 
 class PlantDetailPage extends ConsumerWidget {
@@ -43,6 +47,8 @@ class PlantDetailPage extends ConsumerWidget {
             accuracy: '${(scan.confidence * 100).round().clamp(0, 100)}%',
             note: scan.notes ?? 'Tidak ada catatan tambahan.',
             isHealthy: HistoryData.isHealthyName(scan.diseaseName),
+            photoAssetPath: scan.localImagePath,
+            cloudImageUrl: scan.cloudImageUrl,
           ),
         )
         .toList();
@@ -278,6 +284,8 @@ class PlantDetailPage extends ConsumerWidget {
         accuracy: history.accuracy,
         note: history.note,
         userId: plant.userId,
+        photoAssetPath: history.photoAssetPath,
+        cloudImageUrl: history.cloudImageUrl,
       ),
     );
   }
