@@ -33,6 +33,7 @@ const List<String> kLeafItToMeSchema = <String>[
     last_inspection_at TEXT,
     status TEXT NOT NULL,
     note TEXT,
+    image_path TEXT,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     deleted_at TEXT

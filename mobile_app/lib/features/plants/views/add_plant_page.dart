@@ -9,7 +9,6 @@ import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
 import '../../detection/presentation/pages/data_inspection_page.dart';
-import '../../detection/presentation/pages/photo_preview_page.dart';
 import '../models/plant.dart';
 import '../providers/plant_provider.dart';
 
@@ -219,6 +218,7 @@ class _AddPlantPageState extends ConsumerState<AddPlantPage> {
       lastInspectionDate: 'Belum ada pemeriksaan',
       status: "Sehat",
       note: _noteController.text.trim(),
+      imagePath: _selectedImage?.path,
     );
 
     try {
@@ -251,21 +251,10 @@ class _AddPlantPageState extends ConsumerState<AddPlantPage> {
     );
 
     try {
-      if (_selectedImage != null) {
-        context.pushReplacementNamed(
-          'photo-preview',
-          extra: InspectionPhotoSelection(
-            draft: draft,
-            source: 'Tambah Tanaman',
-            imageFile: _selectedImage,
-          ),
-        );
-      } else {
-        context.pushReplacementNamed(
-          'photo-source',
-          extra: draft,
-        );
-      }
+      context.pushReplacementNamed(
+        'photo-source',
+        extra: draft,
+      );
     } catch (_) {
       if (context.canPop()) {
         context.pop();

@@ -127,11 +127,9 @@ class HistoryDetailPage extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
             children: [
-              _DetectionResultCard(record: record, isHealthy: _isHealthy),
-              const SizedBox(height: 12),
               _ScannedLeafPhotoCard(record: record, isHealthy: _isHealthy),
               const SizedBox(height: 12),
-              _PlantInformationCard(record: record),
+              _DetectionResultCard(record: record, isHealthy: _isHealthy),
               const SizedBox(height: 12),
               _TreatmentCard(isHealthy: _isHealthy),
               const SizedBox(height: 12),
@@ -253,96 +251,6 @@ class _ScannedLeafPhotoCard extends StatelessWidget {
   }
 }
 
-class _PlantInformationCard extends StatelessWidget {
-  const _PlantInformationCard({required this.record});
-
-  final HistoryRecord record;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: HistoryDetailPage._lightGreen,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 70,
-            height: 70,
-            padding: const EdgeInsets.all(9),
-            decoration: BoxDecoration(
-              color: const Color(0xFFD7EFD4),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Image.asset(
-              'assets/images/tomato_plant.png',
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return const Icon(
-                  Icons.eco_rounded,
-                  color: HistoryDetailPage._primaryGreen,
-                  size: 42,
-                );
-              },
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  record.plantName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: HistoryDetailPage._darkGreen,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  record.plantVariety,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: HistoryDetailPage._secondaryText,
-                    fontSize: 11,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.schedule_rounded,
-                      color: HistoryDetailPage._primaryGreen,
-                      size: 14,
-                    ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        record.date,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: HistoryDetailPage._secondaryText,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _DetectionResultCard extends StatelessWidget {
   const _DetectionResultCard({required this.record, required this.isHealthy});

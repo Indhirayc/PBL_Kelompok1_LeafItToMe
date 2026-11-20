@@ -53,6 +53,7 @@ class HistoryDisease {
   final List<String> preventions;
   final List<String> treatments;
   final String searchKeyword;
+  final String? imageAssetPath;
 
   const HistoryDisease({
     required this.name,
@@ -64,6 +65,7 @@ class HistoryDisease {
     required this.preventions,
     required this.treatments,
     required this.searchKeyword,
+    this.imageAssetPath,
   });
 }
 
@@ -250,6 +252,7 @@ abstract final class HistoryData {
       'Kurangi kelembapan di sekitar tanaman dengan memperbaiki sirkulasi udara dan menghindari penyiraman berlebih.',
     ],
     searchKeyword: 'bakterisida tembaga bacterial spot tomat',
+    imageAssetPath: 'assets/images/bacterial_spot.jpg',
   );
 
   static const HistoryDisease leafMold = HistoryDisease(
@@ -274,6 +277,7 @@ abstract final class HistoryData {
       'Kurangi kelembapan kandang tanaman',
     ],
     searchKeyword: 'fungisida mancozeb obat jamur daun tomat',
+    imageAssetPath: 'assets/images/leaf_mold.jpg',
   );
 
   static const HistoryDisease lateBlight = HistoryDisease(
@@ -298,12 +302,39 @@ abstract final class HistoryData {
       'Perbaiki drainase dan sirkulasi udara',
     ],
     searchKeyword: 'fungisida tembaga busuk daun late blight',
+    imageAssetPath: 'assets/images/late_blight.jpg',
+  );
+
+  static const HistoryDisease tylcv = HistoryDisease(
+    name: 'Tomato Yellow Leaf Curl Virus (TYLCV)',
+    latinName: 'Begomovirus',
+    category: 'Virus',
+    severity: 'Risiko Tinggi',
+    severityColor: Color(0xFFD32F2F),
+    symptoms: [
+      'Daun melengkung ke atas dan mengkerut',
+      'Warna daun menguning terutama di sela tulang daun',
+      'Tanaman kerdil dan gagal berbuah',
+    ],
+    preventions: [
+      'Kendalikan hama kutu kebul (vektor virus) dengan mulsa perak atau perangkap kuning.',
+      'Gunakan varietas tomat yang tahan virus jika tersedia di wilayah setempat.',
+      'Segera cabut dan musnahkan tanaman yang terinfeksi agar tidak menular ke tanaman lain.',
+    ],
+    treatments: [
+      'Belum ada obat kimia untuk membunuh virus pada tanaman yang sudah terlanjur terinfeksi.',
+      'Cabut dan musnahkan tanaman yang parah agar tidak menjadi sumber inokulum bagi kutu kebul.',
+      'Semprot insektisida/insektisida nabati untuk menekan populasi kutu kebul.',
+    ],
+    searchKeyword: 'insektisida kutu kebul virus kuning tomat',
+    imageAssetPath: 'assets/images/tylcv.jpg',
   );
 
   static const Map<String, HistoryDisease> _diseasesById = {
     'P001': bacterialSpot,
     'P002': lateBlight,
     'P003': leafMold,
+    'P004': tylcv,
   };
 
   static String normalizeDiseaseName(String value) =>

@@ -247,17 +247,37 @@ class TreatmentRecommendationPage extends StatelessWidget {
           Container(
             width: 52,
             height: 52,
-            decoration: const BoxDecoration(
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
               color: _avatarGreen,
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(
-              isHealthy
-                  ? Icons.check_circle_outline_rounded
-                  : Icons.coronavirus_rounded,
-              color: isHealthy || !hasDiseaseData ? _primaryGreen : _dangerRed,
-              size: 26,
-            ),
+            child: (disease?.imageAssetPath != null &&
+                    disease!.imageAssetPath!.isNotEmpty)
+                ? Image.asset(
+                    disease.imageAssetPath!,
+                    width: 52,
+                    height: 52,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Icon(
+                      isHealthy
+                          ? Icons.check_circle_outline_rounded
+                          : Icons.eco_rounded,
+                      color: isHealthy || !hasDiseaseData
+                          ? _primaryGreen
+                          : _dangerRed,
+                      size: 26,
+                    ),
+                  )
+                : Icon(
+                    isHealthy
+                        ? Icons.check_circle_outline_rounded
+                        : Icons.eco_rounded,
+                    color: isHealthy || !hasDiseaseData
+                        ? _primaryGreen
+                        : _dangerRed,
+                    size: 26,
+                  ),
           ),
           const SizedBox(width: 14),
           Expanded(

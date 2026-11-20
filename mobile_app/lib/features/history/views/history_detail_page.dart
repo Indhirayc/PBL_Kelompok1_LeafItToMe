@@ -54,11 +54,9 @@ class HistoryDetailPage extends StatelessWidget {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                   children: [
-                    _buildResultCard(disease),
-                    const SizedBox(height: 16),
                     _buildPhotoCard(plant),
                     const SizedBox(height: 16),
-                    _buildInfoCard(plant),
+                    _buildResultCard(disease),
                     const SizedBox(height: 20),
                     AppButton(
                       key: const Key('recommendationButton'),
@@ -267,82 +265,6 @@ class HistoryDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoCard(HistoryPlant? plant) {
-    final List<_InfoRow> rows = [
-      _InfoRow(
-        icon: Icons.calendar_today_outlined,
-        label: 'Tanggal pemeriksaan',
-        value: formatHistoryDateTime(record.date),
-      ),
-      _InfoRow(
-        icon: Icons.eco_outlined,
-        label: 'Tanaman',
-        value: plant?.name ?? record.plantName ?? '-',
-      ),
-      _InfoRow(
-        icon: Icons.place_outlined,
-        label: 'Lokasi',
-        value: plant?.location ?? record.plantLocation ?? '-',
-      ),
-      _InfoRow(
-        icon: Icons.notes_outlined,
-        label: 'Catatan',
-        value: record.note,
-      ),
-    ];
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      decoration: _cardDecoration(),
-      child: Column(
-        children: [
-          for (int i = 0; i < rows.length; i++) ...[
-            _buildInfoRow(rows[i]),
-            if (i != rows.length - 1) const Divider(height: 1, color: _border),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(_InfoRow row) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(row.icon, color: _secondaryText, size: 20),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  row.label,
-                  style: const TextStyle(
-                    color: _secondaryText,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  row.value,
-                  style: const TextStyle(
-                    color: _darkGreen,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   BoxDecoration _cardDecoration() {
     return BoxDecoration(
       color: Colors.white,
@@ -357,16 +279,4 @@ class HistoryDetailPage extends StatelessWidget {
       ],
     );
   }
-}
-
-class _InfoRow {
-  final IconData icon;
-  final String label;
-  final String value;
-
-  const _InfoRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
 }

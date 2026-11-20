@@ -649,15 +649,29 @@ class _GuideDetailPageState extends State<GuideDetailPage>
                       Container(
                         width: 40,
                         height: 40,
+                        clipBehavior: Clip.antiAlias,
                         decoration: BoxDecoration(
                           color: disease.severityColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Icon(
-                          Icons.coronavirus_outlined,
-                          color: disease.severityColor,
-                          size: 20,
-                        ),
+                        child: disease.imageAssetPath.isNotEmpty
+                            ? Image.asset(
+                                disease.imageAssetPath,
+                                width: 40,
+                                height: 40,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Icon(
+                                  Icons.eco_rounded,
+                                  color: disease.severityColor,
+                                  size: 20,
+                                ),
+                              )
+                            : Icon(
+                                Icons.eco_rounded,
+                                color: disease.severityColor,
+                                size: 20,
+                              ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(

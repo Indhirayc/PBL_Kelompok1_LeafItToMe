@@ -60,7 +60,7 @@ class _DetectionResultPageState extends ConsumerState<DetectionResultPage> {
       id: 'DET-${DateTime.now().microsecondsSinceEpoch}',
       plantId: draft.plant.id,
       diseaseName: DiseaseLabelMapper.canonicalName(diseaseLabel),
-      latinName: isHealthyClass ? 'Solanum lycopersicum' : 'Pathogen spp.',
+      latinName: DiseaseLabelMapper.latinName(diseaseLabel),
       date: draft.inspectionDate,
       accuracy: confidenceScore,
       isHealthy: isHealthyClass,

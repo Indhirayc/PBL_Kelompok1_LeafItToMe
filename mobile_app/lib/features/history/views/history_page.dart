@@ -116,7 +116,13 @@ class HistoryPage extends ConsumerWidget {
               HistoryPageHeader(
                 title: 'Riwayat Pemeriksaan',
                 subtitle: 'Hasil pemeriksaan untuk tanaman ini.',
-                fallbackRoute: 'plants',
+                fallbackRoute: 'plant-detail',
+                onBack: () {
+                  context.goNamed(
+                    'plant-detail',
+                    pathParameters: {'plantId': selected.id},
+                  );
+                },
                 action: IconButton(
                   tooltip: 'Sinkronisasi Data',
                   onPressed: () {

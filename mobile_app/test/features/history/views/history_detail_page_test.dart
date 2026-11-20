@@ -16,7 +16,6 @@ void main() {
     expect(find.text('Solanum lycopersicum'), findsOneWidget);
     expect(find.text('Kondisi Sehat'), findsOneWidget);
     expect(find.text('Tomat Pot Depan'), findsWidgets);
-    expect(find.text('Teras depan'), findsOneWidget);
     expect(find.textContaining('28 September 2026'), findsWidgets);
 
     await tester.scrollUntilVisible(

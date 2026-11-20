@@ -20,7 +20,6 @@ class HistoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool healthy = record.isHealthy;
-    final Color accentColor = healthy ? _healthyGreen : _dangerRed;
     final Color badgeBg = healthy ? _healthyBg : _dangerBg;
 
     return Padding(
@@ -93,24 +92,6 @@ class HistoryCard extends StatelessWidget {
                                 ),
                               ),
                             ],
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: badgeBg,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              'Akurasi ${record.accuracy}%',
-                              style: TextStyle(
-                                color: accentColor,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
                           ),
                           if (!record.isSynced)
                             Container(

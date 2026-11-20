@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../models/plant.dart';
@@ -51,6 +53,7 @@ class PlantCard extends StatelessWidget {
                 width: 48,
                 height: 48,
                 alignment: Alignment.center,
+                clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
                   color: isHealthy
                       ? const Color(0xFFE8F5E9)
@@ -63,11 +66,27 @@ class PlantCard extends StatelessWidget {
                     width: 1.2,
                   ),
                 ),
-                child: Icon(
-                  Icons.eco_rounded,
-                  color: isHealthy ? primaryGreen : const Color(0xFFED6C02),
-                  size: 26,
-                ),
+                child: plant.imagePath != null &&
+                        File(plant.imagePath!).existsSync()
+                    ? Image.file(
+                        File(plant.imagePath!),
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Icon(
+                          Icons.eco_rounded,
+                          color: isHealthy
+                              ? primaryGreen
+                              : const Color(0xFFED6C02),
+                          size: 26,
+                        ),
+                      )
+                    : Icon(
+                        Icons.eco_rounded,
+                        color:
+                            isHealthy ? primaryGreen : const Color(0xFFED6C02),
+                        size: 26,
+                      ),
               ),
               const SizedBox(width: 14),
               // Detail Teks & Badge Status

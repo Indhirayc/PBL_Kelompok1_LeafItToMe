@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +10,7 @@ import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
 import '../../detection/presentation/pages/data_inspection_page.dart';
 import '../../history/data/history_data.dart' hide HistoryRecord;
+import '../../history/widgets/scanned_leaf_image.dart';
 import '../../../../data/models/scan_record_model.dart';
 import '../models/plant.dart';
 import '../providers/plant_provider.dart';
@@ -114,7 +117,29 @@ class PlantDetailPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildPlantAvatar({double size = 58}) {
+  Widget _buildPlantAvatar(Plant plant, {double size = 58}) {
+    if (plant.imagePath != null && File(plant.imagePath!).existsSync()) {
+      return Container(
+        width: size,
+        height: size,
+        clipBehavior: Clip.antiAlias,
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+        ),
+        child: Image.file(
+          File(plant.imagePath!),
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) =>
+              _buildDefaultPlantAvatar(size: size),
+        ),
+      );
+    }
+    return _buildDefaultPlantAvatar(size: size);
+  }
+
+  Widget _buildDefaultPlantAvatar({double size = 58}) {
     return Container(
       width: size,
       height: size,
@@ -150,9 +175,10 @@ class PlantDetailPage extends ConsumerWidget {
   Widget _buildHistoryItem({
     required String title,
     required String date,
-    required Color avatarColor,
     required bool isHealthy,
     required VoidCallback onTap,
+    String? photoAssetPath,
+    String? cloudImageUrl,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -172,21 +198,19 @@ class PlantDetailPage extends ConsumerWidget {
             ),
             child: Row(
               children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: avatarColor,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    isHealthy
-                        ? Icons.check_circle_outline_rounded
-                        : Icons.warning_amber_rounded,
-                    color: isHealthy
-                        ? const Color(0xFF1B5E20)
-                        : const Color(0xFFD7442D),
-                    size: 24,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: SizedBox(
+                    width: 48,
+                    height: 48,
+                    child: ScannedLeafImage(
+                      cloudImageUrl: cloudImageUrl,
+                      localPath: photoAssetPath,
+                      width: 48,
+                      height: 48,
+                      fit: BoxFit.cover,
+                      isHealthy: isHealthy,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -323,7 +347,7 @@ class PlantDetailPage extends ConsumerWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildPlantAvatar(size: 60),
+              _buildPlantAvatar(plant, size: 60),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -341,7 +365,7 @@ class PlantDetailPage extends ConsumerWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      '${plant.id} • ${plant.location}',
+                      plant.location,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -443,10 +467,9 @@ class PlantDetailPage extends ConsumerWidget {
                 return _buildHistoryItem(
                   title: history.disease,
                   date: history.formattedDate,
-                  avatarColor: history.isHealthy
-                      ? const Color(0xFFE2F1E4)
-                      : const Color(0xFFFFE0D6),
                   isHealthy: history.isHealthy,
+                  photoAssetPath: history.photoAssetPath,
+                  cloudImageUrl: history.cloudImageUrl,
                   onTap: () => _openHistoryDetail(
                     context,
                     plant: plant,

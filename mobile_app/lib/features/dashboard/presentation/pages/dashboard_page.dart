@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -445,6 +447,7 @@ class DashboardPage extends ConsumerWidget {
                       lastCheck: plant.lastInspectionDate,
                       status: plant.status,
                       isHealthy: plant.status.toLowerCase() == 'sehat',
+                      imagePath: plant.imagePath,
                       onTap: () => _openPlantDetail(context, plant.id),
                       onOpenSummary: () => _showPlantDetailModal(
                         context,
@@ -529,6 +532,7 @@ class DashboardPage extends ConsumerWidget {
     required String lastCheck,
     required String status,
     required bool isHealthy,
+    String? imagePath,
     required VoidCallback onTap,
     required VoidCallback onOpenSummary,
     required VoidCallback onOpenHistory,
@@ -558,21 +562,38 @@ class DashboardPage extends ConsumerWidget {
               Container(
                 width: 48,
                 height: 48,
+                clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
                   color: isHealthy
                       ? const Color(0xFFE8F5E9)
                       : const Color(0xFFFFF3E0),
                   shape: BoxShape.circle,
                 ),
-                child: Center(
-                  child: Icon(
-                    Icons.eco_rounded,
-                    color: isHealthy
-                        ? const Color(0xFF2E7D32)
-                        : const Color(0xFFED6C02),
-                    size: 26,
-                  ),
-                ),
+                child: imagePath != null && File(imagePath).existsSync()
+                    ? Image.file(
+                        File(imagePath),
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Center(
+                          child: Icon(
+                            Icons.eco_rounded,
+                            color: isHealthy
+                                ? const Color(0xFF2E7D32)
+                                : const Color(0xFFED6C02),
+                            size: 26,
+                          ),
+                        ),
+                      )
+                    : Center(
+                        child: Icon(
+                          Icons.eco_rounded,
+                          color: isHealthy
+                              ? const Color(0xFF2E7D32)
+                              : const Color(0xFFED6C02),
+                          size: 26,
+                        ),
+                      ),
               ),
               const SizedBox(width: 14),
               Expanded(

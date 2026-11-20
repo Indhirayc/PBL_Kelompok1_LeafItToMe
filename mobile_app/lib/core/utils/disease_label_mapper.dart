@@ -7,6 +7,7 @@ class DiseaseLabel {
     required this.detectionDisplayName,
     required this.modelLabel,
     required this.aliases,
+    required this.latinName,
   });
 
   final String documentId;
@@ -16,6 +17,7 @@ class DiseaseLabel {
   final String detectionDisplayName;
   final String modelLabel;
   final List<String> aliases;
+  final String latinName;
 }
 
 abstract final class DiseaseLabelMapper {
@@ -28,6 +30,7 @@ abstract final class DiseaseLabelMapper {
       detectionDisplayName: 'Bacterial Spot (Bercak Bakteri)',
       modelLabel: 'Bacterial_spot',
       aliases: ['bacterial-spot', 'Bacterial Spot (Bercak Bakteri)'],
+      latinName: 'Xanthomonas spp.',
     ),
     DiseaseLabel(
       documentId: 'P002',
@@ -37,6 +40,7 @@ abstract final class DiseaseLabelMapper {
       detectionDisplayName: 'Late Blight (Busuk Daun)',
       modelLabel: 'Late_blight',
       aliases: ['late-blight', 'Late Blight (Busuk Daun)'],
+      latinName: 'Phytophthora infestans',
     ),
     DiseaseLabel(
       documentId: 'P003',
@@ -46,6 +50,7 @@ abstract final class DiseaseLabelMapper {
       detectionDisplayName: 'Leaf Mold (Kapang Daun)',
       modelLabel: 'Leaf_Mold',
       aliases: ['leaf-mold', 'Leaf Mold (Kapang Daun)'],
+      latinName: 'Passalora fulva',
     ),
     DiseaseLabel(
       documentId: 'P004',
@@ -59,6 +64,7 @@ abstract final class DiseaseLabelMapper {
         'Tomato Yellow Leaf Curl Virus',
         'tomato-yellow-leaf-curl-virus',
       ],
+      latinName: 'Begomovirus',
     ),
     DiseaseLabel(
       documentId: 'P005',
@@ -68,6 +74,7 @@ abstract final class DiseaseLabelMapper {
       detectionDisplayName: 'Daun Tomat Sehat',
       modelLabel: 'healthy',
       aliases: ['sehat', 'Daun Tomat Sehat'],
+      latinName: 'Solanum lycopersicum',
     ),
   ];
 
@@ -110,6 +117,12 @@ abstract final class DiseaseLabelMapper {
     final label = resolve(value);
     if (label != null) return label.detectionDisplayName;
     return _fallbackName(value);
+  }
+
+  static String latinName(String? value) {
+    final label = resolve(value);
+    if (label != null) return label.latinName;
+    return isHealthy(value) ? 'Solanum lycopersicum' : 'Xanthomonas spp.';
   }
 
   static String? documentId(String? value) => resolve(value)?.documentId;
