@@ -9,6 +9,7 @@ import '../../../core/utils/disease_label_mapper.dart';
 import '../../guide/data/guide_data.dart';
 import '../data/history_data.dart';
 import '../widgets/history_page_header.dart';
+import '../widgets/scanned_leaf_image.dart';
 
 class TreatmentRecommendationPage extends StatelessWidget {
   const TreatmentRecommendationPage({super.key, required this.record});
@@ -21,7 +22,6 @@ class TreatmentRecommendationPage extends StatelessWidget {
   static const Color _border = Color(0xFFE3EAE4);
   static const Color _primaryGreen = Color(0xFF2F7D4A);
   static const Color _accentGreen = Color(0xFFE8F5E9);
-  static const Color _avatarGreen = Color(0xFFDCEFD9);
   static const Color _dangerRed = Color(0xFFD32F2F);
 
   Future<void> _openMarketplace(BuildContext context, String keyword) async {
@@ -69,14 +69,7 @@ class TreatmentRecommendationPage extends StatelessWidget {
 
   void _openDiseaseDetails(BuildContext context) {
     if (HistoryData.isHealthyName(record.diseaseName)) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(
-            content: Text('Daun sehat. Tidak ada detail penyakit.'),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+      context.pushNamed('guide-detail', extra: 2);
       return;
     }
 
@@ -154,6 +147,12 @@ class TreatmentRecommendationPage extends StatelessWidget {
                 child: ListView(
                   padding: EdgeInsets.fromLTRB(20, 8, 20, bottomSafeArea + 24),
                   children: [
+                    _buildImageHeader(
+                      plantLabel,
+                      disease,
+                      isHealthy,
+                    ),
+                    const SizedBox(height: 16),
                     _buildContextCard(
                       plantLabel,
                       displayName,
@@ -161,9 +160,9 @@ class TreatmentRecommendationPage extends StatelessWidget {
                       isHealthy,
                     ),
                     const SizedBox(height: 22),
-                    const Text(
-                      'Penanganan Awal',
-                      style: TextStyle(
+                    Text(
+                      isHealthy ? 'Perawatan Harian' : 'Penanganan Awal',
+                      style: const TextStyle(
                         color: _darkGreen,
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
@@ -176,9 +175,9 @@ class TreatmentRecommendationPage extends StatelessWidget {
                       emptyMessage: treatmentEmptyMessage,
                     ),
                     const SizedBox(height: 22),
-                    const Text(
-                      'Pencegahan',
-                      style: TextStyle(
+                    Text(
+                      isHealthy ? 'Pencegahan Rutin' : 'Pencegahan',
+                      style: const TextStyle(
                         color: _darkGreen,
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
@@ -190,26 +189,38 @@ class TreatmentRecommendationPage extends StatelessWidget {
                       preventions,
                       emptyMessage: preventionEmptyMessage,
                     ),
-                    const SizedBox(height: 22),
-                    MarketplaceCard(
-                      key: const Key('marketplaceButton'),
-                      description:
-                          'Temukan produk untuk penanganan tanaman melalui '
-                          'marketplace. Periksa kembali informasi dan '
-                          'petunjuk penggunaan produk sebelum membeli.',
-                      onPressed: () => _openMarketplace(
-                        context,
-                        disease?.searchKeyword ?? 'perawatan tanaman tomat',
+                    if (!isHealthy) ...[
+                      const SizedBox(height: 22),
+                      MarketplaceCard(
+                        key: const Key('marketplaceButton'),
+                        description:
+                            'Temukan produk untuk penanganan tanaman melalui '
+                            'marketplace. Periksa kembali informasi dan '
+                            'petunjuk penggunaan produk sebelum membeli.',
+                        onPressed: () => _openMarketplace(
+                          context,
+                          disease?.searchKeyword ?? 'perawatan tanaman tomat',
+                        ),
                       ),
-                    ),
+                    ],
                     const SizedBox(height: 12),
-                    AppButton(
-                      key: const Key('diseaseDetailButton'),
-                      icon: Icons.arrow_forward_rounded,
-                      label: 'Lihat Detail Penyakit',
-                      variant: AppButtonVariant.secondary,
-                      onPressed: () => _openDiseaseDetails(context),
-                    ),
+                    if (isHealthy)
+                      AppButton(
+                        key: const Key('dailyCareButton'),
+                        icon: Icons.eco_rounded,
+                        label: 'Lihat Perawatan Harian ›',
+                        variant: AppButtonVariant.secondary,
+                        onPressed: () =>
+                            context.pushNamed('guide-detail', extra: 2),
+                      )
+                    else
+                      AppButton(
+                        key: const Key('diseaseDetailButton'),
+                        icon: Icons.arrow_forward_rounded,
+                        label: 'Lihat Detail Penyakit',
+                        variant: AppButtonVariant.secondary,
+                        onPressed: () => _openDiseaseDetails(context),
+                      ),
                     const SizedBox(height: 12),
                     AppButton(
                       key: const Key('finishAndViewHistoryButton'),
@@ -228,77 +239,196 @@ class TreatmentRecommendationPage extends StatelessWidget {
     );
   }
 
+  Widget _buildImageHeader(
+    String plantLabel,
+    HistoryDisease? disease,
+    bool isHealthy,
+  ) {
+    final imageAsset = disease?.imageAssetPath ??
+        (isHealthy ? 'assets/images/tomato_plant.png' : null);
+
+    return Container(
+      height: 220,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: _accentGreen,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: ScannedLeafImage(
+                cloudImageUrl: record.cloudImageUrl,
+                localPath: record.photoAssetPath,
+                width: double.infinity,
+                height: 220,
+                fit: BoxFit.cover,
+                isHealthy: isHealthy,
+                fallbackWidget: imageAsset != null
+                    ? Image.asset(
+                        imageAsset,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            Image.asset(
+                          'assets/images/tomato_plant.png',
+                          fit: BoxFit.contain,
+                        ),
+                      )
+                    : Image.asset(
+                        'assets/images/tomato_plant.png',
+                        fit: BoxFit.contain,
+                      ),
+              ),
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 0,
+              height: 80,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.black.withValues(alpha: 0.65),
+                      Colors.black.withValues(alpha: 0.25),
+                      Colors.transparent,
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 14,
+              left: 16,
+              right: 16,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    plantLabel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black54,
+                          blurRadius: 4,
+                          offset: Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    formatHistoryDate(record.date),
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.90),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      shadows: const [
+                        Shadow(
+                          color: Colors.black54,
+                          blurRadius: 4,
+                          offset: Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildContextCard(
     String plantLabel,
     String displayName,
     HistoryDisease? disease,
     bool isHealthy,
   ) {
-    final bool hasDiseaseData = disease != null;
+    final statusColor = isHealthy ? _primaryGreen : _dangerRed;
+    final statusBg =
+        isHealthy ? const Color(0xFFE8F5E9) : const Color(0xFFFFEBEE);
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: _accentGreen,
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _border),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 52,
-            height: 52,
-            clipBehavior: Clip.antiAlias,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: _avatarGreen,
-              borderRadius: BorderRadius.circular(14),
+              color: statusBg,
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: (disease?.imageAssetPath != null &&
-                    disease!.imageAssetPath!.isNotEmpty)
-                ? Image.asset(
-                    disease.imageAssetPath!,
-                    width: 52,
-                    height: 52,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Icon(
-                      isHealthy
-                          ? Icons.check_circle_outline_rounded
-                          : Icons.eco_rounded,
-                      color: isHealthy || !hasDiseaseData
-                          ? _primaryGreen
-                          : _dangerRed,
-                      size: 26,
-                    ),
-                  )
-                : Icon(
-                    isHealthy
-                        ? Icons.check_circle_outline_rounded
-                        : Icons.eco_rounded,
-                    color: isHealthy || !hasDiseaseData
-                        ? _primaryGreen
-                        : _dangerRed,
-                    size: 26,
-                  ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  displayName,
-                  style: const TextStyle(
-                    color: _darkGreen,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                  ),
+                Icon(
+                  isHealthy
+                      ? Icons.check_circle_outline_rounded
+                      : Icons.warning_amber_rounded,
+                  color: statusColor,
+                  size: 14,
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(width: 4),
                 Text(
-                  '$plantLabel  •  ${formatHistoryDate(record.date)}',
-                  style: const TextStyle(color: _secondaryText, fontSize: 12),
+                  isHealthy ? 'Kondisi Sehat' : 'Terdeteksi Penyakit',
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            displayName,
+            style: const TextStyle(
+              color: _darkGreen,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          if (disease?.latinName != null && disease!.latinName.isNotEmpty) ...[
+            const SizedBox(height: 2),
+            Text(
+              disease.latinName,
+              style: const TextStyle(
+                color: _secondaryText,
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+          const SizedBox(height: 6),
+          Text(
+            '$plantLabel  •  ${formatHistoryDate(record.date)}',
+            style: const TextStyle(color: _secondaryText, fontSize: 12),
           ),
         ],
       ),

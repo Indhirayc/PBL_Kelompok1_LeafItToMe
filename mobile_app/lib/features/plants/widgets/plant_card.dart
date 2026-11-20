@@ -107,25 +107,6 @@ class PlantCard extends StatelessWidget {
                     const SizedBox(height: 5),
                     Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 7,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF0F4F1),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            plant.id,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF4A6854),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
                         // Badge Chip Status dengan indikator dot
                         Container(
                           padding: const EdgeInsets.symmetric(

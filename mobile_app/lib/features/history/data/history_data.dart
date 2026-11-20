@@ -330,11 +330,38 @@ abstract final class HistoryData {
     imageAssetPath: 'assets/images/tylcv.jpg',
   );
 
+  static const HistoryDisease healthy = HistoryDisease(
+    name: 'Tanaman Sehat',
+    latinName: 'Solanum lycopersicum',
+    category: 'Tanaman Sehat',
+    severity: 'Kondisi Prima',
+    severityColor: Color(0xFF2E7D32),
+    symptoms: [
+      'Daun berwarna hijau segar dan merata',
+      'Tidak ada bercak, kerutan, atau tanda infeksi patogen',
+      'Pertumbuhan tanaman terpantau subur dan optimal',
+    ],
+    preventions: [
+      'Lakukan penyiraman teratur di pagi hari secukupnya pada media tanam.',
+      'Pastikan tanaman mendapat sinar matahari yang cukup (minimal 6–8 jam sehari).',
+      'Beri nutrisi dan pupuk secara berkala sesuai fase pertumbuhan.',
+      'Pantau kondisi daun secara rutin untuk mendeteksi potensi hama sejak dini.',
+    ],
+    treatments: [
+      'Pertahankan jadwal penyiraman dan pemupukan yang seimbang.',
+      'Lakukan pemangkasan (pruning) tunas air dan daun tua bawah untuk menjaga sirkulasi udara.',
+      'Jaga kebersihan lingkungan tanam dari gulma dan dedaunan kering yang gugur.',
+    ],
+    searchKeyword: 'pupuk nutrisi tanaman tomat',
+    imageAssetPath: 'assets/images/tomato_plant.png',
+  );
+
   static const Map<String, HistoryDisease> _diseasesById = {
     'P001': bacterialSpot,
     'P002': lateBlight,
     'P003': leafMold,
     'P004': tylcv,
+    'P005': healthy,
   };
 
   static String normalizeDiseaseName(String value) =>
@@ -347,6 +374,9 @@ abstract final class HistoryData {
   static bool isHealthyName(String? name) => DiseaseLabelMapper.isHealthy(name);
 
   static HistoryDisease? byDisease(String? name) {
+    if (isHealthyName(name)) {
+      return healthy;
+    }
     final documentId = DiseaseLabelMapper.documentId(name);
     return documentId == null ? null : _diseasesById[documentId];
   }

@@ -196,7 +196,7 @@ class PlantListPage extends ConsumerWidget {
                               ),
                             ),
                             Text(
-                              "Pantau setiap tanaman berdasarkan ID.",
+                              "Pantau kondisi dan riwayat setiap tanaman.",
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(

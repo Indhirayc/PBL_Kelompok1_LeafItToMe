@@ -613,7 +613,7 @@ class DashboardPage extends ConsumerWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '$code • $location',
+                      location,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -758,10 +758,6 @@ class DashboardPage extends ConsumerWidget {
                   fontWeight: FontWeight.bold,
                   color: darkGreen,
                 ),
-              ),
-              Text(
-                'ID Tanaman: $code',
-                style: const TextStyle(fontSize: 13, color: secondaryText),
               ),
               const SizedBox(height: 16),
               Container(
