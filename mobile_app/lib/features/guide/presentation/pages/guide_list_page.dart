@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
 import '../../data/guide_data.dart';
-import '../widgets/guide_video_section.dart';
 
 class GuideListPage extends StatefulWidget {
   const GuideListPage({super.key});
@@ -78,11 +77,7 @@ class _GuideListPageState extends State<GuideListPage> {
 
                 // 2x2 Clean Topic Grid
                 _buildTopicGrid(context),
-                const SizedBox(height: 24),
-
-                // Video panduan (diputar langsung di aplikasi)
-                const GuideVideoSection(),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
               ],
             ),
           ),
@@ -99,90 +94,112 @@ class _GuideListPageState extends State<GuideListPage> {
         onTap: () {
           context.goNamed('guide-detail', extra: 0);
         },
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
         child: Container(
           width: double.infinity,
           key: const Key('guideFeaturedCard'),
           decoration: BoxDecoration(
-            color: cardGreenBg,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: primaryGreen.withValues(alpha: 0.15)),
-          ),
-          child: Stack(
-            children: [
-              // Plant illustration on right
-              Positioned(
-                right: 8,
-                bottom: 4,
-                top: 4,
-                child: SizedBox(
-                  width: (MediaQuery.sizeOf(context).width * 0.33).clamp(
-                    100.0,
-                    125.0,
-                  ),
-                  child: Image.asset(
-                    'assets/images/tomato_plant.png',
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Icon(
-                        Icons.eco_rounded,
-                        size: 56,
-                        color: primaryGreen,
-                      );
-                    },
-                  ),
-                ),
-              ),
-
-              // Editorial Content
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 22, 138, 22),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: primaryGreen.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: const Text(
-                        'PANDUAN LENGKAP',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: primaryGreen,
-                          letterSpacing: 0.6,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Menanam Tomat\ndari Awal',
-                      style: TextStyle(
-                        fontSize: 19,
-                        fontWeight: FontWeight.w700,
-                        color: darkGreen,
-                        height: 1.25,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    const Text(
-                      'Langkah terstruktur dari pemilihan pot hingga penanganan penyakit.',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: secondaryText,
-                        height: 1.35,
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                  ],
-                ),
+            borderRadius: BorderRadius.circular(22),
+            image: const DecorationImage(
+              image: AssetImage('assets/images/banner_panduan.jpg'),
+              fit: BoxFit.cover,
+              alignment: Alignment.centerRight,
+            ),
+            border: Border.all(color: primaryGreen.withValues(alpha: 0.18)),
+            boxShadow: [
+              BoxShadow(
+                color: primaryGreen.withValues(alpha: 0.08),
+                blurRadius: 14,
+                offset: const Offset(0, 4),
               ),
             ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(18, 18, 100, 18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: primaryGreen,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text(
+                    'PANDUAN LENGKAP',
+                    style: TextStyle(
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'Menanam Tomat\ndari Awal',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: darkGreen,
+                    height: 1.22,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Langkah terstruktur dari pot & bibit hingga penanganan penyakit.',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: secondaryText,
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: primaryGreen.withValues(alpha: 0.22),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Mulai Baca',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: primaryGreen,
+                        ),
+                      ),
+                      SizedBox(width: 4),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 12,
+                        color: primaryGreen,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -259,14 +276,13 @@ class _GuideListPageState extends State<GuideListPage> {
         },
         borderRadius: BorderRadius.circular(16),
         child: Container(
-          padding: const EdgeInsets.all(16),
-          height: 168,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: borderColor),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.02),
+                color: Colors.black.withValues(alpha: 0.025),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -274,37 +290,49 @@ class _GuideListPageState extends State<GuideListPage> {
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: cardGreenBg,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Center(
-                  child: Icon(iconData, color: primaryGreen, size: 24),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: darkGreen,
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: cardGreenBg,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(
+                      child: Icon(iconData, color: primaryGreen, size: 22),
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(fontSize: 11, color: secondaryText),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 13,
+                    color: secondaryText.withValues(alpha: 0.4),
                   ),
                 ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w700,
+                  color: darkGreen,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: secondaryText,
+                ),
               ),
             ],
           ),

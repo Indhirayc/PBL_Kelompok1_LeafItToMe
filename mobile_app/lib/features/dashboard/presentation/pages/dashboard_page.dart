@@ -101,77 +101,74 @@ class DashboardPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isNarrowScreen = MediaQuery.sizeOf(context).width < 380;
     final plantsAsync = ref.watch(plantProvider);
 
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        toolbarHeight: 72,
+        toolbarHeight: 64,
         backgroundColor: backgroundColor,
         elevation: 0,
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         titleSpacing: 20,
         title: Padding(
-          padding: const EdgeInsets.only(top: 12.0),
+          padding: const EdgeInsets.only(top: 4.0),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              if (!isNarrowScreen) ...[
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: primaryGreen.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.eco, color: primaryGreen, size: 22),
+              Image.asset(
+                'assets/images/splash/leafittome_logo.png',
+                width: 38,
+                height: 38,
+                fit: BoxFit.contain,
+                filterQuality: FilterQuality.high,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.eco_rounded,
+                  color: primaryGreen,
+                  size: 28,
                 ),
-                const SizedBox(width: 12),
-              ],
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'LeafItToMe',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Color(0xFF1F3826),
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
+              ),
+              const SizedBox(width: 10),
+              const Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'LeafItToMe',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Color(0xFF1F3826),
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -0.3,
                     ),
-                    if (!isNarrowScreen) ...[
-                      const SizedBox(height: 1),
-                      const Text(
-                        'Beranda',
-                        style: TextStyle(
-                          color: Color(0xFF75857B),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
+                  ),
+                  SizedBox(height: 1),
+                  Text(
+                    'Beranda',
+                    style: TextStyle(
+                      color: Color(0xFF75857B),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ),
       ),
       body: SafeArea(
+        top: false,
         child: SingleChildScrollView(
           child: AppContentLayout(
             child: Padding(
-              padding: const EdgeInsets.all(20.0),
+              padding: const EdgeInsets.fromLTRB(20.0, 6.0, 20.0, 24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 12),
                   // Banner Salam & Perkenalan
                   _buildGreetingHeader(
                     hasPlants: plantsAsync.value?.isNotEmpty ?? false,
@@ -215,34 +212,39 @@ class DashboardPage extends ConsumerWidget {
   Widget _buildGreetingHeader({required bool hasPlants}) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [darkGreen, primaryGreen],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        borderRadius: BorderRadius.circular(22),
+        image: const DecorationImage(
+          image: AssetImage('assets/images/banner_beranda.jpg'),
+          fit: BoxFit.cover,
+          alignment: Alignment.centerRight,
         ),
-        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: darkGreen.withValues(alpha: 0.15),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: const Color(0xFF0F3622).withValues(alpha: 0.18),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
-      child: Stack(
-        children: [
-          Positioned(
-            right: -10,
-            bottom: -20,
-            child: Icon(
-              Icons.energy_savings_leaf_rounded,
-              size: 110,
-              color: Colors.white.withValues(alpha: 0.12),
-            ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(22),
+          gradient: LinearGradient(
+            colors: [
+              Colors.black.withValues(alpha: 0.35),
+              Colors.black.withValues(alpha: 0.15),
+              Colors.transparent,
+            ],
+            stops: const [0.0, 0.65, 1.0],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
           ),
-          Column(
+        ),
+        child: Padding(
+          padding: const EdgeInsets.only(right: 60),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
@@ -251,6 +253,14 @@ class DashboardPage extends ConsumerWidget {
                   color: Colors.white,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
+                  letterSpacing: -0.2,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black45,
+                      blurRadius: 6,
+                      offset: Offset(0, 1),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 6),
@@ -259,14 +269,21 @@ class DashboardPage extends ConsumerWidget {
                     ? 'Pantau kesehatan tanamanmu & ikuti panduan perawatan harian.'
                     : 'Mulai petualangan berkebunmu dengan menambah tanaman pertamamu.',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.9),
+                  color: Colors.white.withValues(alpha: 0.95),
                   fontSize: 13,
-                  height: 1.4,
+                  height: 1.45,
+                  shadows: const [
+                    Shadow(
+                      color: Colors.black45,
+                      blurRadius: 4,
+                      offset: Offset(0, 1),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }

@@ -30,14 +30,27 @@ class PlantListPage extends ConsumerWidget {
     }
   }
 
-  Widget _buildStatItem(String count, String label, Color countColor) {
+  Widget _buildStatItem(
+    String count,
+    String label,
+    Color countColor, {
+    Color bgColor = Colors.white,
+    Color borderColor = const Color(0xFFE3EAE4),
+  }) {
     return Container(
       height: 76,
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: bgColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE3EAE4)),
+        border: Border.all(color: borderColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -89,6 +102,8 @@ class PlantListPage extends ConsumerWidget {
                 '$totalCount',
                 'Total Tanaman',
                 const Color(0xFF2E7D32),
+                bgColor: const Color(0xFFF6FAF7),
+                borderColor: const Color(0xFFD8EADC),
               ),
             ),
             const SizedBox(width: 12),
@@ -97,6 +112,8 @@ class PlantListPage extends ConsumerWidget {
                 '$healthyCount',
                 'Kondisi Sehat',
                 const Color(0xFF2E7D32),
+                bgColor: const Color(0xFFF1F9F3),
+                borderColor: const Color(0xFFC7E6CD),
               ),
             ),
             const SizedBox(width: 12),
@@ -105,6 +122,8 @@ class PlantListPage extends ConsumerWidget {
                 '$attentionCount',
                 'Perlu Perhatian',
                 const Color(0xFFED6C02),
+                bgColor: const Color(0xFFFFF7ED),
+                borderColor: const Color(0xFFFFDEC0),
               ),
             ),
           ],
@@ -163,32 +182,58 @@ class PlantListPage extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
                           children: [
-                            const Text(
-                              "Tanamanku",
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: Color(0xFF1F3826),
-                                fontSize: 22,
-                                fontWeight: FontWeight.w700,
+                            Container(
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE8F5E9),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: const Color(0xFF2F7D4A).withValues(alpha: 0.15),
+                                ),
+                              ),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.yard_outlined,
+                                  color: Color(0xFF2F7D4A),
+                                  size: 20,
+                                ),
                               ),
                             ),
-                            const Text(
-                              "Pantau setiap tanaman berdasarkan ID.",
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: Color(0xFF75857B),
-                                fontSize: 13,
-                                fontWeight: FontWeight.w400,
+                            const SizedBox(width: 10),
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Tanamanku",
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: Color(0xFF1F3826),
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  Text(
+                                    "Pantau setiap tanaman berdasarkan ID.",
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: Color(0xFF75857B),
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
                       ),
+                      const SizedBox(width: 8),
                       SizedBox(
                         height: 36,
                         child: ElevatedButton.icon(
@@ -198,7 +243,8 @@ class PlantListPage extends ConsumerWidget {
                             padding: const EdgeInsets.symmetric(horizontal: 14),
                             minimumSize: const Size(0, 36),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            elevation: 0,
+                            elevation: 1,
+                            shadowColor: const Color(0xFF2F7D4A).withValues(alpha: 0.35),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(18),
                             ),
@@ -206,7 +252,7 @@ class PlantListPage extends ConsumerWidget {
                           onPressed: plantsAsync.hasValue
                               ? () => _openAddPlant(context, ref)
                               : null,
-                          icon: const Icon(Icons.add, size: 14),
+                          icon: const Icon(Icons.add_rounded, size: 16),
                           label: const Text(
                             "Tambah",
                             style: TextStyle(
@@ -236,10 +282,51 @@ class PlantListPage extends ConsumerWidget {
     List<Plant> plants,
   ) {
     if (plants.isEmpty) {
-      return const Center(
-        child: Text(
-          "Belum ada data tanaman.\nTekan tombol Tambah untuk membuat baru.",
-          textAlign: TextAlign.center,
+      return Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8F5E9),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: const Color(0xFFC8E6C9),
+                    width: 1.5,
+                  ),
+                ),
+                child: const Icon(
+                  Icons.yard_outlined,
+                  size: 34,
+                  color: Color(0xFF2F7D4A),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                "Belum ada data tanaman.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF183E2D),
+                ),
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                "Tekan tombol Tambah untuk membuat baru dan mulai memantau tanaman tomatmu.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  color: Color(0xFF75857B),
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
