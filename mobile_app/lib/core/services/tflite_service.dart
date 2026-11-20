@@ -66,7 +66,7 @@ class TfliteService {
 
   /// Sakelar pengaman rollback: jika diatur false, sistem langsung
   /// menggunakan model penyakit tanpa melewati validator Stage 1.
-  static const bool enableValidationStage = true;
+  static const bool enableValidationStage = false;
 
   /// Ambang batas terkalibrasi untuk penerimaan daun tomat pada Stage 1.
   /// Berdasarkan optimasi cost-sensitive (w_FA = 3.5, w_FR = 1.0).
