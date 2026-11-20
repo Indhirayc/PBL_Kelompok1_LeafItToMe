@@ -376,7 +376,9 @@ class DashboardPage extends ConsumerWidget {
               child: _buildStatCard(
                 title: 'Total Tanaman',
                 value: '${plants.length}',
-                color: primaryGreen,
+                color: const Color(0xFF2E7D32),
+                bgColor: const Color(0xFFF6FAF7),
+                borderColor: const Color(0xFFD8EADC),
               ),
             ),
             const SizedBox(width: 12),
@@ -385,6 +387,8 @@ class DashboardPage extends ConsumerWidget {
                 title: 'Kondisi Sehat',
                 value: '$healthyCount',
                 color: const Color(0xFF2E7D32),
+                bgColor: const Color(0xFFF1F9F3),
+                borderColor: const Color(0xFFC7E6CD),
               ),
             ),
             const SizedBox(width: 12),
@@ -393,6 +397,8 @@ class DashboardPage extends ConsumerWidget {
                 title: 'Perlu Perhatian',
                 value: '${plants.length - healthyCount}',
                 color: const Color(0xFFED6C02),
+                bgColor: const Color(0xFFFFF7ED),
+                borderColor: const Color(0xFFFFDEC0),
               ),
             ),
           ],
@@ -468,14 +474,23 @@ class DashboardPage extends ConsumerWidget {
     required String title,
     required String value,
     required Color color,
+    Color bgColor = Colors.white,
+    Color borderColor = const Color(0xFFE3EAE4),
   }) {
     return Container(
       height: 76,
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: bgColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: borderColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

@@ -15,18 +15,20 @@ import 'history_detail_page.dart';
 
 class _HistoryPreview {
   const _HistoryPreview({
+    required this.id,
     required this.disease,
-    required this.date,
-    required this.accuracy,
+    required this.scannedAt,
+    required this.formattedDate,
     required this.note,
     required this.isHealthy,
     this.photoAssetPath,
     this.cloudImageUrl,
   });
 
+  final String id;
   final String disease;
-  final String date;
-  final String accuracy;
+  final DateTime scannedAt;
+  final String formattedDate;
   final String note;
   final bool isHealthy;
   final String? photoAssetPath;
@@ -39,12 +41,16 @@ class PlantDetailPage extends ConsumerWidget {
   final String plantId;
 
   List<_HistoryPreview> _historiesFor(List<ScanRecordModel> scans) {
-    return scans
+    final sortedScans = List<ScanRecordModel>.from(scans)
+      ..sort((a, b) => b.scannedAt.compareTo(a.scannedAt));
+
+    return sortedScans
         .map(
           (scan) => _HistoryPreview(
+            id: scan.id,
             disease: scan.diseaseName,
-            date: formatHistoryDate(scan.scannedAt),
-            accuracy: '${(scan.confidence * 100).round().clamp(0, 100)}%',
+            scannedAt: scan.scannedAt,
+            formattedDate: formatHistoryDateTime(scan.scannedAt),
             note: scan.notes ?? 'Tidak ada catatan tambahan.',
             isHealthy: HistoryData.isHealthyName(scan.diseaseName),
             photoAssetPath: scan.localImagePath,
@@ -144,7 +150,6 @@ class PlantDetailPage extends ConsumerWidget {
   Widget _buildHistoryItem({
     required String title,
     required String date,
-    required String accuracy,
     required Color avatarColor,
     required bool isHealthy,
     required VoidCallback onTap,
@@ -168,8 +173,8 @@ class PlantDetailPage extends ConsumerWidget {
             child: Row(
               children: [
                 Container(
-                  width: 50,
-                  height: 50,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
                     color: avatarColor,
                     shape: BoxShape.circle,
@@ -181,17 +186,17 @@ class PlantDetailPage extends ConsumerWidget {
                     color: isHealthy
                         ? const Color(0xFF1B5E20)
                         : const Color(0xFFD7442D),
-                    size: 25,
+                    size: 24,
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         title,
-                        maxLines: 2,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 15,
@@ -199,21 +204,12 @@ class PlantDetailPage extends ConsumerWidget {
                           color: Color(0xFF1F3826),
                         ),
                       ),
-                      const SizedBox(height: 3),
+                      const SizedBox(height: 4),
                       Text(
                         date,
                         style: const TextStyle(
                           fontSize: 12,
                           color: Color(0xFF75857B),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        accuracy,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1B5E20),
                         ),
                       ),
                     ],
@@ -280,8 +276,8 @@ class PlantDetailPage extends ConsumerWidget {
         plantId: plant.id,
         plantName: plant.name,
         disease: history.disease,
-        date: history.date,
-        accuracy: history.accuracy,
+        date: history.formattedDate,
+        accuracy: '',
         note: history.note,
         userId: plant.userId,
         photoAssetPath: history.photoAssetPath,
@@ -446,8 +442,7 @@ class PlantDetailPage extends ConsumerWidget {
               children: recentHistories.map((history) {
                 return _buildHistoryItem(
                   title: history.disease,
-                  date: history.date,
-                  accuracy: 'Akurasi ${history.accuracy}',
+                  date: history.formattedDate,
                   avatarColor: history.isHealthy
                       ? const Color(0xFFE2F1E4)
                       : const Color(0xFFFFE0D6),

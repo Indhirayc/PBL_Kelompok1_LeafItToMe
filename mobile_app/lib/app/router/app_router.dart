@@ -168,7 +168,7 @@ abstract final class AppRouter {
                 plantName:
                     selectedPlant?.name ?? record.plantName ?? 'Tanaman Tomat',
                 disease: record.diseaseName,
-                date: history_data.formatHistoryDate(record.date),
+                date: history_data.formatHistoryDateTime(record.date),
                 accuracy: '${record.accuracy}%',
                 note: record.note,
                 userId: record.userId,

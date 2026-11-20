@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets/app_content_layout.dart';
-
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
 import '../data/history_data.dart';
@@ -18,8 +17,6 @@ class HistoryDetailPage extends StatelessWidget {
   static const Color _darkGreen = Color(0xFF183E2D);
   static const Color _secondaryText = Color(0xFF75857B);
   static const Color _border = Color(0xFFE3EAE4);
-  static const Color _primaryGreen = Color(0xFF2F7D4A);
-  static const Color _paleGreen = Color(0xFFE8F5E9);
   static const Color _bannerGreen = Color(0xFF183E2D);
   static const Color _healthyGreen = Color(0xFF2E7D32);
 
@@ -57,9 +54,9 @@ class HistoryDetailPage extends StatelessWidget {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                   children: [
-                    _buildBanner(disease),
-                    const SizedBox(height: 18),
-                    _buildResultCard(),
+                    _buildResultCard(disease),
+                    const SizedBox(height: 16),
+                    _buildPhotoCard(plant),
                     const SizedBox(height: 16),
                     _buildInfoCard(plant),
                     const SizedBox(height: 20),
@@ -82,7 +79,7 @@ class HistoryDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildBanner(HistoryDisease? disease) {
+  Widget _buildResultCard(HistoryDisease? disease) {
     final bool healthy = record.isHealthy;
     final Color statusColor = healthy
         ? _healthyGreen
@@ -91,83 +88,48 @@ class HistoryDetailPage extends StatelessWidget {
         ? 'Kondisi Sehat'
         : (disease?.severity ?? 'Perlu Penanganan');
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        height: 200,
-        width: double.infinity,
-        color: _bannerGreen,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: ScannedLeafImage(
-                cloudImageUrl: record.cloudImageUrl,
-                localPath: record.photoAssetPath,
-                width: double.infinity,
-                height: 200,
-                fit: BoxFit.cover,
-                isHealthy: healthy,
-                fallbackWidget: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Image.asset(
-                    'assets/images/tomato_plant.png',
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) => const Center(
-                      child: Icon(
-                        Icons.eco_rounded,
-                        color: Color(0xFF6FA98A),
-                        size: 64,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              left: 14,
-              bottom: 14,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: statusColor,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  statusText,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildResultCard() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: _cardDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Hasil Deteksi',
-            style: TextStyle(
-              color: _secondaryText,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Hasil Deteksi',
+                style: TextStyle(
+                  color: _secondaryText,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 3,
+                ),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: statusColor.withValues(alpha: 0.25),
+                  ),
+                ),
+                child: Text(
+                  statusText,
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
             record.diseaseName,
             style: const TextStyle(
@@ -186,23 +148,121 @@ class HistoryDetailPage extends StatelessWidget {
               fontStyle: FontStyle.italic,
             ),
           ),
-          const SizedBox(height: 14),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: _paleGreen,
-              borderRadius: BorderRadius.circular(20),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPhotoCard(HistoryPlant? plant) {
+    final plantName = plant?.name ?? record.plantName ?? 'Tanaman Tomat';
+    final formattedDate = formatHistoryDateTime(record.date);
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        height: 220,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: _bannerGreen,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
             ),
-            child: Text(
-              'Tingkat keyakinan ${record.accuracy}%',
-              style: const TextStyle(
-                color: _primaryGreen,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
+          ],
+        ),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: ScannedLeafImage(
+                cloudImageUrl: record.cloudImageUrl,
+                localPath: record.photoAssetPath,
+                width: double.infinity,
+                height: 220,
+                fit: BoxFit.cover,
+                isHealthy: record.isHealthy,
+                fallbackWidget: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Image.asset(
+                    'assets/images/tomato_plant.png',
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) => const Center(
+                      child: Icon(
+                        Icons.eco_rounded,
+                        color: Color(0xFF6FA98A),
+                        size: 64,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
-        ],
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 0,
+              height: 80,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.black.withValues(alpha: 0.65),
+                      Colors.black.withValues(alpha: 0.25),
+                      Colors.transparent,
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 14,
+              left: 16,
+              right: 16,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    plantName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black54,
+                          blurRadius: 4,
+                          offset: Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    formattedDate,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.90),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      shadows: const [
+                        Shadow(
+                          color: Colors.black54,
+                          blurRadius: 4,
+                          offset: Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -212,22 +272,17 @@ class HistoryDetailPage extends StatelessWidget {
       _InfoRow(
         icon: Icons.calendar_today_outlined,
         label: 'Tanggal pemeriksaan',
-        value: formatHistoryDate(record.date),
+        value: formatHistoryDateTime(record.date),
       ),
       _InfoRow(
         icon: Icons.eco_outlined,
         label: 'Tanaman',
-        value: plant?.name ?? '-',
-      ),
-      _InfoRow(
-        icon: Icons.qr_code_2_outlined,
-        label: 'ID tanaman',
-        value: plant?.id ?? record.plantId,
+        value: plant?.name ?? record.plantName ?? '-',
       ),
       _InfoRow(
         icon: Icons.place_outlined,
         label: 'Lokasi',
-        value: plant?.location ?? '-',
+        value: plant?.location ?? record.plantLocation ?? '-',
       ),
       _InfoRow(
         icon: Icons.notes_outlined,
@@ -253,26 +308,30 @@ class HistoryDetailPage extends StatelessWidget {
 
   Widget _buildInfoRow(_InfoRow row) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 14),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(row.icon, color: _primaryGreen, size: 20),
-          const SizedBox(width: 12),
+          Icon(row.icon, color: _secondaryText, size: 20),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   row.label,
-                  style: const TextStyle(color: _secondaryText, fontSize: 12),
+                  style: const TextStyle(
+                    color: _secondaryText,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 const SizedBox(height: 3),
                 Text(
                   row.value,
                   style: const TextStyle(
                     color: _darkGreen,
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -289,18 +348,25 @@ class HistoryDetailPage extends StatelessWidget {
       color: Colors.white,
       borderRadius: BorderRadius.circular(16),
       border: Border.all(color: _border),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.03),
+          blurRadius: 10,
+          offset: const Offset(0, 4),
+        ),
+      ],
     );
   }
 }
 
 class _InfoRow {
+  final IconData icon;
+  final String label;
+  final String value;
+
   const _InfoRow({
     required this.icon,
     required this.label,
     required this.value,
   });
-
-  final IconData icon;
-  final String label;
-  final String value;
 }

@@ -14,12 +14,10 @@ void main() {
     expect(find.text('Hasil Deteksi'), findsOneWidget);
     expect(find.text('Healthy'), findsOneWidget);
     expect(find.text('Solanum lycopersicum'), findsOneWidget);
-    expect(find.text('Tingkat keyakinan 96%'), findsOneWidget);
     expect(find.text('Kondisi Sehat'), findsOneWidget);
-    expect(find.text('Tomat Pot Depan'), findsOneWidget);
-    expect(find.text('TMT-001'), findsWidgets);
+    expect(find.text('Tomat Pot Depan'), findsWidgets);
     expect(find.text('Teras depan'), findsOneWidget);
-    expect(find.text('28 September 2026'), findsOneWidget);
+    expect(find.textContaining('28 September 2026'), findsWidgets);
 
     await tester.scrollUntilVisible(
       find.text('Lihat Rekomendasi Penanganan'),
@@ -42,6 +40,5 @@ void main() {
     expect(find.text('Bacterial Spot'), findsOneWidget);
     expect(find.text('Xanthomonas spp.'), findsOneWidget);
     expect(find.text('Risiko Sedang'), findsOneWidget);
-    expect(find.text('Tingkat keyakinan 89%'), findsOneWidget);
   });
 }
