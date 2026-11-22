@@ -2,14 +2,22 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-/// Widget untuk menampilkan foto daun hasil pemindaian.
-/// Mendukung 3 tingkat resolusi sumber foto (3-tier fallback):
-/// 1. Cloud URL (Firebase Storage / Cloudinary / HTTP/HTTPS)
-/// 2. Berkas lokal di memori HP (File system path)
-/// 3. Aset bundel aplikasi (Asset path)
-/// Jika seluruh sumber di atas tidak tersedia atau gagal dimuat,
-/// widget secara anggun (gracefully) menampilkan placeholder default.
-class ScannedLeafImage extends StatelessWidget {
+import '../../../../core/services/photo_cache_service.dart';
+
+/// Widget untuk menampilkan foto daun hasil pemindaian dengan strategi
+/// **Hybrid (Opsi C)**:
+///
+/// 1. **Lokal dulu** — berkas di memori HP dipakai apa adanya (instan dan
+///    tetap tampil saat offline); aset bundel juga langsung dipakai.
+/// 2. **Cache cloud** — bila berkas lokal hilang (mis. dibersihkan sistem),
+///    foto ditarik dari URL cloud; hasilnya di-cache terkompresi sehingga
+///    pembukaan berikutnya instan.
+/// 3. **HP baru** — foto otomatis ditarik dari cloud hanya saat lokal tidak
+///    ada; setelah ter-cache tetap instan dan hemat memori.
+///
+/// Bila seluruh sumber tidak tersedia (offline & belum ada cache), widget
+/// secara anggun (gracefully) menampilkan placeholder default.
+class ScannedLeafImage extends StatefulWidget {
   const ScannedLeafImage({
     super.key,
     this.cloudImageUrl,
@@ -33,17 +41,76 @@ class ScannedLeafImage extends StatelessWidget {
   final String fallbackAsset;
   final Widget? fallbackWidget;
 
-  Widget _buildFallback() {
-    if (fallbackWidget != null) {
-      return fallbackWidget!;
+  @override
+  State<ScannedLeafImage> createState() => _ScannedLeafImageState();
+}
+
+class _ScannedLeafImageState extends State<ScannedLeafImage> {
+  static final PhotoCacheService _photoCache = PhotoCacheService();
+
+  String? _resolvedPath;
+  bool _isResolving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolvePhoto();
+  }
+
+  @override
+  void didUpdateWidget(covariant ScannedLeafImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.localPath != widget.localPath ||
+        oldWidget.cloudImageUrl != widget.cloudImageUrl) {
+      _resolvePhoto();
+    }
+  }
+
+  Future<void> _resolvePhoto() async {
+    final localPath = widget.localPath;
+    final cloudImageUrl = widget.cloudImageUrl;
+
+    setState(() {
+      _isResolving = true;
+      _resolvedPath = null;
+    });
+
+    final String? resolved;
+    try {
+      resolved = await _photoCache.resolve(
+        localPath: localPath,
+        cloudImageUrl: cloudImageUrl,
+      );
+    } catch (e) {
+      debugPrint('ScannedLeafImage: resolusi foto gagal: $e');
+      resolved = null;
     }
 
-    if (isHealthy) {
+    if (!mounted) return;
+    if (localPath != widget.localPath ||
+        cloudImageUrl != widget.cloudImageUrl) {
+      // Input berubah saat resolusi berjalan; resolusi ulang sudah dipicu
+      // oleh didUpdateWidget dan hasil ini sudah usang.
+      return;
+    }
+
+    setState(() {
+      _resolvedPath = resolved;
+      _isResolving = false;
+    });
+  }
+
+  Widget _buildFallback() {
+    if (widget.fallbackWidget != null) {
+      return widget.fallbackWidget!;
+    }
+
+    if (widget.isHealthy) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(6),
           child: Image.asset(
-            fallbackAsset,
+            widget.fallbackAsset,
             fit: BoxFit.contain,
             errorBuilder: (context, error, stackTrace) => const Icon(
               Icons.eco_rounded,
@@ -56,47 +123,50 @@ class ScannedLeafImage extends StatelessWidget {
     }
 
     return const Center(
-      child: Icon(
-        Icons.eco_rounded,
-        color: Color(0xFFD32F2F),
-        size: 28,
+      child: Icon(Icons.eco_rounded, color: Color(0xFFD32F2F), size: 28),
+    );
+  }
+
+  Widget _buildLoading() {
+    return Container(
+      width: widget.width,
+      height: widget.height,
+      color: const Color(0xFFE8F5E9),
+      child: const Center(
+        child: SizedBox(
+          width: 22,
+          height: 22,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2F7D4A)),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildLocalOrFallback() {
-    final path = localPath?.trim();
+  Widget _buildResolved() {
+    final path = _resolvedPath;
     if (path == null || path.isEmpty) {
       return _buildFallback();
-    }
-
-    if (path.startsWith('http://') || path.startsWith('https://')) {
-      return Image.network(
-        path,
-        width: width,
-        height: height,
-        fit: fit,
-        errorBuilder: (context, error, stackTrace) => _buildFallback(),
-      );
     }
 
     if (path.startsWith('assets/')) {
       return Image.asset(
         path,
-        width: width,
-        height: height,
-        fit: fit,
+        width: widget.width,
+        height: widget.height,
+        fit: widget.fit,
         errorBuilder: (context, error, stackTrace) => _buildFallback(),
       );
     }
 
-    // Berkas lokal pada penyimpanan perangkat.
-    final file = File(path);
+    // Berkas lokal di HP (foto asli maupun hasil cache cloud).
     return Image.file(
-      file,
-      width: width,
-      height: height,
-      fit: fit,
+      File(path),
+      width: widget.width,
+      height: widget.height,
+      fit: widget.fit,
       errorBuilder: (context, error, stackTrace) => _buildFallback(),
     );
   }
@@ -104,47 +174,16 @@ class ScannedLeafImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget content;
-    final cloud = cloudImageUrl?.trim();
-
-    if (cloud != null &&
-        (cloud.startsWith('http://') || cloud.startsWith('https://'))) {
-      content = Image.network(
-        cloud,
-        width: width,
-        height: height,
-        fit: fit,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Container(
-            width: width,
-            height: height,
-            color: const Color(0xFFE8F5E9),
-            child: const Center(
-              child: SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2F7D4A)),
-                ),
-              ),
-            ),
-          );
-        },
-        errorBuilder: (context, error, stackTrace) => _buildLocalOrFallback(),
-      );
+    if (_isResolving && _resolvedPath == null) {
+      content = _buildLoading();
     } else {
-      content = _buildLocalOrFallback();
+      content = _buildResolved();
     }
 
-    if (borderRadius != null) {
-      return ClipRRect(
-        borderRadius: borderRadius!,
-        child: content,
-      );
+    if (widget.borderRadius != null) {
+      return ClipRRect(borderRadius: widget.borderRadius!, child: content);
     }
 
     return content;
   }
 }
-
