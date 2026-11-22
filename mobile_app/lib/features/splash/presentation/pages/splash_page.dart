@@ -1,12 +1,11 @@
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/theme/app_breakpoints.dart';
+import '../../../../data/repositories/user_repository.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -39,13 +38,14 @@ class _SplashPageState extends State<SplashPage>
       duration: const Duration(seconds: 3),
     )..forward();
 
-    _navigationTimer = Timer(const Duration(seconds: 3), () {
+    _navigationTimer = Timer(const Duration(seconds: 3), () async {
       if (mounted) {
         // Sudah login → langsung home, belum → halaman login
-        final bool isLoggedIn =
-            Firebase.apps.isNotEmpty &&
-            FirebaseAuth.instance.currentUser != null;
-        context.goNamed(isLoggedIn ? 'home' : 'login');
+        final user = await UserRepository().getCurrentUserProfile();
+        final bool isLoggedIn = user != null;
+        if (mounted) {
+          context.goNamed(isLoggedIn ? 'home' : 'login');
+        }
       }
     });
   }

@@ -1,5 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/utils/disease_label_mapper.dart';
@@ -264,10 +262,6 @@ abstract final class GuideData {
     if (_masterLoaded) return;
     _masterLoaded = true;
     try {
-      if (Firebase.apps.isEmpty) return;
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
-
       final remoteDiseases = await _fetchOrCache('diseases');
       final remoteTools = await _fetchOrCache('tools');
 

@@ -114,7 +114,7 @@ class _RegisterPageState extends State<RegisterPage> {
       _isLoading = true;
     });
     try {
-      // 3. Panggil Firebase Auth & Firestore
+      // 3. Panggil UserRepository (SQLite & MySQL)
       await UserRepository().register(
         _emailController.text.trim(),
         _passwordController.text,

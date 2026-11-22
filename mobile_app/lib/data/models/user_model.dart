@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class UserModel {
   final String uid;
   final String namaLengkap;
@@ -21,29 +19,36 @@ class UserModel {
     required this.updatedAt,
   });
 
-  Map<String, dynamic> toFirestore() {
+  Map<String, dynamic> toJson() {
     return {
+      'uid': uid,
       'nama_lengkap': namaLengkap,
       'email': email,
       'no_telepon': noTelepon,
       'foto_profil': fotoProfil,
       'role': role,
-      'created_at': Timestamp.fromDate(createdAt),
-      'updated_at': Timestamp.fromDate(updatedAt),
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
     };
   }
 
-  factory UserModel.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = doc.data()!;
+  factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      uid: doc.id,
-      namaLengkap: data['nama_lengkap'] ?? '',
-      email: data['email'] ?? '',
-      noTelepon: data['no_telepon'] ?? '',
-      fotoProfil: data['foto_profil'] ?? '',
-      role: data['role'] ?? 'user',
-      createdAt: (data['created_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      updatedAt: (data['updated_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      uid: json['uid'] as String? ?? 'user-local',
+      namaLengkap: json['nama_lengkap'] as String? ?? '',
+      email: json['email'] as String? ?? '',
+      noTelepon: json['no_telepon'] as String? ?? '',
+      fotoProfil: json['foto_profil'] as String? ?? '',
+      role: json['role'] as String? ?? 'user',
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'] as String) ?? DateTime.now()
+          : DateTime.now(),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.tryParse(json['updated_at'] as String) ?? DateTime.now()
+          : DateTime.now(),
     );
   }
+
+  Map<String, dynamic> toMap() => toJson();
+  factory UserModel.fromMap(Map<String, dynamic> map) => UserModel.fromJson(map);
 }

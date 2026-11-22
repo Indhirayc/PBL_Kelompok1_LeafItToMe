@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class ScanRecordModel {
   final String id;
   final String userId;
@@ -63,19 +61,6 @@ class ScanRecordModel {
           ? (map['is_synced'] as int? ?? 0) == 1
           : map['sync_status'] == 'synced',
     );
-  }
-
-  Map<String, dynamic> toFirestore() {
-    return {
-      'id': id,
-      'user_id': userId,
-      'disease_name': diseaseName,
-      'confidence': confidence,
-      'cloud_image_url': cloudImageUrl,
-      'notes': notes,
-      'scanned_at': Timestamp.fromDate(scannedAt),
-      if (plantId != null) 'plant_id': plantId,
-    };
   }
 
   // Dipakai ScanApiSource.saveScan().

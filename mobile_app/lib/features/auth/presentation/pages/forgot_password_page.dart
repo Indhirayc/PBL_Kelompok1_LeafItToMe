@@ -1,4 +1,3 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -56,17 +55,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       _isLoading = true;
     });
 
-    // Kirim tautan reset lewat Firebase Auth; bila Firebase tidak tersedia
-    // (test/demo), alur UI tetap berjalan dengan simulasi.
     String? errorMessage;
     try {
-      if (Firebase.apps.isNotEmpty) {
-        await UserRepository().sendPasswordResetEmail(
-          _emailController.text.trim(),
-        );
-      } else {
-        await Future<void>.delayed(const Duration(seconds: 1));
-      }
+      await UserRepository().sendPasswordResetEmail(
+        _emailController.text.trim(),
+      );
     } catch (e) {
       errorMessage = 'Gagal mengirim tautan reset. Periksa email kamu lagi.';
       debugPrint('Reset password gagal: $e');

@@ -1,5 +1,6 @@
 import 'package:mobile_app/core/sync/sync_manager.dart';
-import 'package:mobile_app/data/datasources/remote/firestore_scan_source.dart';
+import 'package:mobile_app/data/datasources/local/app_database.dart';
+import 'package:mobile_app/data/datasources/remote/cloudinary_source.dart';
 import 'package:mobile_app/data/models/scan_record_model.dart';
 import 'package:mobile_app/data/repositories/scan_repository.dart';
 
@@ -26,7 +27,10 @@ class FakeScanRepository extends ScanRepository {
 
 class _FakeSyncManager extends SyncManager {
   _FakeSyncManager(this.result)
-    : super(firestoreSource: _FakeFirestoreWriter());
+    : super(
+        localDb: AppDatabase.instance,
+        cloudinarySource: _FakeImageUploader(),
+      );
 
   final SyncBatchResult result;
 
@@ -34,7 +38,12 @@ class _FakeSyncManager extends SyncManager {
   Future<SyncBatchResult> syncPendingRecords(String userId) async => result;
 }
 
-class _FakeFirestoreWriter implements FirestoreScanWriter {
+class _FakeImageUploader implements ScanImageUploader {
   @override
-  Future<void> saveScanRecord(ScanRecordModel record) async {}
+  Future<Map<String, String>> uploadScanImage({
+    required String userId,
+    required String localPath,
+  }) async {
+    return {'secure_url': 'https://example.com/fake_image.jpg'};
+  }
 }

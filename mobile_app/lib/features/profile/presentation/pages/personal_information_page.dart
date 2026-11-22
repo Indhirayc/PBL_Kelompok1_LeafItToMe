@@ -1,12 +1,9 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../data/repositories/user_repository.dart';
-
-import 'package:go_router/go_router.dart';
 
 class PersonalInformationPage extends StatefulWidget {
   const PersonalInformationPage({super.key});
@@ -29,14 +26,8 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
   void initState() {
     super.initState();
 
-    final user = FirebaseAuth.instance.currentUser;
-    final initialName = (user?.displayName != null && user!.displayName!.trim().isNotEmpty)
-        ? user.displayName!.trim()
-        : '';
-    final initialEmail = user?.email ?? '';
-
-    _nameController = TextEditingController(text: initialName);
-    _emailController = TextEditingController(text: initialEmail);
+    _nameController = TextEditingController();
+    _emailController = TextEditingController();
     _phoneController = TextEditingController();
 
     _loadProfile();
@@ -45,7 +36,6 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
   /// Isi form dari profil user yang sedang login bila tersedia.
   Future<void> _loadProfile() async {
     try {
-      if (Firebase.apps.isEmpty) return;
       final profile = await UserRepository().getCurrentUserProfile();
       if (profile == null || !mounted) return;
 
@@ -86,14 +76,10 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
 
     String? errorMessage;
     try {
-      if (Firebase.apps.isNotEmpty) {
-        // Email Auth tidak diubah lewat sini (butuh verifikasi ulang),
-        // yang disimpan hanya nama lengkap & nomor telepon.
-        await UserRepository().updateUserProfile(
-          namaLengkap: _nameController.text.trim(),
-          noTelepon: _phoneController.text.trim(),
-        );
-      }
+      await UserRepository().updateUserProfile(
+        namaLengkap: _nameController.text.trim(),
+        noTelepon: _phoneController.text.trim(),
+      );
     } catch (e) {
       errorMessage = 'Gagal menyimpan perubahan: $e';
     }

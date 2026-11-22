@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_app/data/models/scan_record_model.dart';
 
@@ -48,22 +47,14 @@ void main() {
       },
     );
 
-    test('toFirestore serializes dengan Timestamp Firestore', () {
-      final firestoreMap = model.toFirestore();
+    test('toApiJson serializes untuk backend MySQL API', () {
+      final apiJson = model.toApiJson();
 
-      expect(firestoreMap['id'], 'scan-123');
-      expect(firestoreMap['user_id'], 'user-001');
-      expect(firestoreMap['disease_name'], 'Tomato Early Blight');
-      expect(firestoreMap['confidence'], 0.95);
-      expect(
-        firestoreMap['cloud_image_url'],
-        'https://storage.googleapis.com/leafittome/scan_123.jpg',
-      );
-      expect(
-        firestoreMap['notes'],
-        'Bercak kecokelatan pada daun bagian bawah',
-      );
-      expect(firestoreMap['scanned_at'], isA<Timestamp>());
+      expect(apiJson['id_riwayat'], 'scan-123');
+      expect(apiJson['id_pengguna'], 'user-001');
+      expect(apiJson['nama_penyakit'], 'Tomato Early Blight');
+      expect(apiJson['confidence_score'], 0.95);
+      expect(apiJson['catatan'], 'Bercak kecokelatan pada daun bagian bawah');
     });
 
     test('copyWith membuat salinan dengan atribut baru yang diubah', () {

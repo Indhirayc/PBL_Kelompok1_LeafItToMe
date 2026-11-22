@@ -1,31 +1,16 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../../app/theme/app_breakpoints.dart';
 import '../../../../core/providers/database_providers.dart';
 import '../../../../core/utils/disease_label_mapper.dart';
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../../../../data/models/user_model.dart';
 import '../../../../data/repositories/user_repository.dart';
 import '../widgets/profile_menu_tile.dart';
 import '../../../../core/widgets/main_bottom_navigation.dart';
-
-FirebaseApp? _defaultFirebaseApp() {
-  for (final app in Firebase.apps) {
-    if (app.name == '[DEFAULT]') {
-      return app;
-    }
-  }
-  return null;
-}
-
-FirebaseAuth? _firebaseAuth() {
-  final app = _defaultFirebaseApp();
-  return app == null ? null : FirebaseAuth.instanceFor(app: app);
-}
 
 class PlantActivityStats {
   const PlantActivityStats({
@@ -111,9 +96,7 @@ class ProfilePage extends StatelessWidget {
 
     if (shouldLogout == true) {
       try {
-        if (Firebase.apps.isNotEmpty) {
-          await UserRepository().logout();
-        }
+        await UserRepository().logout();
       } catch (e) {
         debugPrint('Gagal logout: $e');
       }
@@ -191,16 +174,16 @@ class ProfilePage extends StatelessWidget {
   }
 
   Widget _buildProfileCard(BuildContext context) {
-    final auth = _firebaseAuth();
-    return StreamBuilder<User?>(
-      stream: auth?.userChanges() ?? const Stream<User?>.empty(),
+    return StreamBuilder<UserModel?>(
+      stream: UserRepository().authStateChanges,
       builder: (context, snapshot) {
-        final user = snapshot.data ?? auth?.currentUser;
-        final displayName =
-            (user?.displayName != null && user!.displayName!.trim().isNotEmpty)
-            ? user.displayName!.trim()
-            : (user?.email?.split('@').first ?? 'Pengguna');
-        final email = user?.email ?? 'Email tidak tersedia';
+        final user = snapshot.data;
+        final displayName = (user != null && user.namaLengkap.trim().isNotEmpty)
+            ? user.namaLengkap.trim()
+            : (user?.email.split('@').first ?? 'Pengguna');
+        final email = (user != null && user.email.isNotEmpty)
+            ? user.email
+            : 'Email tidak tersedia';
 
         return Container(
           key: const Key('profileOverviewCard'),

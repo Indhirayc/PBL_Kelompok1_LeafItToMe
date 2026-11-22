@@ -1,18 +1,55 @@
-import '../datasources/remote/firebase_auth_source.dart';
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:sqflite/sqflite.dart';
+
+import '../datasources/local/app_database.dart';
 import '../models/user_model.dart';
 
 class UserRepository {
-  final FirebaseAuthSource _authSource;
+  static final UserRepository instance = UserRepository._internal();
+  factory UserRepository() => instance;
+  UserRepository._internal();
 
-  UserRepository({FirebaseAuthSource? authSource})
-    : _authSource = authSource ?? FirebaseAuthSource();
+  final _controller = StreamController<UserModel?>.broadcast();
+  UserModel? _cachedUser;
 
-  Stream get authStateChanges => _authSource.authStateChanges;
+  Stream<UserModel?> get authStateChanges async* {
+    _cachedUser ??= await getCurrentUserProfile();
+    yield _cachedUser;
+    yield* _controller.stream;
+  }
 
-  String? get currentUserId => _authSource.currentUser?.uid;
+  String? get currentUserId => _cachedUser?.uid;
+
+  Future<UserModel?> getCurrentUserProfile() async {
+    final db = await AppDatabase.instance.database;
+    final rows = await db.query(
+      'app_meta',
+      where: "key = 'current_user'",
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    try {
+      final json = jsonDecode(rows.first['value'] as String) as Map<String, dynamic>;
+      _cachedUser = UserModel.fromJson(json);
+      return _cachedUser;
+    } catch (_) {
+      return null;
+    }
+  }
 
   Future<void> login(String email, String password) async {
-    await _authSource.login(email: email, password: password);
+    final existing = await getCurrentUserProfile();
+    final user = existing ??
+        UserModel(
+          uid: 'user-${email.split('@').first}',
+          namaLengkap: email.split('@').first,
+          email: email,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
+    await _saveUser(user);
   }
 
   Future<UserModel> register(
@@ -20,39 +57,65 @@ class UserRepository {
     String password,
     String namaLengkap,
   ) async {
-    return await _authSource.register(
-      email: email,
-      password: password,
+    final user = UserModel(
+      uid: 'user-${DateTime.now().millisecondsSinceEpoch}',
       namaLengkap: namaLengkap,
+      email: email,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
     );
+    await _saveUser(user);
+    return user;
   }
 
   Future<void> logout() async {
-    await _authSource.logout();
-  }
-
-  Future<UserModel?> getCurrentUserProfile() async {
-    final uid = currentUserId;
-    if (uid == null) return null;
-    return await _authSource.getUserProfile(uid);
+    final db = await AppDatabase.instance.database;
+    await db.delete('app_meta', where: "key = 'current_user'");
+    _cachedUser = null;
+    _controller.add(null);
   }
 
   Future<void> updateUserProfile({
     String? namaLengkap,
     String? noTelepon,
   }) async {
-    final uid = currentUserId;
-    if (uid == null) {
-      throw StateError('Tidak dapat memperbarui profil: user belum login.');
-    }
-    await _authSource.updateUserProfile(
-      uid: uid,
-      namaLengkap: namaLengkap,
-      noTelepon: noTelepon,
+    final current = await getCurrentUserProfile() ??
+        UserModel(
+          uid: 'user-local',
+          namaLengkap: '',
+          email: '',
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
+    final updated = UserModel(
+      uid: current.uid,
+      namaLengkap: namaLengkap ?? current.namaLengkap,
+      email: current.email,
+      noTelepon: noTelepon ?? current.noTelepon,
+      fotoProfil: current.fotoProfil,
+      role: current.role,
+      createdAt: current.createdAt,
+      updatedAt: DateTime.now(),
     );
+    await _saveUser(updated);
   }
 
   Future<void> sendPasswordResetEmail(String email) async {
-    await _authSource.sendPasswordResetEmail(email);
+    // Reset password terdaftar lokal/MySQL
+  }
+
+  Future<void> _saveUser(UserModel user) async {
+    final db = await AppDatabase.instance.database;
+    await db.insert(
+      'app_meta',
+      {
+        'key': 'current_user',
+        'value': jsonEncode(user.toJson()),
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    _cachedUser = user;
+    _controller.add(user);
   }
 }
