@@ -394,7 +394,15 @@ abstract final class HistoryData {
         return;
       }
 
-      final scans = await ScanRepository().getUserHistory(userId);
+      var scans = await ScanRepository().getUserHistory(userId);
+
+      // Strategi Hybrid (Opsi C): HP baru / data lokal kosong → pulihkan
+      // riwayat dari cloud, lalu foto ditarik otomatis oleh cache hybrid.
+      if (scans.isEmpty) {
+        await ScanRepository().restoreFromCloud(userId);
+        scans = await ScanRepository().getUserHistory(userId);
+      }
+
       final existingIds = records
           .where((record) => record.userId == userId)
           .map((record) => record.id)
