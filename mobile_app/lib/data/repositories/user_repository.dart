@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 
 import '../datasources/local/app_database.dart';
+import '../datasources/remote/api_service.dart';
 import '../models/user_model.dart';
 
 class UserRepository {
@@ -11,6 +12,7 @@ class UserRepository {
   factory UserRepository() => instance;
   UserRepository._internal();
 
+  final ApiService _apiService = ApiService(); // Panggil Api Service Dio
   final _controller = StreamController<UserModel?>.broadcast();
   UserModel? _cachedUser;
 
@@ -31,7 +33,8 @@ class UserRepository {
     );
     if (rows.isEmpty) return null;
     try {
-      final json = jsonDecode(rows.first['value'] as String) as Map<String, dynamic>;
+      final json =
+          jsonDecode(rows.first['value'] as String) as Map<String, dynamic>;
       _cachedUser = UserModel.fromJson(json);
       return _cachedUser;
     } catch (_) {
@@ -39,33 +42,57 @@ class UserRepository {
     }
   }
 
+  /// 1. IMPLEMENTASI LOGIN KE BACKEND MYSQL (DOCKER)
   Future<void> login(String email, String password) async {
-    final existing = await getCurrentUserProfile();
-    final user = existing ??
-        UserModel(
-          uid: 'user-${email.split('@').first}',
-          namaLengkap: email.split('@').first,
-          email: email,
+    try {
+      // Kirim data ke backend via Dio
+      final response = await _apiService.login(email, password);
+
+      if (response['status'] == 'success') {
+        final userData = response['user'];
+        final user = UserModel(
+          uid: userData['id_pengguna'] ?? 'user-${email.split('@').first}',
+          namaLengkap: userData['nama_lengkap'] ?? email.split('@').first,
+          email: userData['email'] ?? email,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );
-    await _saveUser(user);
+        await _saveUser(user);
+      } else {
+        throw Exception(response['message'] ?? 'Login gagal di server');
+      }
+    } catch (e) {
+      // Fallback atau lempar error jika gagal terhubung ke backend
+      throw Exception('Gagal terhubung ke server backend: $e');
+    }
   }
 
+  /// 2. IMPLEMENTASI REGISTER KE BACKEND MYSQL (DOCKER)
   Future<UserModel> register(
     String email,
     String password,
     String namaLengkap,
   ) async {
-    final user = UserModel(
-      uid: 'user-${DateTime.now().millisecondsSinceEpoch}',
-      namaLengkap: namaLengkap,
-      email: email,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
-    await _saveUser(user);
-    return user;
+    try {
+      // Kirim data registrasi ke backend via Dio
+      final response = await _apiService.register(namaLengkap, email, password);
+
+      if (response['status'] == 'success') {
+        final user = UserModel(
+          uid: 'user-${DateTime.now().millisecondsSinceEpoch}',
+          namaLengkap: namaLengkap,
+          email: email,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
+        await _saveUser(user);
+        return user;
+      } else {
+        throw Exception(response['message'] ?? 'Registrasi gagal di server');
+      }
+    } catch (e) {
+      throw Exception('Gagal terhubung ke server backend: $e');
+    }
   }
 
   Future<void> logout() async {
@@ -79,7 +106,8 @@ class UserRepository {
     String? namaLengkap,
     String? noTelepon,
   }) async {
-    final current = await getCurrentUserProfile() ??
+    final current =
+        await getCurrentUserProfile() ??
         UserModel(
           uid: 'user-local',
           namaLengkap: '',
@@ -101,20 +129,16 @@ class UserRepository {
   }
 
   Future<void> sendPasswordResetEmail(String email) async {
-    // Reset password terdaftar lokal/MySQL
+    // Implementasi opsional pemanggilan API reset password ke backend jika diperlukan
   }
 
   Future<void> _saveUser(UserModel user) async {
     final db = await AppDatabase.instance.database;
-    await db.insert(
-      'app_meta',
-      {
-        'key': 'current_user',
-        'value': jsonEncode(user.toJson()),
-        'updated_at': DateTime.now().toUtc().toIso8601String(),
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    await db.insert('app_meta', {
+      'key': 'current_user',
+      'value': jsonEncode(user.toJson()),
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
     _cachedUser = user;
     _controller.add(user);
   }
