@@ -87,6 +87,8 @@ flutter:
     - assets/images/splash/leafittome_logo.png
     - assets/images/inspection/camera_leaf_illustration.png
     - assets/images/tomato_plant.png
+    - assets/images/banner_beranda.jpg
+    - assets/images/banner_panduan.jpg
     - assets/icons/navigation/home.svg
     - assets/icons/navigation/guide.svg
     - assets/icons/navigation/plant.svg

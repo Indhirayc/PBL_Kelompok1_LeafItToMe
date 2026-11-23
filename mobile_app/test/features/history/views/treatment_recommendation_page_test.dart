@@ -42,7 +42,7 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.ensureVisible(find.text('Pencegahan'));
+    await tester.scrollUntilVisible(find.text('Pencegahan'), 200);
     await tester.pumpAndSettle();
 
     expect(find.text('Pencegahan'), findsOneWidget);
@@ -53,6 +53,13 @@ void main() {
       ),
       findsOneWidget,
     );
+
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('diseaseDetailButton')),
+      200,
+    );
+    await tester.pumpAndSettle();
+
     expect(find.text('Lihat Detail Penyakit'), findsOneWidget);
     expect(find.text('Lihat di Marketplace'), findsOneWidget);
     expect(
@@ -157,7 +164,7 @@ void main() {
     expect(find.text('Rekomendasi Penanganan'), findsOneWidget);
   });
 
-  testWidgets('menampilkan pesan untuk hasil sehat tanpa membuka detail', (
+  testWidgets('menampilkan perawatan harian untuk hasil sehat tanpa membuka detail', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -167,16 +174,15 @@ void main() {
     );
 
     await tester.scrollUntilVisible(
-      find.byKey(const Key('diseaseDetailButton')),
+      find.byKey(const Key('dailyCareButton')),
       250,
     );
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byKey(const Key('diseaseDetailButton')));
+    await tester.ensureVisible(find.byKey(const Key('dailyCareButton')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('diseaseDetailButton')));
-    await tester.pump();
 
-    expect(find.text('Daun sehat. Tidak ada detail penyakit.'), findsOneWidget);
+    expect(find.text('Lihat Perawatan Harian ›'), findsOneWidget);
     expect(find.text('Rekomendasi Penanganan'), findsOneWidget);
+    expect(find.byKey(const Key('marketplaceButton')), findsNothing);
   });
 }

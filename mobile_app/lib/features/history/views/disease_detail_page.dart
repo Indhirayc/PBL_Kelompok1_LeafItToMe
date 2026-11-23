@@ -20,7 +20,6 @@ class HistoryDiseaseDetailPage extends StatelessWidget {
   static const Color _categoryBg = Color(0xFFE2F1E4);
   static const Color _categoryFg = Color(0xFF2E7D32);
   static const Color _severityBg = Color(0xFFFBE7D6);
-  static const Color _dangerRed = Color(0xFFD32F2F);
   static const Color _pillBg = Color(0xFF4A5B50);
 
   Future<void> _openMarketplace(BuildContext context, String keyword) async {
@@ -130,53 +129,81 @@ class HistoryDiseaseDetailPage extends StatelessWidget {
 
   Widget _buildBanner(HistoryDisease? disease) {
     final String severity = disease?.severity ?? 'Risiko Sedang';
+    final assetPath = disease?.imageAssetPath;
 
     return Container(
-      height: 150,
+      height: 180,
       width: double.infinity,
-      padding: const EdgeInsets.all(6),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: _darkGreen,
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: _accentGreen,
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              left: 12,
-              top: 12,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: _pillBg,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  severity,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (assetPath != null && assetPath.isNotEmpty)
+            Image.asset(
+              assetPath,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => Container(
+                color: _accentGreen,
+                child: const Center(
+                  child: Icon(
+                    Icons.eco_rounded,
+                    color: _primaryGreen,
+                    size: 56,
                   ),
                 ),
               ),
-            ),
-            const Center(
-              child: Icon(
-                Icons.coronavirus_rounded,
-                color: _dangerRed,
-                size: 56,
+            )
+          else
+            Container(
+              color: _accentGreen,
+              child: const Center(
+                child: Icon(
+                  Icons.eco_rounded,
+                  color: _primaryGreen,
+                  size: 56,
+                ),
               ),
             ),
-          ],
-        ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.black.withValues(alpha: 0.55),
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.55),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+          ),
+          Positioned(
+            left: 14,
+            top: 14,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 5,
+              ),
+              decoration: BoxDecoration(
+                color: _pillBg,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                severity,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

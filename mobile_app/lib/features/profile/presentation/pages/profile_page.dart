@@ -207,27 +207,38 @@ class ProfilePage extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: borderColor),
+            gradient: const LinearGradient(
+              colors: [Colors.white, Color(0xFFF7FAF7)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: const Color(0xFFDCE7DF)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
-                blurRadius: 18,
-                offset: const Offset(0, 6),
+                color: const Color(0xFF183E2D).withValues(alpha: 0.04),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
           child: Row(
             children: [
               Container(
-                width: 74,
-                height: 74,
-                padding: const EdgeInsets.all(10),
+                width: 72,
+                height: 72,
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF0F7EE),
+                  color: const Color(0xFFEAF5EB),
                   shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFDCE9DC)),
+                  border: Border.all(color: const Color(0xFFC7E6CC), width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF2F7D4A).withValues(alpha: 0.10),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
                 child: ClipOval(
                   child: Image.asset(
@@ -238,7 +249,7 @@ class ProfilePage extends StatelessWidget {
                       return const Icon(
                         Icons.person_rounded,
                         color: primaryGreen,
-                        size: 42,
+                        size: 40,
                       );
                     },
                   ),
@@ -251,16 +262,16 @@ class ProfilePage extends StatelessWidget {
                   children: [
                     Text(
                       displayName,
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: darkGreen,
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        height: 1.25,
+                        letterSpacing: -0.2,
                       ),
                     ),
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 4),
                     Text(
                       email,
                       maxLines: 1,
@@ -270,25 +281,28 @@ class ProfilePage extends StatelessWidget {
                         fontSize: 12,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     SizedBox(
-                      height: 34,
+                      height: 32,
                       child: OutlinedButton.icon(
                         onPressed: () {
                           context.pushNamed('personal-information');
                         },
-                        icon: const Icon(Icons.edit_outlined, size: 16),
+                        icon: const Icon(Icons.edit_outlined, size: 14),
                         label: const Text('Edit Profil'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: primaryGreen,
-                          side: const BorderSide(color: Color(0xFFBFD7C4)),
-                          padding: const EdgeInsets.symmetric(horizontal: 13),
+                          side: BorderSide(
+                            color: primaryGreen.withValues(alpha: 0.35),
+                          ),
+                          backgroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
                           textStyle: const TextStyle(
-                            fontSize: 12,
+                            fontSize: 11.5,
                             fontWeight: FontWeight.w600,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(16),
                           ),
                         ),
                       ),
@@ -395,19 +409,20 @@ class ProfilePage extends StatelessWidget {
   Widget _buildLogoutButton(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 52,
+      height: 50,
       child: OutlinedButton.icon(
         onPressed: () {
           _showLogoutDialog(context);
         },
-        icon: const Icon(Icons.logout_rounded, size: 20),
+        icon: const Icon(Icons.logout_rounded, size: 19),
         label: const Text('Keluar'),
         style: OutlinedButton.styleFrom(
           foregroundColor: dangerColor,
-          side: const BorderSide(color: dangerColor),
+          side: const BorderSide(color: Color(0xFFFFCDD2)),
+          backgroundColor: const Color(0xFFFFF5F5),
           textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(16),
           ),
         ),
       ),
@@ -500,6 +515,8 @@ class _ActivityCard extends ConsumerWidget {
               value: totalScans,
               label: 'Pemindaian',
               color: const Color(0xFF2F7D4A),
+              bgColor: const Color(0xFFF6FAF7),
+              borderColor: const Color(0xFFD8EADC),
             ),
           ),
           const SizedBox(width: 12),
@@ -508,6 +525,8 @@ class _ActivityCard extends ConsumerWidget {
               value: diseasedScans,
               label: 'Penyakit',
               color: const Color(0xFFED6C02),
+              bgColor: const Color(0xFFFFF7ED),
+              borderColor: const Color(0xFFFFDEC0),
             ),
           ),
           const SizedBox(width: 12),
@@ -516,6 +535,8 @@ class _ActivityCard extends ConsumerWidget {
               value: healthyScans,
               label: 'Sehat',
               color: const Color(0xFF2E7D32),
+              bgColor: const Color(0xFFF1F9F3),
+              borderColor: const Color(0xFFC7E6CD),
             ),
           ),
         ],
@@ -529,11 +550,15 @@ class _ActivityItem extends StatelessWidget {
     required this.value,
     required this.label,
     required this.color,
+    this.bgColor = Colors.white,
+    this.borderColor = ProfilePage.borderColor,
   });
 
   final String value;
   final String label;
   final Color color;
+  final Color bgColor;
+  final Color borderColor;
 
   @override
   Widget build(BuildContext context) {
@@ -541,9 +566,16 @@ class _ActivityItem extends StatelessWidget {
       height: 76,
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: bgColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: ProfilePage.borderColor),
+        border: Border.all(color: borderColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

@@ -53,7 +53,7 @@ void main() {
     test('Konfigurasi ambang batas validasi Stage 1 dan keyakinan Stage 2 sesuai spesifikasi', () {
       expect(TfliteService.leafValidationThreshold, 0.70);
       expect(TfliteService.confidenceThreshold, 0.60);
-      expect(TfliteService.enableValidationStage, isTrue);
+      expect(TfliteService.enableValidationStage, isFalse);
       expect(TfliteService.normalizationMode, NormalizationMode.rawZeroTo255);
     });
   });

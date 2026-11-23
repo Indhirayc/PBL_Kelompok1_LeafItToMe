@@ -80,6 +80,16 @@ GoRouter _router() {
         builder: (context, state) =>
             PlantDetailPage(plantId: state.pathParameters['plantId']!),
       ),
+      GoRoute(
+        path: '/photo-source',
+        name: 'photo-source',
+        builder: (context, state) => const PlantListPage(),
+      ),
+      GoRoute(
+        path: '/photo-preview',
+        name: 'photo-preview',
+        builder: (context, state) => const PlantListPage(),
+      ),
     ],
   );
 }

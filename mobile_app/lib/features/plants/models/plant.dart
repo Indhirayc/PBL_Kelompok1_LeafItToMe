@@ -8,6 +8,7 @@ class Plant {
     required this.status,
     this.note,
     this.userId = 'user-local',
+    this.imagePath,
   });
 
   final String id;
@@ -18,6 +19,7 @@ class Plant {
   final String status;
   final String? note;
   final String userId;
+  final String? imagePath;
 
   Plant copyWith({
     String? id,
@@ -28,6 +30,7 @@ class Plant {
     String? status,
     String? note,
     String? userId,
+    String? imagePath,
   }) {
     return Plant(
       id: id ?? this.id,
@@ -38,6 +41,7 @@ class Plant {
       status: status ?? this.status,
       note: note ?? this.note,
       userId: userId ?? this.userId,
+      imagePath: imagePath ?? this.imagePath,
     );
   }
 }

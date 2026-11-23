@@ -13,7 +13,7 @@ class HistoryRecord {
     required this.plantName,
     required this.disease,
     required this.date,
-    required this.accuracy,
+    this.accuracy = '',
     this.plantVariety = 'Solanum lycopersicum',
     this.diseaseScientificName = 'Early Blight • Alternaria solani',
     this.note = 'Tidak ada catatan tambahan.',
@@ -127,12 +127,7 @@ class HistoryDetailPage extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
             children: [
-              if (record.photoAssetPath != null ||
-                  record.cloudImageUrl != null) ...[
-                _ScannedLeafPhotoCard(record: record, isHealthy: _isHealthy),
-                const SizedBox(height: 12),
-              ],
-              _PlantInformationCard(record: record),
+              _ScannedLeafPhotoCard(record: record, isHealthy: _isHealthy),
               const SizedBox(height: 12),
               _DetectionResultCard(record: record, isHealthy: _isHealthy),
               const SizedBox(height: 12),
@@ -171,150 +166,81 @@ class _ScannedLeafPhotoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
+      height: 220,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFFE8F0E9),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: HistoryDetailPage._borderColor),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          ScannedLeafImage(
-            cloudImageUrl: record.cloudImageUrl,
-            localPath: record.photoAssetPath,
-            height: 220,
-            width: double.infinity,
-            fit: BoxFit.cover,
-            isHealthy: isHealthy,
+          Positioned.fill(
+            child: ScannedLeafImage(
+              cloudImageUrl: record.cloudImageUrl,
+              localPath: record.photoAssetPath,
+              height: 220,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              isHealthy: isHealthy,
+            ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.camera_alt_outlined,
-                  size: 16,
-                  color: HistoryDetailPage._secondaryText,
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            height: 80,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.black.withValues(alpha: 0.65),
+                    Colors.black.withValues(alpha: 0.25),
+                    Colors.transparent,
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
-                const SizedBox(width: 6),
-                const Text(
-                  'Foto Daun Saat Pemeriksaan',
-                  style: TextStyle(
-                    color: HistoryDetailPage._secondaryText,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PlantInformationCard extends StatelessWidget {
-  const _PlantInformationCard({required this.record});
-
-  final HistoryRecord record;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: HistoryDetailPage._lightGreen,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 70,
-            height: 70,
-            padding: const EdgeInsets.all(9),
-            decoration: BoxDecoration(
-              color: const Color(0xFFD7EFD4),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Image.asset(
-              'assets/images/tomato_plant.png',
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return const Icon(
-                  Icons.eco_rounded,
-                  color: HistoryDetailPage._primaryGreen,
-                  size: 42,
-                );
-              },
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
+          Positioned(
+            top: 14,
+            left: 16,
+            right: 16,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 9,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    'ID ${record.plantId}',
-                    style: const TextStyle(
-                      color: HistoryDetailPage._primaryGreen,
-                      fontSize: 9,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 5),
                 Text(
                   record.plantName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: HistoryDetailPage._darkGreen,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black54,
+                        blurRadius: 4,
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  record.plantVariety,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: HistoryDetailPage._secondaryText,
-                    fontSize: 11,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.schedule_rounded,
-                      color: HistoryDetailPage._primaryGreen,
-                      size: 14,
-                    ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        record.date,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: HistoryDetailPage._secondaryText,
-                          fontSize: 10,
-                        ),
+                  record.date,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    shadows: const [
+                      Shadow(
+                        color: Colors.black54,
+                        blurRadius: 4,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -324,20 +250,13 @@ class _PlantInformationCard extends StatelessWidget {
     );
   }
 }
+
 
 class _DetectionResultCard extends StatelessWidget {
   const _DetectionResultCard({required this.record, required this.isHealthy});
 
   final HistoryRecord record;
   final bool isHealthy;
-
-  double get _confidenceValue {
-    final String normalizedValue = record.accuracy.replaceAll('%', '');
-
-    final double parsedValue = double.tryParse(normalizedValue) ?? 0;
-
-    return (parsedValue / 100).clamp(0, 1);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -419,38 +338,6 @@ class _DetectionResultCard extends StatelessWidget {
             style: const TextStyle(
               color: HistoryDetailPage._secondaryText,
               fontSize: 10,
-            ),
-          ),
-          const SizedBox(height: 15),
-          Row(
-            children: [
-              const Expanded(
-                child: Text(
-                  'Tingkat keyakinan model',
-                  style: TextStyle(
-                    color: HistoryDetailPage._secondaryText,
-                    fontSize: 10,
-                  ),
-                ),
-              ),
-              Text(
-                record.accuracy,
-                style: const TextStyle(
-                  color: HistoryDetailPage._darkGreen,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 7),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: LinearProgressIndicator(
-              value: _confidenceValue,
-              minHeight: 6,
-              backgroundColor: const Color(0xFFEAF0EA),
-              valueColor: AlwaysStoppedAnimation<Color>(resultColor),
             ),
           ),
         ],

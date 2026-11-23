@@ -60,7 +60,7 @@ class _DetectionResultPageState extends ConsumerState<DetectionResultPage> {
       id: 'DET-${DateTime.now().microsecondsSinceEpoch}',
       plantId: draft.plant.id,
       diseaseName: DiseaseLabelMapper.canonicalName(diseaseLabel),
-      latinName: isHealthyClass ? 'Solanum lycopersicum' : 'Pathogen spp.',
+      latinName: DiseaseLabelMapper.latinName(diseaseLabel),
       date: draft.inspectionDate,
       accuracy: confidenceScore,
       isHealthy: isHealthyClass,
@@ -142,8 +142,8 @@ class _DetectionResultPageState extends ConsumerState<DetectionResultPage> {
                       const SizedBox(height: 20),
                       InspectionPlantContextCard(
                         name: widget.selection.draft.plant.name,
-                        id: widget.selection.draft.plant.id,
                         location: widget.selection.draft.plant.location,
+                        dateTime: widget.selection.draft.inspectionDate,
                       ),
                       const SizedBox(height: 18),
                       _buildDiseaseCard(diseaseLabel, isHealthyClass),
@@ -160,9 +160,8 @@ class _DetectionResultPageState extends ConsumerState<DetectionResultPage> {
                       ),
                       const SizedBox(height: 12),
                       const Text(
-                        'Prediksi diproses secara lokal menggunakan '
-                        'TensorFlow Lite. Hasil merupakan estimasi model, '
-                        'bukan diagnosis profesional.',
+                        'Prediksi diproses secara lokal. Hasil merupakan '
+                        'estimasi model, bukan diagnosis profesional.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: _secondaryText,
@@ -321,13 +320,13 @@ class _DetectionResultPageState extends ConsumerState<DetectionResultPage> {
                 Icon(
                   isHealthy
                       ? Icons.check_circle_outline
-                      : Icons.fact_check_outlined,
+                      : Icons.warning_amber_rounded,
                   color: statusColor,
                   size: 15,
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  isHealthy ? 'Daun Sehat' : 'Klasifikasi TFLite',
+                  isHealthy ? 'Daun Sehat' : 'Penyakit Terdeteksi',
                   style: TextStyle(
                     color: statusColor,
                     fontSize: 10,

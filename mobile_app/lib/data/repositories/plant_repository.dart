@@ -116,6 +116,7 @@ Map<String, Object?> _toDatabaseMap(Plant plant) => {
       ?.toIso8601String(),
   'status': plant.status,
   'note': plant.note,
+  'image_path': plant.imagePath,
 };
 
 Plant _fromDatabaseMap(Map<String, Object?> map) => Plant(
@@ -129,6 +130,7 @@ Plant _fromDatabaseMap(Map<String, Object?> map) => Plant(
       : _formatDate(DateTime.parse(map['last_inspection_at']! as String)),
   status: map['status']! as String,
   note: map['note'] as String?,
+  imagePath: map['image_path'] as String?,
 );
 
 DateTime _parseDate(String value) {

@@ -40,6 +40,11 @@ class AppDatabase {
       },
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
+      onOpen: (db) async {
+        if (!await _columnExists(db, 'plants', 'image_path')) {
+          await db.execute('ALTER TABLE plants ADD COLUMN image_path TEXT');
+        }
+      },
     );
 
     if (_databaseFactory != null) {
@@ -52,6 +57,7 @@ class AppDatabase {
       onConfigure: options.onConfigure,
       onCreate: options.onCreate,
       onUpgrade: options.onUpgrade,
+      onOpen: options.onOpen,
     );
   }
 
@@ -152,6 +158,10 @@ class AppDatabase {
     await db.execute(
       'CREATE INDEX IF NOT EXISTS idx_plants_user ON plants (user_id)',
     );
+
+    if (!await _columnExists(db, 'plants', 'image_path')) {
+      await db.execute('ALTER TABLE plants ADD COLUMN image_path TEXT');
+    }
 
     // v4 -> v5: tambah video_url pada guides lalu seed video panduan.
     if (!await _columnExists(db, 'guides', 'video_url')) {

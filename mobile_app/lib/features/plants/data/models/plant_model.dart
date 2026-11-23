@@ -9,6 +9,7 @@ class PlantModel {
     required this.status,
     required this.lastInspectionDate,
     this.note,
+    this.imagePath,
   });
 
   final String id;
@@ -18,9 +19,11 @@ class PlantModel {
   final String status;
   final String lastInspectionDate;
   final String? note;
+  final String? imagePath;
 
   factory PlantModel.fromJson(Map<String, dynamic> json) {
     final note = json['note'];
+    final imagePath = json['image_path'] ?? json['imagePath'];
     return PlantModel(
       id: _readString(json, 'id'),
       name: _readString(json, 'name'),
@@ -33,6 +36,7 @@ class PlantModel {
         'lastInspectionDate',
       ),
       note: note is String ? note : null,
+      imagePath: imagePath is String ? imagePath : null,
     );
   }
 
@@ -45,6 +49,7 @@ class PlantModel {
       status: plant.status,
       lastInspectionDate: plant.lastInspectionDate,
       note: plant.note,
+      imagePath: plant.imagePath,
     );
   }
 
@@ -56,6 +61,7 @@ class PlantModel {
     'status': status,
     'last_inspection_date': lastInspectionDate,
     'note': note,
+    if (imagePath != null) 'image_path': imagePath,
   };
 
   Plant toEntity() => Plant(
@@ -66,6 +72,7 @@ class PlantModel {
     status: status,
     lastInspectionDate: lastInspectionDate,
     note: note,
+    imagePath: imagePath,
   );
 
   static String _readString(Map<String, dynamic> json, String key) {

@@ -127,6 +127,92 @@ void main() {
     );
   });
 
+  test('migrates v6 database to v7 by adding image_path column to plants', () async {
+    final databasePath = path.join(tempDirectory.path, 'v6.db');
+    final oldDatabase = await databaseFactoryFfi.openDatabase(
+      databasePath,
+      options: OpenDatabaseOptions(
+        version: 6,
+        onCreate: (db, version) async {
+          await db.execute('''
+            CREATE TABLE plants (
+              id TEXT PRIMARY KEY,
+              user_id TEXT NOT NULL DEFAULT 'user-local',
+              name TEXT NOT NULL,
+              location TEXT NOT NULL,
+              planted_at TEXT NOT NULL,
+              last_inspection_at TEXT,
+              status TEXT NOT NULL,
+              note TEXT,
+              created_at TEXT NOT NULL,
+              updated_at TEXT NOT NULL,
+              deleted_at TEXT
+            )
+          ''');
+          await db.execute('''
+            CREATE TABLE app_meta (
+              key TEXT PRIMARY KEY,
+              value TEXT NOT NULL,
+              updated_at TEXT NOT NULL
+            )
+          ''');
+          await db.execute('''
+            CREATE TABLE guides (
+              id TEXT PRIMARY KEY,
+              title TEXT NOT NULL,
+              description TEXT,
+              content TEXT NOT NULL,
+              category TEXT,
+              video_url TEXT,
+              updated_at TEXT NOT NULL
+            )
+          ''');
+          await db.insert('plants', {
+            'id': 'plant-v6',
+            'user_id': 'user-1',
+            'name': 'Tomat Ceri',
+            'location': 'Kebun A',
+            'planted_at': '2026-11-01T00:00:00.000Z',
+            'status': 'Sehat',
+            'created_at': '2026-11-01T00:00:00.000Z',
+            'updated_at': '2026-11-01T00:00:00.000Z',
+          });
+        },
+      ),
+    );
+    await oldDatabase.close();
+
+    final upgradedDatabase = AppDatabase.forTesting(
+      databaseFactory: databaseFactoryFfi,
+      databasePath: databasePath,
+    );
+    addTearDown(upgradedDatabase.close);
+    final repo = PlantRepository(database: upgradedDatabase);
+
+    // Verify existing plant still exists and imagePath is null
+    final existingPlants = await repo.getAll(userId: 'user-1');
+    expect(existingPlants.length, 1);
+    expect(existingPlants.first.imagePath, isNull);
+
+    // Verify creating new plant with imagePath succeeds
+    const newPlant = Plant(
+      id: 'plant-with-photo',
+      userId: 'user-1',
+      name: 'Tomat Baru',
+      location: 'Pot 1',
+      plantedDate: '20 November 2026',
+      lastInspectionDate: 'Belum ada pemeriksaan',
+      status: 'Sehat',
+      imagePath: '/path/to/avatar.jpg',
+    );
+    await repo.create(newPlant);
+
+    final updatedList = await repo.getAll(userId: 'user-1');
+    expect(updatedList.length, 2);
+    final retrieved = updatedList.firstWhere((p) => p.id == 'plant-with-photo');
+    expect(retrieved.imagePath, '/path/to/avatar.jpg');
+  });
+
   test(
     'migrates v1 scans and queues unsynced rows without data loss',
     () async {

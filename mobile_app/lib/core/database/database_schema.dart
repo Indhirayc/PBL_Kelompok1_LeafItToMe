@@ -1,4 +1,4 @@
-/// Cetak biru (DDL) database SQLite LeafItToMe — versi 6.
+/// Cetak biru (DDL) database SQLite LeafItToMe — versi 7.
 ///
 /// Menyajikan skema tabel database offline-first aplikasi (`sqflite`):
 /// 8 tabel ternormalisasi: `plants`, `scans`, `diseases`, `guides`, `tools`,
@@ -7,7 +7,7 @@
 /// Skema ini adalah Single Source of Truth yang dieksekusi oleh `AppDatabase`.
 library;
 
-const int kLeafItToMeDatabaseVersion = 6;
+const int kLeafItToMeDatabaseVersion = 7;
 
 /// Daftar nama tabel yang dikelola oleh database aplikasi.
 const List<String> kLeafItToMeTables = <String>[
@@ -33,6 +33,7 @@ const List<String> kLeafItToMeSchema = <String>[
     last_inspection_at TEXT,
     status TEXT NOT NULL,
     note TEXT,
+    image_path TEXT,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     deleted_at TEXT
