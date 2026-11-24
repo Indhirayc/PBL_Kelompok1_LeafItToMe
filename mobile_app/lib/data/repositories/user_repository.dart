@@ -59,10 +59,15 @@ class UserRepository {
         );
         await _saveUser(user);
       } else {
+        // PERBAIKAN 1: Langsung lempar message dari server (misal: "Email belum terdaftar")
         throw Exception(response['message'] ?? 'Login gagal di server');
       }
     } catch (e) {
-      // Fallback atau lempar error jika gagal terhubung ke backend
+      // PERBAIKAN 2: Jika error dari server (yang sudah dilempar di atas), teruskan apa adanya.
+      // Jika error karena benar-benar mati lampu/tidak ada internet (DioException), baru tampilkan pesan koneksi.
+      if (e is Exception) {
+        rethrow;
+      }
       throw Exception('Gagal terhubung ke server backend: $e');
     }
   }

@@ -4,7 +4,6 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../../../core/database/database_schema.dart';
-import '../../../core/utils/disease_label_mapper.dart';
 import '../../models/guide_content_model.dart';
 import '../../models/scan_record_model.dart';
 import 'sync_queue_dao.dart';
@@ -61,9 +60,98 @@ class AppDatabase {
   }
 
   Future<void> _createSchema(DatabaseExecutor db) async {
-    for (final sql in kLeafItToMeSchema) {
-      await db.execute(sql);
-    }
+    await db.execute('''
+      CREATE TABLE plants (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        location TEXT NOT NULL,
+        planted_at TEXT NOT NULL,
+        last_inspection_at TEXT,
+        status TEXT NOT NULL,
+        note TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        deleted_at TEXT
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE scans (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        plant_id TEXT,
+        disease_label TEXT NOT NULL,
+        confidence REAL NOT NULL,
+        local_image_path TEXT NOT NULL,
+        cloud_image_url TEXT,
+        notes TEXT,
+        scanned_at TEXT NOT NULL,
+        sync_status TEXT NOT NULL DEFAULT 'pending'
+          CHECK (sync_status IN ('pending', 'synced')),
+        FOREIGN KEY (plant_id) REFERENCES plants(id) ON DELETE SET NULL
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE diseases (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT,
+        symptoms TEXT,
+        treatment TEXT,
+        image_url TEXT,
+        updated_at TEXT NOT NULL
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE guides (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        description TEXT,
+        content TEXT NOT NULL,
+        category TEXT,
+        video_url TEXT,
+        updated_at TEXT NOT NULL
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE tools (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT,
+        image_url TEXT,
+        updated_at TEXT NOT NULL
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE products (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT,
+        image_url TEXT,
+        price REAL,
+        product_url TEXT,
+        updated_at TEXT NOT NULL
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE sync_queue (
+        id TEXT PRIMARY KEY,
+        entity_type TEXT NOT NULL,
+        entity_id TEXT NOT NULL,
+        operation TEXT NOT NULL,
+        payload TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        attempts INTEGER NOT NULL DEFAULT 0,
+        last_error TEXT,
+        UNIQUE (entity_type, entity_id, operation)
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE app_meta (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    ''');
     await db.execute(
       'INSERT OR REPLACE INTO app_meta (key, value, updated_at) '
       'VALUES (?, ?, ?)',
@@ -143,16 +231,6 @@ class AppDatabase {
       );
     }
 
-    // v5 -> v6: add ownership to plants from existing installations.
-    if (!await _columnExists(db, 'plants', 'user_id')) {
-      await db.execute(
-        "ALTER TABLE plants ADD COLUMN user_id TEXT NOT NULL DEFAULT 'user-local'",
-      );
-    }
-    await db.execute(
-      'CREATE INDEX IF NOT EXISTS idx_plants_user ON plants (user_id)',
-    );
-
     // v4 -> v5: tambah video_url pada guides lalu seed video panduan.
     if (!await _columnExists(db, 'guides', 'video_url')) {
       await db.execute('ALTER TABLE guides ADD COLUMN video_url TEXT');
@@ -165,19 +243,15 @@ class AppDatabase {
       final guideId = guide['id_panduan'] as String;
       final videoUrl = guide['video_url'] as String?;
 
-      await db.insert(
-        'guides',
-        {
-          'id': guideId,
-          'title': guide['judul'],
-          'description': guide['deskripsi'],
-          'content': guide['langkah_langkah'] ?? '',
-          'category': guide['kategori'],
-          'video_url': videoUrl,
-          'updated_at': guide['created_at'] ?? _utcNow(),
-        },
-        conflictAlgorithm: ConflictAlgorithm.ignore,
-      );
+      await db.insert('guides', {
+        'id': guideId,
+        'title': guide['judul'],
+        'description': guide['deskripsi'],
+        'content': guide['langkah_langkah'] ?? '',
+        'category': guide['kategori'],
+        'video_url': videoUrl,
+        'updated_at': guide['created_at'] ?? _utcNow(),
+      }, conflictAlgorithm: ConflictAlgorithm.ignore);
 
       if (videoUrl != null) {
         await db.update(
@@ -214,34 +288,17 @@ class AppDatabase {
   Future<void> saveScanResult(ScanRecordModel scan) async {
     final db = await database;
     await db.transaction((transaction) async {
-      if (scan.plantId != null) {
-        final ownedPlants = await transaction.query(
-          'plants',
-          columns: ['id'],
-          where: 'id = ? AND user_id = ? AND deleted_at IS NULL',
-          whereArgs: [scan.plantId, scan.userId],
-          limit: 1,
-        );
-        if (ownedPlants.isEmpty) {
-          throw StateError(
-            'Tanaman ${scan.plantId} tidak ditemukan di akun pemilik scan.',
-          );
-        }
-      }
-
       await insertScan(scan, executor: transaction);
       if (scan.plantId != null) {
         await transaction.update(
           'plants',
           {
-            'status': DiseaseLabelMapper.isHealthy(scan.diseaseName)
-                ? 'Sehat'
-                : scan.diseaseName,
+            'status': scan.diseaseName,
             'last_inspection_at': scan.scannedAt.toUtc().toIso8601String(),
             'updated_at': _utcNow(),
           },
-          where: 'id = ? AND user_id = ? AND deleted_at IS NULL',
-          whereArgs: [scan.plantId, scan.userId],
+          where: 'id = ? AND deleted_at IS NULL',
+          whereArgs: [scan.plantId],
         );
       }
       await syncQueueDao.enqueue(
@@ -260,7 +317,7 @@ class AppDatabase {
       '''
       SELECT s.*, p.name AS plant_name, p.location AS plant_location
       FROM scans s
-      LEFT JOIN plants p ON p.id = s.plant_id AND p.user_id = s.user_id
+      LEFT JOIN plants p ON p.id = s.plant_id
       WHERE s.user_id = ?
       ORDER BY s.scanned_at DESC
       ''',
@@ -274,15 +331,11 @@ class AppDatabase {
     String userId,
   ) async {
     final db = await database;
-    final result = await db.rawQuery(
-      '''
-      SELECT s.*, p.name AS plant_name, p.location AS plant_location
-      FROM scans s
-      LEFT JOIN plants p ON p.id = s.plant_id AND p.user_id = s.user_id
-      WHERE s.plant_id = ? AND s.user_id = ?
-      ORDER BY s.scanned_at DESC
-      ''',
-      [plantId, userId],
+    final result = await db.query(
+      'scans',
+      where: 'plant_id = ? AND user_id = ?',
+      whereArgs: [plantId, userId],
+      orderBy: 'scanned_at DESC',
     );
     return result.map(ScanRecordModel.fromSqliteMap).toList();
   }
@@ -321,7 +374,7 @@ class AppDatabase {
     return db.transaction((transaction) async {
       final values = <String, Object?>{
         'sync_status': 'synced',
-        'cloud_image_url': ?cloudImageUrl,
+        'cloud_image_url': cloudImageUrl,
       };
       final updatedCount = await transaction.update(
         'scans',
@@ -329,14 +382,12 @@ class AppDatabase {
         where: 'id = ?',
         whereArgs: [id],
       );
-      if (updatedCount == 1) {
-        await syncQueueDao.remove(
-          entityType: 'scan',
-          entityId: id,
-          operation: 'upsert',
-          executor: transaction,
-        );
-      }
+      await syncQueueDao.remove(
+        entityType: 'scan',
+        entityId: id,
+        operation: 'upsert',
+        executor: transaction,
+      );
       return updatedCount;
     });
   }
@@ -348,15 +399,11 @@ class AppDatabase {
     List<Map<String, dynamic>> items,
   ) async {
     final db = await database;
-    await db.insert(
-      'app_meta',
-      {
-        'key': 'master_cache_$key',
-        'value': jsonEncode(items),
-        'updated_at': _utcNow(),
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    await db.insert('app_meta', {
+      'key': 'master_cache_$key',
+      'value': jsonEncode(items),
+      'updated_at': _utcNow(),
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   /// Ambil item master data dari cache app_meta; null bila belum tersimpan
@@ -390,4 +437,4 @@ String _utcNow() => DateTime.now().toUtc().toIso8601String();
 /// menyimpan database lama (v1 `scan_history`, v3/v4 schema Indonesia, atau
 /// v4 schema Inggris tanpa `guides.video_url`) otomatis dimigrasikan, bukan
 /// melempar error downgrade.
-const int _kSchemaVersion = kLeafItToMeDatabaseVersion;
+const int _kSchemaVersion = 5;

@@ -87,6 +87,7 @@ class ScanRecordModel {
     String? plantId,
     String? plantName,
     String? plantLocation,
+    DateTime? scannedAt,
   }) {
     return ScanRecordModel(
       id: id,
@@ -99,7 +100,7 @@ class ScanRecordModel {
       localImagePath: localImagePath,
       cloudImageUrl: cloudImageUrl ?? this.cloudImageUrl,
       notes: notes ?? this.notes,
-      scannedAt: scannedAt,
+      scannedAt: scannedAt ?? this.scannedAt,
       isSynced: isSynced ?? this.isSynced,
     );
   }
