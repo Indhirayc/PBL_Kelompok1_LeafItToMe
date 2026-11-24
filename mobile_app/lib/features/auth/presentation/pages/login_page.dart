@@ -152,6 +152,13 @@ class _LoginPageState extends State<LoginPage> {
     context.goNamed('register');
   }
 
+  void _replayOnboarding() {
+    context.pushNamed(
+      'onboarding',
+      queryParameters: const {'replay': 'true'},
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -323,6 +330,28 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 8),
+
+                  TextButton(
+                    key: const Key('replayOnboardingButton'),
+                    onPressed: _replayOnboarding,
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFF8A9B90),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      minimumSize: const Size(0, 28),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: const Text(
+                      'Lihat perkenalan lagi',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
                   ),
                 ],
               ),

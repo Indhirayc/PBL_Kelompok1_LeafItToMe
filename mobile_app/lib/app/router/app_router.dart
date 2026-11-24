@@ -13,6 +13,7 @@ import '../../features/guide/presentation/pages/disease_detail_page.dart';
 import '../../features/guide/presentation/pages/guide_detail_page.dart';
 import '../../features/guide/presentation/pages/guide_list_page.dart';
 import '../../features/guide/presentation/pages/tool_detail_page.dart';
+import '../../features/onboarding/presentation/pages/onboarding_page.dart';
 import '../../features/plants/views/add_plant_page.dart';
 import '../../features/plants/views/plant_detail_page.dart';
 import '../../features/plants/views/plant_list_page.dart';
@@ -30,12 +31,19 @@ import '../../features/sync/views/sync_result_page.dart';
 
 abstract final class AppRouter {
   static final GoRouter router = GoRouter(
-    initialLocation: '/splash',
+    initialLocation: '/onboarding',
     routes: [
       GoRoute(
         path: '/splash',
         name: 'splash',
         builder: (context, state) => const SplashPage(),
+      ),
+      GoRoute(
+        path: '/onboarding',
+        name: 'onboarding',
+        builder: (context, state) => OnboardingPage(
+          replay: state.uri.queryParameters['replay'] == 'true',
+        ),
       ),
 
       // Authentication
