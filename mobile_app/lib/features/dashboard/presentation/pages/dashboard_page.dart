@@ -120,19 +120,16 @@ class DashboardPage extends ConsumerWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.asset(
-                  'assets/images/splash/leafittome_logo.png',
-                  width: 38,
-                  height: 38,
-                  fit: BoxFit.contain,
-                  filterQuality: FilterQuality.high,
-                  errorBuilder: (context, error, stackTrace) => const Icon(
-                    Icons.eco_rounded,
-                    color: primaryGreen,
-                    size: 28,
-                  ),
+              Image.asset(
+                'assets/images/splash/leafittome_logo.png',
+                width: 38,
+                height: 38,
+                fit: BoxFit.contain,
+                filterQuality: FilterQuality.high,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.eco_rounded,
+                  color: primaryGreen,
+                  size: 28,
                 ),
               ),
               const SizedBox(width: 10),
