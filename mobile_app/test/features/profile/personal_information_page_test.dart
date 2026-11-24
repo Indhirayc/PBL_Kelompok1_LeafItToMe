@@ -48,4 +48,31 @@ void main() {
     expect(find.byKey(const Key('profileOverviewCard')), findsOneWidget);
     expect(find.text('Edit Profil'), findsOneWidget);
   });
+
+  testWidgets('PersonalInformationPage mengizinkan nomor telepon kosong (opsional)', (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: PersonalInformationPage(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Isi nama dan email valid, kosongkan nomor telepon
+    final textFields = find.byType(TextFormField);
+    expect(textFields, findsNWidgets(3));
+
+    await tester.enterText(textFields.at(0), 'Budi Santoso');
+    await tester.enterText(textFields.at(1), 'budi@example.com');
+    await tester.enterText(textFields.at(2), ''); // Phone empty
+
+    await tester.tap(find.text('Simpan Perubahan'));
+    await tester.pumpAndSettle();
+
+    // Tidak ada pesan error 'Nomor telepon wajib diisi'
+    expect(find.text('Nomor telepon wajib diisi.'), findsNothing);
+  });
 }

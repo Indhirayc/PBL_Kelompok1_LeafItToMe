@@ -345,7 +345,7 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
                   _ProfileTextField(
                     controller: _phoneController,
                     label: 'Nomor Telepon',
-                    hintText: 'Masukkan nomor telepon',
+                    hintText: 'Masukkan nomor telepon (opsional)',
                     icon: Icons.phone_outlined,
                     keyboardType: TextInputType.phone,
                     textInputAction: TextInputAction.done,
@@ -353,8 +353,9 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
                     validator: (value) {
                       final phone = value?.trim() ?? '';
 
+                      // Nomor telepon bersifat opsional (tidak wajib diisi)
                       if (phone.isEmpty) {
-                        return 'Nomor telepon wajib diisi.';
+                        return null;
                       }
 
                       if (phone.length < 10 || phone.length > 15) {
