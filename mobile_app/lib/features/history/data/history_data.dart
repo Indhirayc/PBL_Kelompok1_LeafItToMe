@@ -37,12 +37,14 @@ class HistoryPlant {
   final String name;
   final String location;
   final String userId;
+  final String? imagePath;
 
   const HistoryPlant({
     required this.id,
     required this.name,
     required this.location,
     this.userId = 'user-local',
+    this.imagePath,
   });
 }
 
@@ -410,6 +412,7 @@ abstract final class HistoryData {
         name: plant.name,
         location: plant.location,
         userId: plant.userId,
+        imagePath: plant.imagePath,
       );
       final index = plants.indexWhere(
         (item) => item.id == plant.id && item.userId == plant.userId,

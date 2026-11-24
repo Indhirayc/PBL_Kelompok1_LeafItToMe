@@ -25,7 +25,7 @@ void main() {
     expect(find.text('Riwayat Pemeriksaan'), findsOneWidget);
     expect(find.text('Hasil pemeriksaan untuk tanaman ini.'), findsOneWidget);
     expect(find.text('Tomat Pot Depan'), findsOneWidget);
-    expect(find.text('TMT-001  •  Teras depan'), findsOneWidget);
+    expect(find.text('Teras depan'), findsOneWidget);
     expect(find.text('Healthy'), findsNWidgets(2));
     expect(find.text('Bacterial Spot'), findsOneWidget);
   });

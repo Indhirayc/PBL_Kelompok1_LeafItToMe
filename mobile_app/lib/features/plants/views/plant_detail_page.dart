@@ -318,6 +318,7 @@ class PlantDetailPage extends ConsumerWidget {
         name: plant.name,
         location: plant.location,
         userId: plant.userId,
+        imagePath: plant.imagePath,
       ),
     );
   }
