@@ -547,8 +547,8 @@ class _ActivityCard extends ConsumerWidget {
           Expanded(
             child: _ActivityItem(
               value: totalScans,
-              label: 'Pemindaian',
-              color: const Color(0xFF2F7D4A),
+              label: 'Total Tanaman',
+              color: const Color(0xFF2E7D32),
               bgColor: const Color(0xFFF6FAF7),
               borderColor: const Color(0xFFD8EADC),
             ),
@@ -556,21 +556,21 @@ class _ActivityCard extends ConsumerWidget {
           const SizedBox(width: 12),
           Expanded(
             child: _ActivityItem(
-              value: diseasedScans,
-              label: 'Penyakit',
-              color: const Color(0xFFED6C02),
-              bgColor: const Color(0xFFFFF7ED),
-              borderColor: const Color(0xFFFFDEC0),
+              value: healthyScans,
+              label: 'Kondisi Sehat',
+              color: const Color(0xFF2E7D32),
+              bgColor: const Color(0xFFF1F9F3),
+              borderColor: const Color(0xFFC7E6CD),
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: _ActivityItem(
-              value: healthyScans,
-              label: 'Sehat',
-              color: const Color(0xFF2E7D32),
-              bgColor: const Color(0xFFF1F9F3),
-              borderColor: const Color(0xFFC7E6CD),
+              value: diseasedScans,
+              label: 'Perlu Perhatian',
+              color: const Color(0xFFED6C02),
+              bgColor: const Color(0xFFFFF7ED),
+              borderColor: const Color(0xFFFFDEC0),
             ),
           ),
         ],

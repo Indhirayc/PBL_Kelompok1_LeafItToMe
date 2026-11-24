@@ -89,5 +89,11 @@ void main() {
     expect(find.text('3'), findsOneWidget);
     expect(find.text('2'), findsOneWidget);
     expect(find.text('1'), findsOneWidget);
+
+    final scanDx = tester.getTopLeft(find.text('Total Tanaman')).dx;
+    final healthyDx = tester.getTopLeft(find.text('Kondisi Sehat')).dx;
+    final diseaseDx = tester.getTopLeft(find.text('Perlu Perhatian')).dx;
+    expect(scanDx < healthyDx, isTrue);
+    expect(healthyDx < diseaseDx, isTrue);
   });
 }
