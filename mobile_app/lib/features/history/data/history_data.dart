@@ -20,13 +20,16 @@ const List<String> _historyMonthNames = [
   'Desember',
 ];
 
-String formatHistoryDate(DateTime date) =>
-    '${date.day} ${_historyMonthNames[date.month - 1]} ${date.year}';
+String formatHistoryDate(DateTime date) {
+  final local = date.toLocal();
+  return '${local.day} ${_historyMonthNames[local.month - 1]} ${local.year}';
+}
 
 String formatHistoryDateTime(DateTime date) {
-  final hour = date.hour.toString().padLeft(2, '0');
-  final minute = date.minute.toString().padLeft(2, '0');
-  return '${formatHistoryDate(date)} • $hour:$minute';
+  final local = date.toLocal();
+  final hour = local.hour.toString().padLeft(2, '0');
+  final minute = local.minute.toString().padLeft(2, '0');
+  return '${formatHistoryDate(local)} • $hour:$minute';
 }
 
 class HistoryPlant {
@@ -145,7 +148,7 @@ abstract final class HistoryData {
       plantId: 'TMT-001',
       diseaseName: 'Healthy',
       latinName: 'Solanum lycopersicum',
-      date: DateTime(2026, 9, 28),
+      date: DateTime(2026, 9, 28, 14, 30),
       accuracy: 96,
       isHealthy: true,
       note: 'Daun tampak hijau segar, tidak ditemukan bercak.',
@@ -156,7 +159,7 @@ abstract final class HistoryData {
       plantId: 'TMT-001',
       diseaseName: 'Bacterial Spot',
       latinName: 'Xanthomonas spp.',
-      date: DateTime(2026, 9, 18),
+      date: DateTime(2026, 9, 18, 9, 15),
       accuracy: 89,
       isHealthy: false,
       note: 'Terdapat bercak cokelat pada beberapa daun.',
@@ -167,7 +170,7 @@ abstract final class HistoryData {
       plantId: 'TMT-001',
       diseaseName: 'Healthy',
       latinName: 'Solanum lycopersicum',
-      date: DateTime(2026, 9, 2),
+      date: DateTime(2026, 9, 2, 16, 45),
       accuracy: 94,
       isHealthy: true,
       note: 'Tanaman dalam kondisi sehat.',
@@ -178,7 +181,7 @@ abstract final class HistoryData {
       plantId: 'TMT-001',
       diseaseName: 'Leaf Mold',
       latinName: 'Passalora fulva',
-      date: DateTime(2026, 8, 24),
+      date: DateTime(2026, 8, 24, 11, 20),
       accuracy: 91,
       isHealthy: false,
       note: 'Terlihat bercak kekuningan dan lapisan seperti jamur pada daun.',
@@ -189,7 +192,7 @@ abstract final class HistoryData {
       plantId: 'TMT-001',
       diseaseName: 'Late Blight',
       latinName: 'Phytophthora infestans',
-      date: DateTime(2026, 8, 12),
+      date: DateTime(2026, 8, 12, 8, 10),
       accuracy: 87,
       isHealthy: false,
       note: 'Ditemukan bercak berwarna cokelat gelap pada bagian tepi daun.',
@@ -200,7 +203,7 @@ abstract final class HistoryData {
       plantId: 'TMT-002',
       diseaseName: 'Healthy',
       latinName: 'Solanum lycopersicum',
-      date: DateTime(2026, 9, 25),
+      date: DateTime(2026, 9, 25, 15, 0),
       accuracy: 95,
       isHealthy: true,
       note: 'Kondisi tanaman sehat dan daun tidak menunjukkan gejala penyakit.',
@@ -211,7 +214,7 @@ abstract final class HistoryData {
       plantId: 'TMT-002',
       diseaseName: 'Leaf Mold',
       latinName: 'Passalora fulva',
-      date: DateTime(2026, 9, 10),
+      date: DateTime(2026, 9, 10, 10, 30),
       accuracy: 88,
       isHealthy: false,
       note: 'Ditemukan bercak kekuningan pada permukaan bagian atas daun.',
@@ -222,7 +225,7 @@ abstract final class HistoryData {
       plantId: 'TMT-002',
       diseaseName: 'Late Blight',
       latinName: 'Phytophthora infestans',
-      date: DateTime(2026, 8, 22),
+      date: DateTime(2026, 8, 22, 13, 40),
       accuracy: 90,
       isHealthy: false,
       note: 'Ditemukan bercak basah kehitaman pada bagian tepi daun.',

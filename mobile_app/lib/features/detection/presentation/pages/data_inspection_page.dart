@@ -75,7 +75,15 @@ class _DataInspectionPageState extends State<DataInspectionPage> {
     }
 
     setState(() {
-      _inspectionDate = selectedDate;
+      final now = DateTime.now();
+      _inspectionDate = DateTime(
+        selectedDate.year,
+        selectedDate.month,
+        selectedDate.day,
+        now.hour,
+        now.minute,
+        now.second,
+      );
     });
   }
 

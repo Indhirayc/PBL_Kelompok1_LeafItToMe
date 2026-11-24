@@ -29,9 +29,10 @@ class InspectionPlantContextCard extends StatelessWidget {
       'November',
       'Desember',
     ];
-    final hour = date.hour.toString().padLeft(2, '0');
-    final minute = date.minute.toString().padLeft(2, '0');
-    return '${date.day} ${months[date.month - 1]} ${date.year} • $hour:$minute';
+    final local = date.toLocal();
+    final hour = local.hour.toString().padLeft(2, '0');
+    final minute = local.minute.toString().padLeft(2, '0');
+    return '${local.day} ${months[local.month - 1]} ${local.year} • $hour:$minute';
   }
 
   @override
