@@ -92,6 +92,7 @@ abstract final class GuideData {
       },
       tip: 'Simpan sisa benih di wadah kedap udara dan tempat yang sejuk.',
       icon: Icons.eco_outlined,
+      imageAssetPath: 'assets/images/benih_tomat.jpg',
       searchKeyword: 'benih tomat hibrida unggul',
     ),
     ToolModel(
@@ -107,6 +108,7 @@ abstract final class GuideData {
       },
       tip: 'Sterilkan media tanam di bawah sinar matahari sebelum digunakan.',
       icon: Icons.landscape_outlined,
+      imageAssetPath: 'assets/images/media_tanam.jpg',
       searchKeyword: 'media tanam organik gembur',
     ),
     ToolModel(
@@ -122,6 +124,7 @@ abstract final class GuideData {
       },
       tip: 'Siramlah langsung di sekeliling pangkal batang, hindari menyiram daun.',
       icon: Icons.water_drop_outlined,
+      imageAssetPath: 'assets/images/penyiram_sprayer.jpg',
       searchKeyword: 'sprayer semprotan tanaman 2 liter',
     ),
     ToolModel(
@@ -137,6 +140,7 @@ abstract final class GuideData {
       },
       tip: 'Pasang ajir seawal mungkin saat penanaman bibit agar akar tidak rusak.',
       icon: Icons.straighten_outlined,
+      imageAssetPath: 'assets/images/ajir_tanaman.jpg',
       searchKeyword: 'ajir bambu penyangga tanaman',
     ),
     ToolModel(
@@ -152,6 +156,7 @@ abstract final class GuideData {
       },
       tip: 'Berikan pupuk kalsium untuk mencegah pembusukan pada ujung buah.',
       icon: Icons.science_outlined,
+      imageAssetPath: 'assets/images/pupuk_organik.jpg',
       searchKeyword: 'pupuk npk 16 16 16 tanaman tomat',
     ),
   ];
