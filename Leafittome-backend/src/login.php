@@ -11,6 +11,7 @@ $result = $conn->query($sql);
 
 if ($result->num_rows > 0) {
     $user = $result->fetch_assoc();
+    // Kondisi 1: Email ditemukan, cek password
     if (password_verify($password, $user['password'])) {
         echo json_encode([
             "status" => "success",
@@ -22,9 +23,17 @@ if ($result->num_rows > 0) {
             ]
         ]);
     } else {
-        echo json_encode(["status" => "error", "message" => "Password salah"]);
+        // Kondisi 2: Password salah
+        echo json_encode([
+            "status" => "error", 
+            "message" => "Password yang Anda masukkan salah."
+        ]);
     }
 } else {
-    echo json_encode(["status" => "error", "message" => "Email tidak ditemukan"]);
+    // Kondisi 3: Email belum terdaftar di database
+    echo json_encode([
+        "status" => "error", 
+        "message" => "Email belum terdaftar. Silakan daftar terlebih dahulu."
+    ]);
 }
 ?>

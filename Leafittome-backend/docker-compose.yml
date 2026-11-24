@@ -5,7 +5,7 @@ services:
     restart: always
     environment:
       MYSQL_DATABASE: leafittome
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: rootpassword
     ports:
       - "3306:3306"
     volumes:
