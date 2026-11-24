@@ -222,15 +222,30 @@ class _GuideDetailPageState extends State<GuideDetailPage>
                       Container(
                         width: 42,
                         height: 42,
+                        clipBehavior: Clip.antiAlias,
                         decoration: BoxDecoration(
                           color: GuideDetailPage.accentGreen,
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Icon(
-                          tool.icon,
-                          color: GuideDetailPage.primaryGreen,
-                          size: 20,
-                        ),
+                        child: tool.imageAssetPath != null &&
+                                tool.imageAssetPath!.isNotEmpty
+                            ? Image.asset(
+                                tool.imageAssetPath!,
+                                width: 42,
+                                height: 42,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Icon(
+                                  tool.icon,
+                                  color: GuideDetailPage.primaryGreen,
+                                  size: 20,
+                                ),
+                              )
+                            : Icon(
+                                tool.icon,
+                                color: GuideDetailPage.primaryGreen,
+                                size: 20,
+                              ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(

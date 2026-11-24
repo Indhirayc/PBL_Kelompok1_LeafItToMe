@@ -14,6 +14,7 @@ import '../../features/guide/presentation/pages/guide_detail_page.dart';
 import '../../features/guide/presentation/pages/guide_list_page.dart';
 import '../../features/guide/presentation/pages/tool_detail_page.dart';
 import '../../features/plants/views/add_plant_page.dart';
+import '../../features/plants/views/edit_plant_page.dart';
 import '../../features/plants/views/plant_detail_page.dart';
 import '../../features/plants/views/plant_list_page.dart';
 import '../../features/profile/presentation/pages/about_page.dart';
@@ -135,6 +136,19 @@ abstract final class AppRouter {
           }
 
           return PlantDetailPage(plantId: plantId);
+        },
+      ),
+      GoRoute(
+        path: '/plants/:plantId/edit',
+        name: 'edit-plant',
+        builder: (context, state) {
+          final plantId = state.pathParameters['plantId'];
+
+          if (plantId == null || plantId.isEmpty) {
+            return const PlantListPage();
+          }
+
+          return EditPlantPage(plantId: plantId);
         },
       ),
 

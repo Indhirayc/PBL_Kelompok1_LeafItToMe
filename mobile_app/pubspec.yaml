@@ -89,6 +89,12 @@ flutter:
     - assets/images/tomato_plant.png
     - assets/images/banner_beranda.jpg
     - assets/images/banner_panduan.jpg
+    - assets/images/pot_tanam.jpg
+    - assets/images/benih_tomat.jpg
+    - assets/images/media_tanam.jpg
+    - assets/images/penyiram_sprayer.jpg
+    - assets/images/ajir_tanaman.jpg
+    - assets/images/pupuk_organik.jpg
     - assets/icons/navigation/home.svg
     - assets/icons/navigation/guide.svg
     - assets/icons/navigation/plant.svg

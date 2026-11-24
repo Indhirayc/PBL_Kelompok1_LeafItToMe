@@ -82,7 +82,7 @@ class HistoryCard extends StatelessWidget {
                               const SizedBox(width: 6),
                               Flexible(
                                 child: Text(
-                                  formatHistoryDate(record.date),
+                                  formatHistoryDateTime(record.date),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(

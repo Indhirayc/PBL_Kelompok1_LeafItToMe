@@ -512,7 +512,7 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(find.text('Profil'), findsAtLeastNWidgets(1));
-      expect(find.text('Pemindaian'), findsOneWidget);
+      expect(find.text('Total Tanaman'), findsOneWidget);
       expect(find.text('Informasi Pribadi'), findsOneWidget);
       expect(find.byType(MainBottomNavigation), findsOneWidget);
       expect(

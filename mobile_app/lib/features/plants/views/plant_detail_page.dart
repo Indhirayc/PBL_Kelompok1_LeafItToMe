@@ -318,6 +318,7 @@ class PlantDetailPage extends ConsumerWidget {
         name: plant.name,
         location: plant.location,
         userId: plant.userId,
+        imagePath: plant.imagePath,
       ),
     );
   }
@@ -395,6 +396,50 @@ class PlantDetailPage extends ConsumerWidget {
                   ],
                 ),
               ),
+              const SizedBox(width: 8),
+              Material(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                child: InkWell(
+                  key: const Key('editProfileCardButton'),
+                  onTap: () {
+                    context.pushNamed(
+                      'edit-plant',
+                      pathParameters: {'plantId': plant.id},
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFC8E6C9)),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.edit_outlined,
+                          size: 14,
+                          color: Color(0xFF2E7D32),
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          'Edit',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF2E7D32),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -406,7 +451,7 @@ class PlantDetailPage extends ConsumerWidget {
           AppButton(
             key: const Key('scanPlantButton'),
             label: 'Scan Daun',
-            height: 50,
+            height: 48,
             onPressed: () => _openInspectionForm(context, plant),
           ),
         ],
@@ -657,8 +702,23 @@ class PlantDetailPage extends ConsumerWidget {
         centerTitle: false,
         titleSpacing: 0,
         actions: [
+          IconButton(
+            key: const Key('editPlantButton'),
+            tooltip: 'Edit Profil Tanaman',
+            onPressed: () {
+              context.pushNamed(
+                'edit-plant',
+                pathParameters: {'plantId': plant.id},
+              );
+            },
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+            splashRadius: 22,
+            color: const Color(0xFF2F7D4A),
+            icon: const Icon(Icons.edit_outlined, size: 22),
+          ),
           Padding(
-            padding: const EdgeInsets.only(right: 20),
+            padding: const EdgeInsets.only(right: 16),
             child: IconButton(
               tooltip: 'Hapus Tanaman',
               onPressed: () {

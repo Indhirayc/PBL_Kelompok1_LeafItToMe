@@ -40,6 +40,7 @@ class UserRepository {
   Future<void> updateUserProfile({
     String? namaLengkap,
     String? noTelepon,
+    String? fotoProfil,
   }) async {
     final uid = currentUserId;
     if (uid == null) {
@@ -49,6 +50,7 @@ class UserRepository {
       uid: uid,
       namaLengkap: namaLengkap,
       noTelepon: noTelepon,
+      fotoProfil: fotoProfil,
     );
   }
 
