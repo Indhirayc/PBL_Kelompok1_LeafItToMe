@@ -1,6 +1,6 @@
 {
-    "name": "mobile_app",
-    "short_name": "mobile_app",
+    "name": "LeafItToMe",
+    "short_name": "LeafItToMe",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
