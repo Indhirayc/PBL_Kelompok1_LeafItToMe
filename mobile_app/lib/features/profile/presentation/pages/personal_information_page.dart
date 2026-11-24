@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/widgets/app_content_layout.dart';
 import '../../../../core/widgets/app_button.dart';
@@ -24,12 +27,15 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
   late final TextEditingController _phoneController;
 
   bool _isSaving = false;
+  File? _selectedPhoto;
+  String? _existingPhotoUrl;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
 
-    final user = FirebaseAuth.instance.currentUser;
+    final user = _currentUser();
     final initialName = (user?.displayName != null && user!.displayName!.trim().isNotEmpty)
         ? user.displayName!.trim()
         : '';
@@ -39,7 +45,20 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
     _emailController = TextEditingController(text: initialEmail);
     _phoneController = TextEditingController();
 
+    if (user?.photoURL != null && user!.photoURL!.isNotEmpty) {
+      _existingPhotoUrl = user.photoURL;
+    }
+
     _loadProfile();
+  }
+
+  User? _currentUser() {
+    try {
+      if (Firebase.apps.isNotEmpty) {
+        return FirebaseAuth.instance.currentUser;
+      }
+    } catch (_) {}
+    return null;
   }
 
   /// Isi form dari profil user yang sedang login bila tersedia.
@@ -59,6 +78,9 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
         if (profile.noTelepon.isNotEmpty) {
           _phoneController.text = profile.noTelepon;
         }
+        if (profile.fotoProfil.isNotEmpty) {
+          _existingPhotoUrl = profile.fotoProfil;
+        }
       });
     } catch (e) {
       debugPrint('Gagal memuat profil: $e');
@@ -71,6 +93,24 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
     _emailController.dispose();
     _phoneController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickPhoto(ImageSource source) async {
+    try {
+      final XFile? file = await _picker.pickImage(
+        source: source,
+        maxWidth: 800,
+        maxHeight: 800,
+        imageQuality: 85,
+      );
+      if (file != null && mounted) {
+        setState(() {
+          _selectedPhoto = File(file.path);
+        });
+      }
+    } catch (e) {
+      debugPrint('Gagal memilih foto profil: $e');
+    }
   }
 
   Future<void> _saveProfile() async {
@@ -87,11 +127,11 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
     String? errorMessage;
     try {
       if (Firebase.apps.isNotEmpty) {
-        // Email Auth tidak diubah lewat sini (butuh verifikasi ulang),
-        // yang disimpan hanya nama lengkap & nomor telepon.
+        final String? finalPhotoPath = _selectedPhoto?.path ?? _existingPhotoUrl;
         await UserRepository().updateUserProfile(
           namaLengkap: _nameController.text.trim(),
           noTelepon: _phoneController.text.trim(),
+          fotoProfil: finalPhotoPath,
         );
       }
     } catch (e) {
@@ -128,7 +168,10 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (context) {
+      builder: (modalContext) {
+        final hasPhoto = _selectedPhoto != null ||
+            (_existingPhotoUrl != null && _existingPhotoUrl!.isNotEmpty);
+
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(24, 4, 24, 24),
@@ -149,7 +192,8 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
                   icon: Icons.camera_alt_outlined,
                   title: 'Ambil dari kamera',
                   onTap: () {
-                    Navigator.of(context).pop();
+                    Navigator.of(modalContext).pop();
+                    _pickPhoto(ImageSource.camera);
                   },
                 ),
                 const SizedBox(height: 8),
@@ -157,9 +201,24 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
                   icon: Icons.photo_library_outlined,
                   title: 'Pilih dari galeri',
                   onTap: () {
-                    Navigator.of(context).pop();
+                    Navigator.of(modalContext).pop();
+                    _pickPhoto(ImageSource.gallery);
                   },
                 ),
+                if (hasPhoto) ...[
+                  const SizedBox(height: 8),
+                  _PhotoOption(
+                    icon: Icons.delete_outline_rounded,
+                    title: 'Hapus foto profil',
+                    onTap: () {
+                      Navigator.of(modalContext).pop();
+                      setState(() {
+                        _selectedPhoto = null;
+                        _existingPhotoUrl = '';
+                      });
+                    },
+                  ),
+                ],
               ],
             ),
           ),
@@ -331,6 +390,74 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
   }
 
   Widget _buildProfilePhoto() {
+    Widget avatarChild;
+
+    if (_selectedPhoto != null && _selectedPhoto!.existsSync()) {
+      avatarChild = ClipOval(
+        child: Image.file(
+          _selectedPhoto!,
+          width: 110,
+          height: 110,
+          fit: BoxFit.cover,
+        ),
+      );
+    } else if (_existingPhotoUrl != null && _existingPhotoUrl!.isNotEmpty) {
+      if (File(_existingPhotoUrl!).existsSync()) {
+        avatarChild = ClipOval(
+          child: Image.file(
+            File(_existingPhotoUrl!),
+            width: 110,
+            height: 110,
+            fit: BoxFit.cover,
+          ),
+        );
+      } else if (Uri.tryParse(_existingPhotoUrl!)?.hasScheme ?? false) {
+        avatarChild = ClipOval(
+          child: Image.network(
+            _existingPhotoUrl!,
+            width: 110,
+            height: 110,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => const Icon(
+              Icons.person_rounded,
+              color: _ProfileColors.primaryGreen,
+              size: 56,
+            ),
+          ),
+        );
+      } else {
+        avatarChild = Image.asset(
+          'assets/images/splash/leafittome_logo.png',
+          fit: BoxFit.contain,
+          filterQuality: FilterQuality.high,
+          errorBuilder: (context, error, stackTrace) => const Icon(
+            Icons.person_rounded,
+            color: _ProfileColors.primaryGreen,
+            size: 56,
+          ),
+        );
+      }
+    } else {
+      avatarChild = Image.asset(
+        'assets/images/splash/leafittome_logo.png',
+        fit: BoxFit.contain,
+        filterQuality: FilterQuality.high,
+        errorBuilder: (context, error, stackTrace) {
+          return const Icon(
+            Icons.person_rounded,
+            color: _ProfileColors.primaryGreen,
+            size: 56,
+          );
+        },
+      );
+    }
+
+    final bool hasCustomPhoto = (_selectedPhoto != null && _selectedPhoto!.existsSync()) ||
+        (_existingPhotoUrl != null &&
+            _existingPhotoUrl!.isNotEmpty &&
+            (File(_existingPhotoUrl!).existsSync() ||
+                (Uri.tryParse(_existingPhotoUrl!)?.hasScheme ?? false)));
+
     return Column(
       children: [
         Stack(
@@ -340,24 +467,13 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
               key: const Key('profilePhotoAvatar'),
               width: 110,
               height: 110,
-              padding: const EdgeInsets.all(17),
+              padding: hasCustomPhoto ? EdgeInsets.zero : const EdgeInsets.all(17),
               decoration: BoxDecoration(
                 color: const Color(0xFFF4FAF3),
                 shape: BoxShape.circle,
                 border: Border.all(color: const Color(0xFFD5E9D7), width: 1.2),
               ),
-              child: Image.asset(
-                'assets/images/splash/leafittome_logo.png',
-                fit: BoxFit.contain,
-                filterQuality: FilterQuality.high,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(
-                    Icons.person_rounded,
-                    color: _ProfileColors.primaryGreen,
-                    size: 56,
-                  );
-                },
-              ),
+              child: avatarChild,
             ),
             Positioned(
               right: -2,
@@ -366,6 +482,7 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
                 color: _ProfileColors.primaryGreen,
                 shape: const CircleBorder(),
                 child: InkWell(
+                  key: const Key('editProfilePhotoButton'),
                   onTap: _editProfilePhoto,
                   customBorder: const CircleBorder(),
                   child: const SizedBox(

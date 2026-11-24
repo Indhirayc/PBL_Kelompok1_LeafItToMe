@@ -84,26 +84,31 @@ class FirebaseAuthSource {
     return UserModel.fromFirestore(doc);
   }
 
-  // Perbarui profil user di Firestore (nama lengkap & nomor telepon)
+  // Perbarui profil user di Firestore (nama lengkap, nomor telepon, dan foto profil)
   Future<void> updateUserProfile({
     required String uid,
     String? namaLengkap,
     String? noTelepon,
+    String? fotoProfil,
   }) async {
     final updates = <String, dynamic>{
       'updated_at': Timestamp.fromDate(DateTime.now()),
     };
     if (namaLengkap != null) updates['nama_lengkap'] = namaLengkap;
     if (noTelepon != null) updates['no_telepon'] = noTelepon;
+    if (fotoProfil != null) updates['foto_profil'] = fotoProfil;
 
     await _firestore
         .collection('users')
         .doc(uid)
         .set(updates, SetOptions(merge: true));
 
-    // Samakan nama di profil Auth agar header profil ikut berubah
+    // Samakan nama & foto di profil Auth agar header profil ikut berubah
     if (namaLengkap != null && namaLengkap.isNotEmpty) {
       await _auth.currentUser?.updateDisplayName(namaLengkap);
+    }
+    if (fotoProfil != null) {
+      await _auth.currentUser?.updatePhotoURL(fotoProfil.isEmpty ? null : fotoProfil);
     }
   }
 

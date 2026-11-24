@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -227,7 +229,12 @@ class ProfilePage extends StatelessWidget {
               Container(
                 width: 72,
                 height: 72,
-                padding: const EdgeInsets.all(8),
+                padding: (user?.photoURL != null &&
+                        user!.photoURL!.isNotEmpty &&
+                        (File(user.photoURL!).existsSync() ||
+                            (Uri.tryParse(user.photoURL!)?.hasScheme ?? false)))
+                    ? EdgeInsets.zero
+                    : const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: const Color(0xFFEAF5EB),
                   shape: BoxShape.circle,
@@ -241,18 +248,7 @@ class ProfilePage extends StatelessWidget {
                   ],
                 ),
                 child: ClipOval(
-                  child: Image.asset(
-                    'assets/images/splash/leafittome_logo.png',
-                    fit: BoxFit.contain,
-                    filterQuality: FilterQuality.high,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Icon(
-                        Icons.person_rounded,
-                        color: primaryGreen,
-                        size: 40,
-                      );
-                    },
-                  ),
+                  child: _buildAvatarWidget(user?.photoURL),
                 ),
               ),
               const SizedBox(width: 15),
@@ -312,6 +308,44 @@ class ProfilePage extends StatelessWidget {
               ),
             ],
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAvatarWidget(String? photoURL) {
+    if (photoURL != null && photoURL.isNotEmpty) {
+      if (File(photoURL).existsSync()) {
+        return Image.file(
+          File(photoURL),
+          width: 72,
+          height: 72,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => _buildFallbackLogo(),
+        );
+      } else if (Uri.tryParse(photoURL)?.hasScheme ?? false) {
+        return Image.network(
+          photoURL,
+          width: 72,
+          height: 72,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => _buildFallbackLogo(),
+        );
+      }
+    }
+    return _buildFallbackLogo();
+  }
+
+  Widget _buildFallbackLogo() {
+    return Image.asset(
+      'assets/images/splash/leafittome_logo.png',
+      fit: BoxFit.contain,
+      filterQuality: FilterQuality.high,
+      errorBuilder: (context, error, stackTrace) {
+        return const Icon(
+          Icons.person_rounded,
+          color: primaryGreen,
+          size: 40,
         );
       },
     );
