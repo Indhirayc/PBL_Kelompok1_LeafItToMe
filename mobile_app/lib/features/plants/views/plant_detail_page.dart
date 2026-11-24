@@ -403,11 +403,41 @@ class PlantDetailPage extends ConsumerWidget {
             style: const TextStyle(fontSize: 12, color: Color(0xFF65756A)),
           ),
           const SizedBox(height: 12),
-          AppButton(
-            key: const Key('scanPlantButton'),
-            label: 'Scan Daun',
-            height: 50,
-            onPressed: () => _openInspectionForm(context, plant),
+          Row(
+            children: [
+              Expanded(
+                child: AppButton(
+                  key: const Key('scanPlantButton'),
+                  label: 'Scan Daun',
+                  height: 48,
+                  onPressed: () => _openInspectionForm(context, plant),
+                ),
+              ),
+              const SizedBox(width: 10),
+              OutlinedButton.icon(
+                key: const Key('editProfileCardButton'),
+                onPressed: () {
+                  context.pushNamed(
+                    'edit-plant',
+                    pathParameters: {'plantId': plant.id},
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF2F7D4A),
+                  side: const BorderSide(color: Color(0xFF2F7D4A)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  minimumSize: const Size(0, 48),
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                ),
+                icon: const Icon(Icons.edit_outlined, size: 18),
+                label: const Text(
+                  'Edit',
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -657,8 +687,23 @@ class PlantDetailPage extends ConsumerWidget {
         centerTitle: false,
         titleSpacing: 0,
         actions: [
+          IconButton(
+            key: const Key('editPlantButton'),
+            tooltip: 'Edit Profil Tanaman',
+            onPressed: () {
+              context.pushNamed(
+                'edit-plant',
+                pathParameters: {'plantId': plant.id},
+              );
+            },
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+            splashRadius: 22,
+            color: const Color(0xFF2F7D4A),
+            icon: const Icon(Icons.edit_outlined, size: 22),
+          ),
           Padding(
-            padding: const EdgeInsets.only(right: 20),
+            padding: const EdgeInsets.only(right: 16),
             child: IconButton(
               tooltip: 'Hapus Tanaman',
               onPressed: () {
