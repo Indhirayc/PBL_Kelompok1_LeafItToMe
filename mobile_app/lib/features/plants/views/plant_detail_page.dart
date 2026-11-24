@@ -395,6 +395,50 @@ class PlantDetailPage extends ConsumerWidget {
                   ],
                 ),
               ),
+              const SizedBox(width: 8),
+              Material(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                child: InkWell(
+                  key: const Key('editProfileCardButton'),
+                  onTap: () {
+                    context.pushNamed(
+                      'edit-plant',
+                      pathParameters: {'plantId': plant.id},
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFC8E6C9)),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.edit_outlined,
+                          size: 14,
+                          color: Color(0xFF2E7D32),
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          'Edit',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF2E7D32),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -403,41 +447,11 @@ class PlantDetailPage extends ConsumerWidget {
             style: const TextStyle(fontSize: 12, color: Color(0xFF65756A)),
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: AppButton(
-                  key: const Key('scanPlantButton'),
-                  label: 'Scan Daun',
-                  height: 48,
-                  onPressed: () => _openInspectionForm(context, plant),
-                ),
-              ),
-              const SizedBox(width: 10),
-              OutlinedButton.icon(
-                key: const Key('editProfileCardButton'),
-                onPressed: () {
-                  context.pushNamed(
-                    'edit-plant',
-                    pathParameters: {'plantId': plant.id},
-                  );
-                },
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF2F7D4A),
-                  side: const BorderSide(color: Color(0xFF2F7D4A)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  minimumSize: const Size(0, 48),
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                ),
-                icon: const Icon(Icons.edit_outlined, size: 18),
-                label: const Text(
-                  'Edit',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-                ),
-              ),
-            ],
+          AppButton(
+            key: const Key('scanPlantButton'),
+            label: 'Scan Daun',
+            height: 48,
+            onPressed: () => _openInspectionForm(context, plant),
           ),
         ],
       ),
